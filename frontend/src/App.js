@@ -681,24 +681,19 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
             />
             
             {formData.state && (
-              <div className="flex items-center gap-2 text-sm bg-green-50 p-2 rounded-lg border border-green-200">
-                <CheckCircle2 size={16} color="#059669" />
-                <span className="font-medium text-green-800">{formData.state}</span>
+              <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                <div className="flex items-center gap-2 text-sm mb-1">
+                  <CheckCircle2 size={16} color="#059669" />
+                  <span className="font-semibold text-green-800">Delivery Location Confirmed</span>
+                </div>
+                {formData.area && (
+                  <p className="text-xs text-green-700 ml-6">Area: {formData.area}</p>
+                )}
+                <p className="text-xs text-green-700 ml-6">State: {formData.state}</p>
               </div>
             )}
           </div>
         </div>
-      </div>
-
-      <div className="mb-4">
-        <div className="relative overflow-hidden rounded-xl shadow-md">
-          <img
-            src={BEFORE_AFTER_IMAGES[0]}
-            alt="Before and After Results"
-            className="w-full h-auto"
-          />
-        </div>
-        <p className="text-xs text-center text-[#475569] mt-2 italic">Visible transformation in 4-6 weeks</p>
       </div>
 
       <button
