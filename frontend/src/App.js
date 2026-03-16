@@ -299,6 +299,13 @@ function App() {
           }}
         />
       )}
+
+      {showBackPrompt && (
+        <BackPromptModal
+          onClose={() => setShowBackPrompt(false)}
+          onConfirm={confirmBack}
+        />
+      )}
     </div>
   );
 }
