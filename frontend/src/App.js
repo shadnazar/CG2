@@ -956,6 +956,11 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
         <span>Secure checkout powered by Razorpay</span>
       </div>
 
+      <div className="bg-gray-50 rounded-xl p-3 mb-4 text-center">
+        <p className="text-xs text-[#475569] mb-1">🔒 256-bit SSL encrypted • 100% secure payment</p>
+        <p className="text-xs text-[#94A3B8]">Your payment information is never stored</p>
+      </div>
+
       <button
         data-testid="place-order-button"
         onClick={handlePlaceOrder}
@@ -964,6 +969,17 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
       >
         {loading ? 'Processing...' : `Place Order - ₹${paymentMethod === 'COD' ? '1,199' : '899'}`}
       </button>
+
+      <div className="flex items-center justify-center gap-4 mt-3">
+        <div className="flex items-center gap-1">
+          <CheckCircle2 size={14} color="#059669" />
+          <span className="text-xs text-[#475569]">Money-back guarantee</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <Truck size={14} color="#059669" />
+          <span className="text-xs text-[#475569]">Free shipping</span>
+        </div>
+      </div>
     </div>
   );
 }
