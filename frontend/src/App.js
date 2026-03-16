@@ -715,6 +715,10 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
         <p className="text-sm text-[#475569]">Just 3 simple steps to complete</p>
       </div>
 
+      <div className="bg-green-50 border-2 border-green-500 p-3 rounded-xl mb-4 text-center">
+        <p className="text-green-800 font-bold text-sm">🚚 FREE Shipping + Expected Delivery: {new Date(Date.now() + (2 * 24 * 60 * 60 * 1000)).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}</p>
+      </div>
+
       <div className="bg-gradient-to-r from-[#4C1D95] to-[#6d28d9] text-white p-3 rounded-2xl mb-4">
         <div className="flex items-center gap-2 mb-1">
           <Sparkles size={18} />
