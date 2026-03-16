@@ -319,6 +319,12 @@ async def get_recent_orders_count():
     return {"count": base_count + count}
 
 
+@api_router.get("/pincode/{pincode}/state")
+async def get_state_by_pincode(pincode: str):
+    state = get_state_from_pincode(pincode)
+    return {"pincode": pincode, "state": state}
+
+
 app.include_router(api_router)
 
 app.add_middleware(
