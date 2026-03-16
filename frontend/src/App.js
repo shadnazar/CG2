@@ -447,10 +447,21 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
           </h3>
           <div className="relative overflow-hidden rounded-2xl">
             <img
-              src={BEFORE_AFTER_IMAGES[0]}
+              src={BEFORE_AFTER_IMAGES[currentBeforeAfterIndex]}
               alt="Before and After Results"
-              className="w-full h-auto"
+              className="w-full h-auto transition-opacity duration-500"
+              data-testid="before-after-slider"
             />
+            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
+              {BEFORE_AFTER_IMAGES.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-2 w-2 rounded-full transition-all ${
+                    idx === currentBeforeAfterIndex ? 'bg-white w-6' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
           <p className="text-sm text-center text-[#475569] mt-2 italic">Visible transformation in 4-6 weeks</p>
         </div>
