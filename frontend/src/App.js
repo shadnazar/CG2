@@ -36,7 +36,8 @@ function App() {
     email: '',
     houseNumber: '',
     area: '',
-    pincode: ''
+    pincode: '',
+    state: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('PREPAID');
   const [orderDetails, setOrderDetails] = useState(null);
