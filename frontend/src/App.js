@@ -45,6 +45,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showCODWarning, setShowCODWarning] = useState(false);
+  const [showBackPrompt, setShowBackPrompt] = useState(false);
   const [timeLeft, setTimeLeft] = useState(240);
   const [recentOrders, setRecentOrders] = useState(30);
 
