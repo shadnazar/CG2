@@ -607,6 +607,57 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
             </div>
           ))}
         </div>
+
+        <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-2xl p-4 mb-6 text-center">
+          <p className="text-lg font-bold mb-1">🚚 FREE Shipping All Over India!</p>
+          <p className="text-sm opacity-90">No hidden charges • Track your order 24/7</p>
+        </div>
+
+        <div className="bg-gradient-to-br from-[#FFFBEB] to-[#FEF3C7] border-2 border-[#F59E0B] rounded-2xl p-5 mb-6">
+          <div className="flex items-start gap-3 mb-3">
+            <CheckCircle2 size={32} color="#059669" className="flex-shrink-0" />
+            <div>
+              <h3 className="text-lg font-bold text-[#1E293B] mb-1">100% Money-Back Guarantee</h3>
+              <p className="text-sm text-[#475569]">
+                Not satisfied with results in 30 days? Get a <strong>full refund</strong>, no questions asked. We're that confident!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Common Questions Answered
+          </h3>
+          <div className="space-y-3">
+            {[
+              { q: 'How long until I see results?', a: 'Most customers see visible improvement in 4-6 weeks with consistent use.' },
+              { q: 'Is it safe for sensitive skin?', a: 'Yes! Dermatologist-tested and suitable for all skin types including sensitive skin.' },
+              { q: 'Can I use it with other products?', a: 'Absolutely! Use morning and night after cleansing. Follow with moisturizer and sunscreen.' }
+            ].map((faq, idx) => (
+              <div key={idx} className="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                <p className="font-semibold text-[#1E293B] mb-1 text-sm">Q: {faq.q}</p>
+                <p className="text-xs text-[#475569]">A: {faq.a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center justify-center gap-6 mb-6 flex-wrap">
+          <div className="flex items-center gap-2">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Logo_UPI.svg" alt="UPI" className="h-6" />
+          </div>
+          <div className="flex items-center gap-2">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-5" />
+          </div>
+          <div className="flex items-center gap-2">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6" />
+          </div>
+          <div className="flex items-center gap-2">
+            <ShieldCheck size={24} color="#059669" />
+            <span className="text-xs text-[#475569]">SSL Secure</span>
+          </div>
+        </div>
       </div>
 
       <div className="sticky-cta">
