@@ -382,8 +382,10 @@ def main():
     tests = [
         tester.test_root_endpoint,
         tester.test_recent_orders_stats,
+        tester.test_pincode_state_detection,
         tester.test_create_razorpay_order,
         tester.test_create_order_with_new_fields,
+        tester.test_create_order_with_state_field,
         tester.test_create_cod_order_with_new_fields,
         tester.test_get_order_by_id,
         tester.test_get_all_orders,
