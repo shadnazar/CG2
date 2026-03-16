@@ -473,7 +473,7 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
             Clinically Proven Ingredients
           </h3>
           <div className="space-y-2">
-            {['0.3% Retinol', 'Niacinamide', 'Hyaluronic Acid', 'Vitamin E', 'Alpha Arbutin'].map((ingredient, idx) => (
+            {['0.3% Retinol', 'Niacinamide', 'Hyaluronic Acid', 'Vitamin E'].map((ingredient, idx) => (
               <div key={idx} className="flex items-center gap-2">
                 <CheckCircle2 size={18} color="#059669" />
                 <span className="text-[#475569]">{ingredient}</span>
