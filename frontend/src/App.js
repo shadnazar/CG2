@@ -511,47 +511,47 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
 function CheckoutPage({ formData, handleFormChange, handleContinue }) {
   return (
     <div className="p-6 animate-slide-up">
-      <div className="mb-6">
-        <h2 className="text-3xl font-bold text-[#1E293B] mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
-          Delivery Details
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold text-[#1E293B] mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>
+          Quick Delivery Setup
         </h2>
-        <p className="text-[#475569]">Fill in your details to unlock exclusive offers</p>
+        <p className="text-sm text-[#475569]">Just 3 simple steps to complete</p>
       </div>
 
-      <div className="bg-gradient-to-r from-[#4C1D95] to-[#6d28d9] text-white p-4 rounded-2xl mb-6">
+      <div className="bg-gradient-to-r from-[#4C1D95] to-[#6d28d9] text-white p-3 rounded-2xl mb-4">
         <div className="flex items-center gap-2 mb-1">
-          <Sparkles size={20} />
-          <span className="font-bold">Unlock Extra ₹300 OFF!</span>
+          <Sparkles size={18} />
+          <span className="font-bold text-sm">Extra ₹300 OFF on Prepaid!</span>
         </div>
-        <p className="text-sm opacity-90">Choose prepaid payment and save more</p>
+        <p className="text-xs opacity-90">Pay online and save more</p>
       </div>
 
-      <div className="space-y-4 mb-6">
+      <div className="space-y-3 mb-6">
         <div>
-          <label className="block text-sm font-medium text-[#1E293B] mb-2">Full Name *</label>
+          <label className="block text-xs font-medium text-[#475569] mb-1">Full Name *</label>
           <input
             data-testid="name-input"
             type="text"
             name="name"
             value={formData.name}
             onChange={handleFormChange}
-            placeholder="Enter your full name"
+            placeholder="Enter your name"
             className="input-field"
             required
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1E293B] mb-2">Phone Number *</label>
+          <label className="block text-xs font-medium text-[#475569] mb-1">Phone Number *</label>
           <div className="flex gap-2">
-            <div className="input-field w-16 text-center" style={{ width: '60px' }}>+91</div>
+            <div className="input-field text-center" style={{ width: '55px', padding: '12px 8px' }}>+91</div>
             <input
               data-testid="phone-input"
               type="tel"
               name="phone"
               value={formData.phone}
               onChange={handleFormChange}
-              placeholder="Enter 10-digit number"
+              placeholder="10-digit number"
               className="input-field"
               maxLength="10"
               required
@@ -560,80 +560,78 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1E293B] mb-2">Email (Optional)</label>
+          <label className="block text-xs font-medium text-[#475569] mb-1">Email (Optional for updates)</label>
           <input
             data-testid="email-input"
             type="email"
             name="email"
             value={formData.email}
             onChange={handleFormChange}
-            placeholder="your.email@example.com"
+            placeholder="your@email.com"
             className="input-field"
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-[#1E293B] mb-2">House/Flat Number *</label>
-          <input
-            data-testid="house-input"
-            type="text"
-            name="houseNumber"
-            value={formData.houseNumber}
-            onChange={handleFormChange}
-            placeholder="Flat 301, Building A"
-            className="input-field"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[#1E293B] mb-2">Area/Locality *</label>
-          <input
-            data-testid="area-input"
-            type="text"
-            name="area"
-            value={formData.area}
-            onChange={handleFormChange}
-            placeholder="Indiranagar, Bangalore"
-            className="input-field"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-[#1E293B] mb-2">PIN Code *</label>
-          <input
-            data-testid="pincode-input"
-            type="text"
-            name="pincode"
-            value={formData.pincode}
-            onChange={handleFormChange}
-            placeholder="560038"
-            className="input-field"
-            maxLength="6"
-            required
-          />
-          {formData.state && (
-            <div className="mt-2 flex items-center gap-2 text-sm text-[#059669]">
-              <CheckCircle2 size={16} />
-              <span className="font-medium">{formData.state}</span>
-            </div>
-          )}
+        <div className="bg-gray-50 p-3 rounded-xl">
+          <p className="text-xs font-semibold text-[#1E293B] mb-2">Delivery Address</p>
+          
+          <div className="space-y-2">
+            <input
+              data-testid="house-input"
+              type="text"
+              name="houseNumber"
+              value={formData.houseNumber}
+              onChange={handleFormChange}
+              placeholder="House/Flat No."
+              className="input-field"
+              style={{ padding: '10px 12px' }}
+              required
+            />
+            
+            <input
+              data-testid="area-input"
+              type="text"
+              name="area"
+              value={formData.area}
+              onChange={handleFormChange}
+              placeholder="Area, Locality, City"
+              className="input-field"
+              style={{ padding: '10px 12px' }}
+              required
+            />
+            
+            <input
+              data-testid="pincode-input"
+              type="text"
+              name="pincode"
+              value={formData.pincode}
+              onChange={handleFormChange}
+              placeholder="PIN Code (6 digits)"
+              className="input-field"
+              style={{ padding: '10px 12px' }}
+              maxLength="6"
+              required
+            />
+            
+            {formData.state && (
+              <div className="flex items-center gap-2 text-sm bg-green-50 p-2 rounded-lg border border-green-200">
+                <CheckCircle2 size={16} color="#059669" />
+                <span className="font-medium text-green-800">{formData.state}</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="mb-6">
-        <h3 className="text-lg font-semibold mb-3 text-[#1E293B]" style={{ fontFamily: 'Playfair Display, serif' }}>
-          See The Transformation
-        </h3>
-        <div className="relative overflow-hidden rounded-2xl shadow-lg">
+      <div className="mb-4">
+        <div className="relative overflow-hidden rounded-xl shadow-md">
           <img
             src={BEFORE_AFTER_IMAGES[0]}
             alt="Before and After Results"
             className="w-full h-auto"
           />
         </div>
-        <p className="text-xs text-center text-[#475569] mt-2 italic">Real customer results in 4-6 weeks</p>
+        <p className="text-xs text-center text-[#475569] mt-2 italic">Visible transformation in 4-6 weeks</p>
       </div>
 
       <button
