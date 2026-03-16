@@ -407,6 +407,14 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
           </span>
         </div>
 
+        <div className="bg-red-50 border border-red-200 p-3 rounded-xl mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <AlertCircle size={20} color="#DC2626" />
+            <span className="text-red-800 text-sm font-bold">Only 7 units left in stock!</span>
+          </div>
+          <Package size={20} color="#DC2626" />
+        </div>
+
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-[#1E293B] mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
             Celesta Glow
