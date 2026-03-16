@@ -14,6 +14,7 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import razorpay
+from pincode_data import get_state_from_pincode
 
 
 ROOT_DIR = Path(__file__).parent
