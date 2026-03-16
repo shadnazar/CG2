@@ -837,6 +837,11 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
       >
         Continue to Payment
       </button>
+
+      <div className="flex items-center justify-center gap-2 mt-3 text-xs text-[#94A3B8]">
+        <ShieldCheck size={14} color="#059669" />
+        <span>Your information is 100% secure and encrypted</span>
+      </div>
     </div>
   );
 }
