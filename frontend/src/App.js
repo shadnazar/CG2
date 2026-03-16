@@ -889,6 +889,70 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
   );
 }
 
+function ExitIntentModal({ onClose, onStay }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" data-testid="exit-intent-modal">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <AlertCircle size={40} color="white" />
+          </div>
+          <h3 className="text-2xl font-bold text-[#1E293B] mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>
+            ⚠️ WAIT! Don't Risk Aging Skin
+          </h3>
+          <p className="text-[#DC2626] font-semibold mb-2 text-lg">
+            Every day without proper skincare ages your skin faster!
+          </p>
+          <p className="text-[#475569] mb-4">
+            Fine lines, dark spots, and wrinkles become PERMANENT without treatment. Don't let your skin suffer!
+          </p>
+          
+          <div className="bg-[#FEF2F2] border-2 border-[#DC2626] rounded-xl p-4 mb-4">
+            <p className="text-sm text-[#DC2626] font-semibold mb-2">
+              ⏰ Without Anti-Aging Care:
+            </p>
+            <ul className="text-xs text-left text-[#7F1D1D] space-y-1">
+              <li>✗ Deep wrinkles form permanently</li>
+              <li>✗ Dark spots multiply and darken</li>
+              <li>✗ Skin loses elasticity & sags</li>
+              <li>✗ Dullness becomes irreversible</li>
+            </ul>
+          </div>
+
+          <div className="bg-[#ECFDF5] border-2 border-[#059669] rounded-xl p-4">
+            <p className="text-sm text-[#059669] font-semibold mb-2">
+              ✅ Start Today & Get:
+            </p>
+            <ul className="text-xs text-left text-[#065F46] space-y-1">
+              <li>✓ Visible results in 4-6 weeks</li>
+              <li>✓ 40% OFF - Save ₹600 TODAY</li>
+              <li>✓ 10,000+ happy customers</li>
+              <li>✓ 99% see glowing, youthful skin</li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            onClick={onStay}
+            className="btn-primary"
+            data-testid="exit-stay-button"
+          >
+            Protect My Skin Now - Get 40% OFF!
+          </button>
+          <button
+            onClick={onClose}
+            className="w-full py-3 text-[#94A3B8] text-sm hover:text-[#64748B] transition-colors"
+            data-testid="exit-leave-button"
+          >
+            No thanks, I'll risk aging skin
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function BackPromptModal({ onClose, onConfirm }) {
   const motivationalMessages = [
     {
