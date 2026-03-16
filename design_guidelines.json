@@ -1,0 +1,129 @@
+{
+  "design_system": {
+    "typography": {
+      "font_family": {
+        "heading": "Playfair Display, serif",
+        "body": "Inter, sans-serif"
+      },
+      "imports": [
+        "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap"
+      ],
+      "scale": {
+        "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+        "h2": "text-3xl md:text-4xl font-semibold tracking-tight",
+        "h3": "text-2xl md:text-3xl font-medium",
+        "body_lg": "text-lg leading-relaxed",
+        "body_base": "text-base leading-relaxed",
+        "caption": "text-sm text-muted-foreground"
+      }
+    },
+    "colors": {
+      "theme": "light",
+      "palette": {
+        "primary": {
+          "DEFAULT": "#4C1D95",
+          "foreground": "#FFFFFF",
+          "description": "Deep Royal Violet - Luxury, Anti-aging, Trust"
+        },
+        "secondary": {
+          "DEFAULT": "#F59E0B",
+          "foreground": "#FFFFFF",
+          "description": "Amber Gold - Glow, Vitality, Premium Accents"
+        },
+        "background": {
+          "DEFAULT": "#FFFFFF",
+          "alt": "#FFFBEB",
+          "description": "White and Soft Cream (Amber-50) for warmth"
+        },
+        "text": {
+          "primary": "#1E293B",
+          "secondary": "#475569",
+          "muted": "#94A3B8"
+        },
+        "accent": {
+          "success": "#059669",
+          "error": "#DC2626",
+          "warning": "#D97706"
+        }
+      }
+    },
+    "spacing": {
+      "container": "max-w-md mx-auto bg-white min-h-screen shadow-2xl overflow-hidden",
+      "section_padding": "py-8 px-6",
+      "element_gap": "gap-4"
+    },
+    "shadows": {
+      "card": "shadow-lg hover:shadow-xl transition-shadow duration-300",
+      "button": "shadow-md hover:shadow-lg active:shadow-sm"
+    },
+    "border_radius": {
+      "card": "rounded-2xl",
+      "button": "rounded-full",
+      "input": "rounded-xl"
+    }
+  },
+  "components": {
+    "buttons": {
+      "primary": "bg-[#4C1D95] text-white hover:bg-[#3b1676] w-full py-4 text-lg font-bold rounded-full shadow-lg transform transition hover:-translate-y-0.5 active:translate-y-0",
+      "secondary": "bg-[#F59E0B] text-white hover:bg-[#d97706] w-full py-3 text-base font-semibold rounded-full shadow-md",
+      "outline": "border-2 border-[#4C1D95] text-[#4C1D95] hover:bg-[#4C1D95] hover:text-white w-full py-3 font-medium rounded-full transition-colors"
+    },
+    "inputs": {
+      "default": "w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-[#4C1D95] focus:ring-2 focus:ring-[#4C1D95]/20 outline-none transition-all bg-gray-50 focus:bg-white"
+    },
+    "cards": {
+      "product": "bg-white rounded-2xl p-4 shadow-sm border border-gray-100",
+      "testimonial": "bg-[#FFFBEB] p-6 rounded-2xl border border-[#F59E0B]/20 relative"
+    }
+  },
+  "layout_structure": {
+    "app_container": "max-w-[480px] mx-auto bg-white min-h-screen shadow-2xl relative",
+    "header": "sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 px-4 py-3 flex items-center justify-between",
+    "footer": "bg-[#4C1D95] text-white py-12 px-6 text-center"
+  },
+  "assets": {
+    "images": {
+      "product_hero": "https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/ig243hne_IMG_9115.png",
+      "product_gallery": [
+        "https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/bjk8ksay_IMG_9675.png",
+        "https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/g5vzgxym_IMG_9676.png",
+        "https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/hry8n67v_IMG_9677.png",
+        "https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/ak0hq7r8_IMG_9678.png"
+      ]
+    },
+    "icons": "Use lucide-react for all icons (ShieldCheck, Star, Truck, Clock, ChevronRight, etc.)"
+  },
+  "content_strategy": {
+    "brand_voice": "Trustworthy, Scientific, Premium, Caring",
+    "key_benefits": [
+      "Reduces Fine Lines & Wrinkles",
+      "Boosts Collagen Production",
+      "Deep Hydration & Glow",
+      "Even Skin Tone"
+    ],
+    "trust_signals": [
+      "Dermatologist Tested",
+      "Made in India",
+      "Cruelty Free",
+      "10,000+ Happy Customers"
+    ]
+  },
+  "implementation_plan": {
+    "step_1": "Setup Fonts & Global Styles: Add Google Fonts import to index.css. Define CSS variables for colors.",
+    "step_2": "Create Layout Component: 'FunnelLayout' that handles the 3-step state (currentStep, formData, orderDetails).",
+    "step_3": "Build Page 1 (Product): Hero section with image carousel, '40% OFF' badge, Benefits grid, Testimonials, Sticky 'Buy Now' button.",
+    "step_4": "Build Page 2 (Details): Form for Name, Address, Phone (Mandatory). Show 'Unlock Extra ₹300 OFF with Prepaid' banner.",
+    "step_5": "Build Page 3 (Payment): Toggle between COD (₹1199) and Prepaid (₹899). Show delivery timeline (5-7 days vs Fast). Order Summary.",
+    "step_6": "Build Success View: Order confirmation with random Order ID.",
+    "step_7": "Add Micro-interactions: Smooth transitions between steps, button press effects, confetti on success."
+  },
+  "universal_guidelines": [
+    "Mobile-First: Design strictly for mobile width (max-w-md mx-auto).",
+    "High Contrast: Ensure text is readable against backgrounds.",
+    "Touch Targets: Buttons must be at least 44px height.",
+    "Speed: Optimize image loading (lazy load gallery).",
+    "Trust: Always show 'Secure Checkout' or 'Verified' badges near payment.",
+    "No Dead Ends: Every page must have a clear primary action.",
+    "Data-TestID: All interactive elements must have data-testid attributes."
+  ]
+}
