@@ -72,8 +72,20 @@ function App() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleFormChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleFormChange = async (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    
+    if (name === 'pincode' && value.length === 6) {
+      try {
+        const response = await axios.get(`${API}/pincode/${value}/state`);
+        if (response.data.state) {
+          setFormData(prev => ({ ...prev, state: response.data.state }));
+        }
+      } catch (error) {
+        console.error('Failed to fetch state:', error);
+      }
+    }
   };
 
   const validateForm = () => {
