@@ -419,6 +419,20 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
 
         <div className="mb-6">
           <h3 className="text-xl font-semibold mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>
+            Real Results, Real People
+          </h3>
+          <div className="relative overflow-hidden rounded-2xl">
+            <img
+              src={BEFORE_AFTER_IMAGES[0]}
+              alt="Before and After Results"
+              className="w-full h-auto"
+            />
+          </div>
+          <p className="text-sm text-center text-[#475569] mt-2 italic">Visible transformation in 4-6 weeks</p>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>
             Loved by 10,000+ Customers
           </h3>
           <div className="relative">
