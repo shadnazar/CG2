@@ -818,6 +818,67 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
   );
 }
 
+function BackPromptModal({ onClose, onConfirm }) {
+  const motivationalMessages = [
+    {
+      title: "You're Almost There! ✨",
+      message: "Just one more step to unlock glowing, youthful skin!",
+      stat: "99% of customers see visible results in 4-6 weeks"
+    },
+    {
+      title: "Don't Miss Out! 🌟",
+      message: "Your skin transformation journey is about to begin!",
+      stat: "92% of customers report smoother, hydrated skin"
+    },
+    {
+      title: "So Close to Radiance! 💫",
+      message: "Complete your order now and join thousands of happy customers!",
+      stat: "10,000+ customers already loving their glowing skin"
+    }
+  ];
+
+  const randomMessage = motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)];
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="back-prompt-modal">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#4C1D95] to-[#F59E0B] rounded-full flex items-center justify-center mx-auto mb-4">
+            <Sparkles size={40} color="white" />
+          </div>
+          <h3 className="text-2xl font-bold text-[#1E293B] mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
+            {randomMessage.title}
+          </h3>
+          <p className="text-[#475569] mb-4">{randomMessage.message}</p>
+          
+          <div className="bg-[#FFFBEB] border-2 border-[#F59E0B] rounded-xl p-4 mb-4">
+            <p className="text-sm text-[#92400E] font-semibold">
+              ✨ {randomMessage.stat}
+            </p>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            onClick={onClose}
+            className="btn-primary"
+            data-testid="stay-and-complete-button"
+          >
+            Yes, Complete My Order!
+          </button>
+          <button
+            onClick={onConfirm}
+            className="w-full py-3 text-[#475569] font-medium hover:bg-gray-50 rounded-full transition-colors border border-gray-200"
+            data-testid="go-back-button"
+          >
+            Go Back
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid }) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="cod-warning-modal">
