@@ -46,9 +46,10 @@ class Order(BaseModel):
     order_id: str = Field(default_factory=lambda: f"CG{random.randint(100000, 999999)}")
     name: str
     phone: str
-    house_number: str
-    area: str
-    pincode: str
+    house_number: str = ""
+    area: str = ""
+    pincode: str = ""
+    address: Optional[str] = None
     payment_method: str
     amount: float
     email: Optional[str] = None
