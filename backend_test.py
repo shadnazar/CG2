@@ -291,6 +291,85 @@ class CelestaGlowAPITester:
         
         return False
 
+    def test_pincode_state_detection(self):
+        """Test the NEW pincode state detection API"""
+        test_cases = [
+            ("560034", "Karnataka"),
+            ("110001", "Delhi"),
+            ("400001", "Maharashtra"),
+            ("600001", "Tamil Nadu"),
+            ("000000", None),  # Invalid pincode
+            ("12345", None),   # 5 digits
+            ("999999", None)   # Non-existent pincode
+        ]
+        
+        all_passed = True
+        
+        for pincode, expected_state in test_cases:
+            success, response = self.run_test(
+                f"Pincode State Detection ({pincode})",
+                "GET",
+                f"pincode/{pincode}/state",
+                200
+            )
+            
+            if success:
+                if response.get('pincode') == pincode:
+                    actual_state = response.get('state')
+                    if expected_state is None:
+                        if actual_state is None or actual_state == "":
+                            print(f"✅ Correctly returned no state for invalid pincode {pincode}")
+                        else:
+                            print(f"❌ Expected no state for {pincode}, got: {actual_state}")
+                            all_passed = False
+                    else:
+                        if actual_state == expected_state:
+                            print(f"✅ Correctly detected state {expected_state} for pincode {pincode}")
+                        else:
+                            print(f"❌ Expected state {expected_state} for {pincode}, got: {actual_state}")
+                            all_passed = False
+                else:
+                    print(f"❌ Pincode mismatch in response for {pincode}")
+                    all_passed = False
+            else:
+                print(f"❌ Failed to get state for pincode {pincode}")
+                all_passed = False
+        
+        return all_passed
+
+    def test_create_order_with_state_field(self):
+        """Test creating order with state field (NEW FEATURE)"""
+        order_data = {
+            "name": "Ananya Sharma",
+            "phone": "9123456789",
+            "email": "ananya@test.com",
+            "house_number": "Flat 501, Tower B",
+            "area": "Whitefield, Bangalore",
+            "pincode": "560066",
+            "state": "Karnataka",  # NEW: State field
+            "payment_method": "PREPAID",
+            "amount": 899.0
+        }
+        
+        success, response = self.run_test(
+            "Create Order with State Field",
+            "POST",
+            "orders",
+            200,
+            data=order_data
+        )
+        
+        if success:
+            # Validate that state field is included in response
+            if response.get('state') != order_data['state']:
+                print(f"❌ State field mismatch: expected {order_data['state']}, got {response.get('state')}")
+                return False
+            
+            print(f"✅ Order created successfully with state: {response.get('state')}")
+            return True
+        
+        return False
+
 def main():
     print("🚀 Starting Enhanced Celesta Glow API Tests")
     print("Testing NEW FEATURES: Separated address fields, Razorpay integration, Recent orders stats")
