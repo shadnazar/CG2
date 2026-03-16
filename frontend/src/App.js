@@ -453,16 +453,25 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { icon: '✨', text: 'Reduces Fine Lines', color: '#4C1D95' },
-              { icon: '💧', text: 'Deep Hydration', color: '#059669' },
-              { icon: '🌟', text: 'Fades Dark Spots', color: '#F59E0B' },
-              { icon: '✨', text: 'Fights Dullness', color: '#DC2626' },
-              { icon: '🎯', text: 'Clears Pimples', color: '#4C1D95' },
-              { icon: '💎', text: 'Boosts Collagen', color: '#059669' }
+              { icon: '✨', text: 'Reduces Fine Lines', color: '#4C1D95', bg: 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=400&q=80' },
+              { icon: '💧', text: 'Deep Hydration', color: '#059669', bg: 'https://images.unsplash.com/photo-1556229010-6c3f2c9ca5f8?w=400&q=80' },
+              { icon: '🌟', text: 'Fades Dark Spots', color: '#F59E0B', bg: 'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=400&q=80' },
+              { icon: '✨', text: 'Fights Dullness', color: '#DC2626', bg: 'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&q=80' },
+              { icon: '🎯', text: 'Clears Pimples', color: '#4C1D95', bg: 'https://images.unsplash.com/photo-1512290923902-8a9f81dc236c?w=400&q=80' },
+              { icon: '💎', text: 'Boosts Collagen', color: '#059669', bg: 'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400&q=80' }
             ].map((benefit, idx) => (
-              <div key={idx} data-testid={`benefit-${idx}`} className="benefit-card">
+              <div 
+                key={idx} 
+                data-testid={`benefit-${idx}`} 
+                className="benefit-card relative overflow-hidden"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(255,255,255,0.95), rgba(255,255,255,0.95)), url(${benefit.bg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
                 <div className="text-3xl mb-2">{benefit.icon}</div>
-                <p className="text-sm font-medium text-[#1E293B]">{benefit.text}</p>
+                <p className="text-sm font-medium text-[#1E293B] relative z-10">{benefit.text}</p>
               </div>
             ))}
           </div>
