@@ -321,6 +321,12 @@ async def get_recent_orders_count():
     return {"count": base_count + count}
 
 
+@api_router.post("/track")
+async def track_page_visit(page: str, session_id: str = None):
+    await analytics_tracker.track_visit(page, session_id)
+    return {"status": "tracked"}
+
+
 @api_router.get("/pincode/{pincode}/state")
 async def get_state_by_pincode(pincode: str):
     state = get_state_from_pincode(pincode)
