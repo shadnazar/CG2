@@ -158,13 +158,16 @@ async def root():
 async def create_razorpay_order(order_data: RazorpayOrderCreate):
     try:
         amount_in_paise = int(order_data.amount * 100)
+        logging.info(f"Creating Razorpay order for amount: {amount_in_paise} paise")
         razorpay_order = razorpay_client.order.create({
             "amount": amount_in_paise,
             "currency": "INR",
             "payment_capture": 1
         })
+        logging.info(f"Razorpay order created successfully: {razorpay_order}")
         return razorpay_order
     except Exception as e:
+        logging.error(f"Razorpay order creation failed: {type(e).__name__} - {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
