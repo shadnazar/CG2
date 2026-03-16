@@ -51,6 +51,7 @@ class Order(BaseModel):
     house_number: str = ""
     area: str = ""
     pincode: str = ""
+    state: str = ""
     address: Optional[str] = None
     payment_method: str
     amount: float
