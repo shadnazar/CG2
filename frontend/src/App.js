@@ -856,6 +856,17 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
         <p className="text-[#475569]">Select your preferred payment option</p>
       </div>
 
+      <div className="bg-[#FFFBEB] border-2 border-[#F59E0B] rounded-xl p-3 mb-4 text-center">
+        <p className="text-[#92400E] font-bold text-sm">⚡ Last Chance: Save ₹300 with Prepaid Payment!</p>
+      </div>
+
+      <div className="flex items-center justify-center gap-4 mb-4">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/8/89/Logo_UPI.svg" alt="UPI" className="h-8 opacity-70" />
+        <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-6 opacity-70" />
+        <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-8 opacity-70" />
+        <img src="https://seeklogo.com/images/R/rupay-logo-4421B0973F-seeklogo.com.png" alt="RuPay" className="h-6 opacity-70" />
+      </div>
+
       <div className="space-y-4 mb-6">
         <div
           data-testid="prepaid-option"
