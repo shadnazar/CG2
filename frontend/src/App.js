@@ -870,7 +870,7 @@ function ConfirmationPage({ orderDetails }) {
           <div>
             <p className="text-[#94A3B8] text-xs mb-1">Address</p>
             <p className="text-[#1E293B] font-medium">
-              {orderDetails?.house_number}, {orderDetails?.area}, {orderDetails?.pincode}
+              {orderDetails?.house_number}, {orderDetails?.area}, {orderDetails?.state} - {orderDetails?.pincode}
             </p>
           </div>
           <div>
