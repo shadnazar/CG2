@@ -48,6 +48,11 @@ function App() {
   const [showBackPrompt, setShowBackPrompt] = useState(false);
   const [timeLeft, setTimeLeft] = useState(240);
   const [recentOrders, setRecentOrders] = useState(30);
+  const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
+
+  useEffect(() => {
+    axios.post(`${API}/track?page=product&session_id=${sessionId}`).catch(err => console.log(err));
+  }, []);
 
   useEffect(() => {
     const timer = setInterval(() => {
