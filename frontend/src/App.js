@@ -8,7 +8,7 @@ const API = `${BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 
 const BEFORE_AFTER_IMAGES = [
-  'https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/227ppugg_E7B2E3A3-32BC-419A-8767-D5E76FE705DA.png',
+  'https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/o6yd8m0v_Female_image.jpg',
   'https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/ut31n4je_E7B2E3A3-32BC-419A-8767-D5E76FE705DA.png'
 ];
 
