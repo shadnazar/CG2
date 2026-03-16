@@ -66,18 +66,75 @@ class CelestaGlowAPITester:
             print("❌ Root endpoint message incorrect")
             return False
 
-    def test_create_order_prepaid(self):
-        """Test creating a prepaid order"""
+    def test_recent_orders_stats(self):
+        """Test the recent orders stats endpoint (NEW FEATURE)"""
+        success, response = self.run_test(
+            "Recent Orders Stats",
+            "GET",
+            "stats/recent-orders",
+            200
+        )
+        
+        if success:
+            if 'count' in response and isinstance(response['count'], int) and response['count'] >= 30:
+                print(f"✅ Recent orders count: {response['count']}")
+                return True
+            else:
+                print(f"❌ Invalid recent orders response: {response}")
+                return False
+        
+        return False
+
+    def test_create_razorpay_order(self):
+        """Test Razorpay order creation (NEW FEATURE)"""
         order_data = {
-            "name": "Test Customer",
-            "phone": "9876543210",
-            "address": "123 MG Road, Bangalore, Karnataka 560001",
+            "amount": 899.0
+        }
+        
+        success, response = self.run_test(
+            "Create Razorpay Order",
+            "POST",
+            "create-razorpay-order",
+            200,
+            data=order_data
+        )
+        
+        if success:
+            required_fields = ['id', 'amount', 'currency']
+            missing_fields = [field for field in required_fields if field not in response]
+            
+            if missing_fields:
+                print(f"❌ Missing fields in Razorpay response: {missing_fields}")
+                return False
+            
+            if response.get('amount') != 89900:  # Amount in paise
+                print(f"❌ Wrong amount in Razorpay order: {response.get('amount')}")
+                return False
+            
+            if response.get('currency') != 'INR':
+                print(f"❌ Wrong currency in Razorpay order: {response.get('currency')}")
+                return False
+            
+            print(f"✅ Razorpay order created successfully: {response.get('id')}")
+            return True
+        
+        return False
+
+    def test_create_order_with_new_fields(self):
+        """Test creating order with new separated address fields"""
+        order_data = {
+            "name": "Riya Patel",
+            "phone": "9123456789",
+            "email": "riya@example.com",
+            "house_number": "Flat 405, Skyline Apartments",
+            "area": "Koramangala, Bangalore",
+            "pincode": "560034",
             "payment_method": "PREPAID",
             "amount": 899.0
         }
         
         success, response = self.run_test(
-            "Create Prepaid Order",
+            "Create Order with New Fields",
             "POST",
             "orders",
             200,
@@ -85,8 +142,8 @@ class CelestaGlowAPITester:
         )
         
         if success:
-            # Validate response structure
-            required_fields = ['order_id', 'name', 'phone', 'address', 'payment_method', 'amount', 'delivery_timeline', 'status']
+            # Validate response structure with new fields
+            required_fields = ['order_id', 'name', 'phone', 'house_number', 'area', 'pincode', 'email', 'payment_method', 'amount', 'delivery_timeline', 'status']
             missing_fields = [field for field in required_fields if field not in response]
             
             if missing_fields:
@@ -99,6 +156,23 @@ class CelestaGlowAPITester:
                 print(f"❌ Invalid order_id format: {order_id}")
                 return False
             
+            # Validate new address fields
+            if response.get('house_number') != order_data['house_number']:
+                print(f"❌ House number mismatch: {response.get('house_number')}")
+                return False
+            
+            if response.get('area') != order_data['area']:
+                print(f"❌ Area mismatch: {response.get('area')}")
+                return False
+            
+            if response.get('pincode') != order_data['pincode']:
+                print(f"❌ Pincode mismatch: {response.get('pincode')}")
+                return False
+            
+            if response.get('email') != order_data['email']:
+                print(f"❌ Email mismatch: {response.get('email')}")
+                return False
+            
             # Validate delivery timeline for prepaid
             if response.get('delivery_timeline') != 'Fast Delivery (2-3 Days)':
                 print(f"❌ Wrong delivery timeline for prepaid: {response.get('delivery_timeline')}")
@@ -107,22 +181,26 @@ class CelestaGlowAPITester:
             # Store order_id for later tests
             self.created_order_id = order_id
             print(f"✅ Order created successfully with ID: {order_id}")
+            print(f"✅ All new address fields validated correctly")
             return True
         
         return False
 
-    def test_create_order_cod(self):
-        """Test creating a COD order"""
+    def test_create_cod_order_with_new_fields(self):
+        """Test creating COD order with new fields"""
         order_data = {
             "name": "Test Customer COD",
             "phone": "9876543211",
-            "address": "456 Brigade Road, Bangalore, Karnataka 560025",
+            "house_number": "House 123",
+            "area": "Brigade Road, Bangalore",
+            "pincode": "560025",
+            "email": "test@example.com",
             "payment_method": "COD",
             "amount": 1199.0
         }
         
         success, response = self.run_test(
-            "Create COD Order",
+            "Create COD Order with New Fields",
             "POST",
             "orders",
             200,
@@ -156,6 +234,13 @@ class CelestaGlowAPITester:
         if success:
             if response.get('order_id') == self.created_order_id:
                 print(f"✅ Successfully retrieved order: {self.created_order_id}")
+                # Validate that new fields are present
+                new_fields = ['house_number', 'area', 'pincode', 'email']
+                for field in new_fields:
+                    if field not in response:
+                        print(f"❌ Missing new field in retrieved order: {field}")
+                        return False
+                print("✅ All new fields present in retrieved order")
                 return True
             else:
                 print(f"❌ Retrieved wrong order ID: {response.get('order_id')}")
@@ -175,6 +260,15 @@ class CelestaGlowAPITester:
         if success:
             if isinstance(response, list):
                 print(f"✅ Retrieved {len(response)} orders")
+                # Check if orders have new fields
+                if len(response) > 0:
+                    first_order = response[0]
+                    new_fields = ['house_number', 'area', 'pincode']
+                    for field in new_fields:
+                        if field not in first_order:
+                            print(f"❌ Missing new field in orders list: {field}")
+                            return False
+                    print("✅ Orders contain new address fields")
                 return True
             else:
                 print("❌ Response is not a list")
@@ -198,8 +292,9 @@ class CelestaGlowAPITester:
         return False
 
 def main():
-    print("🚀 Starting Celesta Glow API Tests")
-    print("=" * 50)
+    print("🚀 Starting Enhanced Celesta Glow API Tests")
+    print("Testing NEW FEATURES: Separated address fields, Razorpay integration, Recent orders stats")
+    print("=" * 80)
     
     # Setup
     tester = CelestaGlowAPITester()
@@ -207,8 +302,10 @@ def main():
     # Run all tests
     tests = [
         tester.test_root_endpoint,
-        tester.test_create_order_prepaid,
-        tester.test_create_order_cod,
+        tester.test_recent_orders_stats,
+        tester.test_create_razorpay_order,
+        tester.test_create_order_with_new_fields,
+        tester.test_create_cod_order_with_new_fields,
         tester.test_get_order_by_id,
         tester.test_get_all_orders,
         tester.test_invalid_order_id
@@ -222,7 +319,7 @@ def main():
             tester.tests_run += 1
     
     # Print results
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 80)
     print(f"📊 API Tests Summary:")
     print(f"   Tests Run: {tester.tests_run}")
     print(f"   Tests Passed: {tester.tests_passed}")
