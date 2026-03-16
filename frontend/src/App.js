@@ -222,9 +222,16 @@ function App() {
   };
 
   const handleBack = () => {
-    if (currentStep > 1 && currentStep < 4) {
+    if (currentStep === 2) {
+      setShowBackPrompt(true);
+    } else if (currentStep > 1 && currentStep < 4) {
       setCurrentStep(currentStep - 1);
     }
+  };
+
+  const confirmBack = () => {
+    setShowBackPrompt(false);
+    setCurrentStep(1);
   };
 
   return (
