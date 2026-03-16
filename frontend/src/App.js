@@ -189,6 +189,7 @@ function App() {
         house_number: formData.houseNumber,
         area: formData.area,
         pincode: formData.pincode,
+        state: formData.state,
         email: formData.email,
         payment_method: method,
         amount: amount
