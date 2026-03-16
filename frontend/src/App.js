@@ -544,9 +544,41 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
 }
 
 function CheckoutPage({ formData, handleFormChange, handleContinue }) {
+  const [currentBeforeAfterIndex, setCurrentBeforeAfterIndex] = useState(0);
+  const [detectedArea, setDetectedArea] = useState('');
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBeforeAfterIndex((prev) => (prev + 1) % BEFORE_AFTER_IMAGES.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="p-6 animate-slide-up">
       <div className="mb-4">
+        <div className="relative overflow-hidden rounded-xl shadow-lg mb-3">
+          <img
+            src={BEFORE_AFTER_IMAGES[currentBeforeAfterIndex]}
+            alt="Before and After Results"
+            className="w-full h-auto transition-opacity duration-500"
+            data-testid="checkout-before-after-slider"
+          />
+          <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2">
+            {BEFORE_AFTER_IMAGES.map((_, idx) => (
+              <div
+                key={idx}
+                className={`h-2 w-2 rounded-full transition-all ${
+                  idx === currentBeforeAfterIndex ? 'bg-white w-6' : 'bg-white/50'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+        <p className="text-xs text-center text-[#475569] mb-4 italic">Real results from real customers</p>
+      </div>
+
+      <div className="mb-3">
         <h2 className="text-2xl font-bold text-[#1E293B] mb-1" style={{ fontFamily: 'Playfair Display, serif' }}>
           Quick Delivery Setup
         </h2>
