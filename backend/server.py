@@ -15,6 +15,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import razorpay
 from pincode_data import get_state_from_pincode
+from analytics_tracker import AnalyticsTracker
 
 
 ROOT_DIR = Path(__file__).parent
