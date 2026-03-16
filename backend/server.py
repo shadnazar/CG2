@@ -77,77 +77,159 @@ def send_order_confirmation_email(order: Order):
         smtp_port = int(os.environ['SMTP_PORT'])
         smtp_user = os.environ['SMTP_USER']
         smtp_password = os.environ['SMTP_PASSWORD']
+        business_email = os.environ['BUSINESS_EMAIL']
         
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = f'Order Confirmed - {order.order_id} | Celesta Glow'
-        msg['From'] = smtp_user
-        msg['To'] = order.email if order.email else smtp_user
+        full_address = f"{order.house_number}, {order.area}, {order.state} - {order.pincode}"
         
-        full_address = f"{order.house_number}, {order.area}, {order.pincode}"
+        # Send email to customer
+        if order.email:
+            msg_customer = MIMEMultipart('alternative')
+            msg_customer['Subject'] = f'Order Confirmed - {order.order_id} | Celesta Glow'
+            msg_customer['From'] = smtp_user
+            msg_customer['To'] = order.email
+            
+            html_customer = f"""
+            <html>
+              <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                  <div style="background: linear-gradient(135deg, #4C1D95, #6d28d9); color: white; padding: 30px; text-align: center; border-radius: 10px;">
+                    <h1 style="margin: 0; font-size: 28px;">✨ Order Confirmed!</h1>
+                    <p style="margin: 10px 0 0; font-size: 16px;">Thank you for choosing Celesta Glow</p>
+                  </div>
+                  
+                  <div style="background: white; padding: 30px; margin-top: 20px; border-radius: 10px;">
+                    <div style="background: #4C1D95; color: white; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
+                      <p style="margin: 0; font-size: 14px;">Your Order ID</p>
+                      <h2 style="margin: 5px 0 0; font-size: 32px; letter-spacing: 2px;">{order.order_id}</h2>
+                    </div>
+                    
+                    <h3 style="color: #4C1D95; margin-bottom: 15px;">📦 Order Details</h3>
+                    <table style="width: 100%; border-collapse: collapse;">
+                      <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Product:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">Celesta Glow Anti-Aging Face Serum (30ml)</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Amount:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee; color: #059669; font-weight: bold;">₹{order.amount}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Payment:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">{order.payment_method}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Delivery:</strong></td>
+                        <td style="padding: 10px; border-bottom: 1px solid #eee;">{order.delivery_timeline}</td>
+                      </tr>
+                    </table>
+                    
+                    <h3 style="color: #4C1D95; margin-top: 25px; margin-bottom: 15px;">📍 Delivery Address</h3>
+                    <p style="margin: 5px 0;"><strong>{order.name}</strong></p>
+                    <p style="margin: 5px 0;">+91 {order.phone}</p>
+                    <p style="margin: 5px 0;">{full_address}</p>
+                    
+                    <div style="background: #FFFBEB; border-left: 4px solid #F59E0B; padding: 15px; margin-top: 25px; border-radius: 5px;">
+                      <p style="margin: 0; color: #92400E;">🌟 <strong>Your skin transformation journey begins!</strong> Start using Celesta Glow as soon as you receive it for best results.</p>
+                    </div>
+                  </div>
+                  
+                  <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+                    <p>Questions? Contact us at {smtp_user}</p>
+                    <p style="margin-top: 10px;">&copy; 2025 Celesta Glow. All rights reserved.</p>
+                  </div>
+                </div>
+              </body>
+            </html>
+            """
+            
+            part_customer = MIMEText(html_customer, 'html')
+            msg_customer.attach(part_customer)
+            
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.send_message(msg_customer)
+            
+            logging.info(f"Customer confirmation email sent for order {order.order_id}")
         
-        html = f"""
+        # Send email to business
+        msg_business = MIMEMultipart('alternative')
+        msg_business['Subject'] = f'New Order Received - {order.order_id}'
+        msg_business['From'] = smtp_user
+        msg_business['To'] = business_email
+        
+        html_business = f"""
         <html>
           <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-              <div style="background: linear-gradient(135deg, #4C1D95, #6d28d9); color: white; padding: 30px; text-align: center; border-radius: 10px;">
-                <h1 style="margin: 0; font-size: 28px;">✨ Order Confirmed!</h1>
-                <p style="margin: 10px 0 0; font-size: 16px;">Thank you for choosing Celesta Glow</p>
+              <div style="background: #4C1D95; color: white; padding: 20px; text-align: center; border-radius: 10px;">
+                <h2 style="margin: 0;">🛒 New Order Received!</h2>
+                <h1 style="margin: 10px 0; font-size: 36px; letter-spacing: 2px;">{order.order_id}</h1>
               </div>
               
-              <div style="background: white; padding: 30px; margin-top: 20px; border-radius: 10px;">
-                <div style="background: #4C1D95; color: white; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 20px;">
-                  <p style="margin: 0; font-size: 14px;">Your Order ID</p>
-                  <h2 style="margin: 5px 0 0; font-size: 32px; letter-spacing: 2px;">{order.order_id}</h2>
-                </div>
-                
-                <h3 style="color: #4C1D95; margin-bottom: 15px;">📦 Order Details</h3>
-                <table style="width: 100%; border-collapse: collapse;">
-                  <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Product:</strong></td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;">Celesta Glow Anti-Aging Face Serum</td>
+              <div style="background: white; padding: 25px; margin-top: 20px; border-radius: 10px;">
+                <h3 style="color: #4C1D95; margin-bottom: 15px;">Order Details</h3>
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+                  <tr style="background: #f3f4f6;">
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; font-weight: bold;">Order ID</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb;">{order.order_id}</td>
                   </tr>
                   <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Amount:</strong></td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee; color: #059669; font-weight: bold;">₹{order.amount}</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; font-weight: bold;">Product</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb;">Celesta Glow Anti-Aging Face Serum (30ml)</td>
+                  </tr>
+                  <tr style="background: #f3f4f6;">
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; font-weight: bold;">Amount</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; color: #059669; font-weight: bold;">₹{order.amount}</td>
                   </tr>
                   <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Payment:</strong></td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;">{order.payment_method}</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; font-weight: bold;">Payment Method</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb;">{order.payment_method}</td>
                   </tr>
-                  <tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;"><strong>Delivery:</strong></td>
-                    <td style="padding: 10px; border-bottom: 1px solid #eee;">{order.delivery_timeline}</td>
+                  <tr style="background: #f3f4f6;">
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; font-weight: bold;">Delivery Timeline</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb;">{order.delivery_timeline}</td>
                   </tr>
                 </table>
                 
-                <h3 style="color: #4C1D95; margin-top: 25px; margin-bottom: 15px;">📍 Delivery Address</h3>
-                <p style="margin: 5px 0;"><strong>{order.name}</strong></p>
-                <p style="margin: 5px 0;">+91 {order.phone}</p>
-                <p style="margin: 5px 0;">{full_address}</p>
+                <h3 style="color: #4C1D95; margin-bottom: 15px;">Customer Details</h3>
+                <table style="width: 100%; border-collapse: collapse;">
+                  <tr style="background: #f3f4f6;">
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; font-weight: bold;">Name</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb;">{order.name}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; font-weight: bold;">Phone</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb;">+91 {order.phone}</td>
+                  </tr>
+                  <tr style="background: #f3f4f6;">
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; font-weight: bold;">Email</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb;">{order.email if order.email else 'Not provided'}</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb; font-weight: bold;">Address</td>
+                    <td style="padding: 12px; border: 1px solid #e5e7eb;">{full_address}</td>
+                  </tr>
+                </table>
                 
-                <div style="background: #FFFBEB; border-left: 4px solid #F59E0B; padding: 15px; margin-top: 25px; border-radius: 5px;">
-                  <p style="margin: 0; color: #92400E;">🌟 <strong>Your skin transformation journey begins!</strong> Start using Celesta Glow as soon as you receive it for best results.</p>
+                <div style="background: #FFFBEB; border-left: 4px solid #F59E0B; padding: 15px; margin-top: 20px; border-radius: 5px;">
+                  <p style="margin: 0; color: #92400E;"><strong>⚠️ Action Required:</strong> Please process this order and arrange shipment.</p>
                 </div>
-              </div>
-              
-              <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
-                <p>Questions? Contact us at {smtp_user}</p>
-                <p style="margin-top: 10px;">&copy; 2025 Celesta Glow. All rights reserved.</p>
               </div>
             </div>
           </body>
         </html>
         """
         
-        part = MIMEText(html, 'html')
-        msg.attach(part)
+        part_business = MIMEText(html_business, 'html')
+        msg_business.attach(part_business)
         
         with smtplib.SMTP(smtp_host, smtp_port) as server:
             server.starttls()
             server.login(smtp_user, smtp_password)
-            server.send_message(msg)
+            server.send_message(msg_business)
         
-        logging.info(f"Order confirmation email sent for order {order.order_id}")
+        logging.info(f"Business notification email sent for order {order.order_id}")
     except Exception as e:
         logging.error(f"Failed to send email: {str(e)}")
 
