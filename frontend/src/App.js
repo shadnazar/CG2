@@ -324,7 +324,7 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBeforeAfterIndex((prev) => (prev + 1) % BEFORE_AFTER_IMAGES.length);
-    }, 5000);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
@@ -550,7 +550,7 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBeforeAfterIndex((prev) => (prev + 1) % BEFORE_AFTER_IMAGES.length);
-    }, 5000);
+    }, 2000);
     return () => clearInterval(interval);
   }, []);
 
