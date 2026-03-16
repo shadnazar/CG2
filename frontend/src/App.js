@@ -127,6 +127,7 @@ function App() {
   const handleContinueToPayment = () => {
     if (validateForm()) {
       setCurrentStep(3);
+      axios.post(`${API}/track?page=payment&session_id=${sessionId}`).catch(err => console.log(err));
     }
   };
 
