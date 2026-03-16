@@ -613,7 +613,27 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
             maxLength="6"
             required
           />
+          {formData.state && (
+            <div className="mt-2 flex items-center gap-2 text-sm text-[#059669]">
+              <CheckCircle2 size={16} />
+              <span className="font-medium">{formData.state}</span>
+            </div>
+          )}
         </div>
+      </div>
+
+      <div className="mb-6">
+        <h3 className="text-lg font-semibold mb-3 text-[#1E293B]" style={{ fontFamily: 'Playfair Display, serif' }}>
+          See The Transformation
+        </h3>
+        <div className="relative overflow-hidden rounded-2xl shadow-lg">
+          <img
+            src={BEFORE_AFTER_IMAGES[0]}
+            alt="Before and After Results"
+            className="w-full h-auto"
+          />
+        </div>
+        <p className="text-xs text-center text-[#475569] mt-2 italic">Real customer results in 4-6 weeks</p>
       </div>
 
       <button
