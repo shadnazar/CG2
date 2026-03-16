@@ -121,6 +121,7 @@ function App() {
 
   const handleBuyNow = () => {
     setCurrentStep(2);
+    axios.post(`${API}/track?page=checkout&session_id=${sessionId}`).catch(err => console.log(err));
   };
 
   const handleContinueToPayment = () => {
