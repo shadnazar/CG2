@@ -324,6 +324,16 @@ function App() {
           onConfirm={confirmBack}
         />
       )}
+
+      {showExitIntent && (
+        <ExitIntentModal
+          onClose={() => setShowExitIntent(false)}
+          onStay={() => {
+            setShowExitIntent(false);
+            document.getElementById('root').scrollIntoView({ behavior: 'smooth' });
+          }}
+        />
+      )}
     </div>
   );
 }
