@@ -46,6 +46,7 @@ function App() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showCODWarning, setShowCODWarning] = useState(false);
   const [showBackPrompt, setShowBackPrompt] = useState(false);
+  const [showExitIntent, setShowExitIntent] = useState(false);
   const [timeLeft, setTimeLeft] = useState(240);
   const [recentOrders, setRecentOrders] = useState(30);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
