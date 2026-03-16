@@ -36,6 +36,7 @@ class OrderCreate(BaseModel):
     house_number: str
     area: str
     pincode: str
+    state: str
     payment_method: str
     amount: float
     email: Optional[str] = None
