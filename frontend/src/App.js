@@ -435,19 +435,15 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
               <span>• Vitamin E Serum</span>
               <span className="font-semibold">₹500</span>
             </div>
-            <div className="flex justify-between">
-              <span>• Alpha Arbutin</span>
-              <span className="font-semibold">₹450</span>
-            </div>
             <div className="border-t border-white/30 pt-2 mt-2 flex justify-between font-bold text-base">
               <span>Separate Total:</span>
-              <span className="text-[#F59E0B]">₹3,050</span>
+              <span className="text-[#F59E0B]">₹2,600</span>
             </div>
           </div>
           <div className="bg-[#059669] rounded-lg p-3 text-center">
-            <p className="text-xs mb-1">You Get ALL 5 Premium Ingredients for JUST</p>
+            <p className="text-xs mb-1">You Get ALL 4 Premium Ingredients for JUST</p>
             <p className="text-2xl font-bold">₹899</p>
-            <p className="text-xs mt-1 opacity-90">That's 70% LESS than buying separately!</p>
+            <p className="text-xs mt-1 opacity-90">That's 65% LESS than buying separately!</p>
           </div>
         </div>
 
