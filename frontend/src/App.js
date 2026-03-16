@@ -56,6 +56,16 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const handleMouseLeave = (e) => {
+      if (currentStep === 1 && e.clientY <= 0 && !showExitIntent) {
+        setShowExitIntent(true);
+      }
+    };
+    document.addEventListener('mouseleave', handleMouseLeave);
+    return () => document.removeEventListener('mouseleave', handleMouseLeave);
+  }, [currentStep, showExitIntent]);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft((prev) => (prev > 0 ? prev - 1 : 240));
     }, 1000);
