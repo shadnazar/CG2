@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import '@/App.css';
 import axios from 'axios';
-import { ChevronLeft, ShieldCheck, Star, Sparkles, Truck, Clock, CheckCircle2, Package } from 'lucide-react';
+import { ChevronLeft, ShieldCheck, Star, Sparkles, Truck, Clock, CheckCircle2, Package, AlertCircle, X, ChevronRight } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
+const RAZORPAY_KEY = 'rzp_live_S1JnQ0RQsLO48';
 
 const PRODUCT_IMAGES = [
   'https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/ig243hne_IMG_9115.png',
@@ -14,17 +15,57 @@ const PRODUCT_IMAGES = [
   'https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/ak0hq7r8_IMG_9678.png'
 ];
 
+const REVIEWS = [
+  { name: 'Shahana', initial: 'S', concern: 'Dull skin', text: 'My skin feels healthier every week. Perfect for Indian climate. Lightweight but effective!' },
+  { name: 'Priya Sharma', initial: 'P', concern: 'Dark spots', text: 'Dark spots are fading beautifully! Visible results in just 3 weeks. Love this serum!' },
+  { name: 'Ananya Reddy', initial: 'A', concern: 'Pimples & Acne', text: 'My acne marks are clearing up so well. Non-greasy formula is perfect for oily skin.' },
+  { name: 'Meera Kapoor', initial: 'M', concern: 'Fine lines', text: 'Fine lines around my eyes are less visible now. My skin looks plumper and younger!' },
+  { name: 'Divya Singh', initial: 'D', concern: 'Uneven tone', text: 'Finally found a serum that works! My skin tone is more even and I get compliments daily.' },
+  { name: 'Riya Patel', initial: 'R', concern: 'Dullness', text: 'Instant glow after application! My skin has never looked this radiant. Best purchase!' }
+];
+
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    address: ''
+    email: '',
+    houseNumber: '',
+    area: '',
+    pincode: ''
   });
   const [paymentMethod, setPaymentMethod] = useState('PREPAID');
   const [orderDetails, setOrderDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [showCODWarning, setShowCODWarning] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(240);
+  const [recentOrders, setRecentOrders] = useState(30);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => (prev > 0 ? prev - 1 : 240));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchRecentOrders = async () => {
+      try {
+        const response = await axios.get(`${API}/stats/recent-orders`);
+        setRecentOrders(response.data.count);
+      } catch (error) {
+        console.error('Failed to fetch recent orders:', error);
+      }
+    };
+    fetchRecentOrders();
+  }, []);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
   const handleFormChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -39,8 +80,16 @@ function App() {
       alert('Please enter a valid 10-digit phone number');
       return false;
     }
-    if (!formData.address.trim()) {
-      alert('Please enter your complete address');
+    if (!formData.houseNumber.trim()) {
+      alert('Please enter your house/flat number');
+      return false;
+    }
+    if (!formData.area.trim()) {
+      alert('Please enter your area/locality');
+      return false;
+    }
+    if (!formData.pincode.trim() || formData.pincode.length !== 6) {
+      alert('Please enter a valid 6-digit PIN code');
       return false;
     }
     return true;
@@ -56,15 +105,75 @@ function App() {
     }
   };
 
-  const handlePlaceOrder = async () => {
-    setLoading(true);
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleRazorpayPayment = async () => {
+    const res = await loadRazorpay();
+    if (!res) {
+      alert('Razorpay SDK failed to load');
+      return;
+    }
+
     try {
-      const amount = paymentMethod === 'COD' ? 1199 : 899;
+      const orderResponse = await axios.post(`${API}/create-razorpay-order`, {
+        amount: 899
+      });
+
+      const options = {
+        key: RAZORPAY_KEY,
+        amount: orderResponse.data.amount,
+        currency: orderResponse.data.currency,
+        name: 'Celesta Glow',
+        description: 'Anti-Aging Face Serum',
+        order_id: orderResponse.data.id,
+        handler: async function (response) {
+          try {
+            await axios.post(`${API}/verify-payment`, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            await createOrder('PREPAID', 899);
+          } catch (error) {
+            alert('Payment verification failed');
+          }
+        },
+        prefill: {
+          name: formData.name,
+          contact: formData.phone,
+          email: formData.email || 'customer@celestaglow.com'
+        },
+        theme: {
+          color: '#4C1D95'
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      console.error('Razorpay order creation failed:', error);
+      alert('Failed to initiate payment');
+    }
+  };
+
+  const createOrder = async (method, amount) => {
+    try {
       const response = await axios.post(`${API}/orders`, {
         name: formData.name,
         phone: formData.phone,
-        address: formData.address,
-        payment_method: paymentMethod,
+        house_number: formData.houseNumber,
+        area: formData.area,
+        pincode: formData.pincode,
+        email: formData.email,
+        payment_method: method,
         amount: amount
       });
       setOrderDetails(response.data);
@@ -72,9 +181,24 @@ function App() {
     } catch (error) {
       console.error('Order creation failed:', error);
       alert('Failed to place order. Please try again.');
-    } finally {
+    }
+  };
+
+  const handlePlaceOrder = async () => {
+    if (paymentMethod === 'COD') {
+      setShowCODWarning(true);
+    } else {
+      setLoading(true);
+      await handleRazorpayPayment();
       setLoading(false);
     }
+  };
+
+  const confirmCOD = async () => {
+    setShowCODWarning(false);
+    setLoading(true);
+    await createOrder('COD', 1199);
+    setLoading(false);
   };
 
   const handleBack = () => {
@@ -109,7 +233,16 @@ function App() {
           </div>
         )}
 
-        {currentStep === 1 && <ProductPage onBuyNow={handleBuyNow} currentImageIndex={currentImageIndex} setCurrentImageIndex={setCurrentImageIndex} />}
+        {currentStep === 1 && (
+          <ProductPage
+            onBuyNow={handleBuyNow}
+            currentImageIndex={currentImageIndex}
+            setCurrentImageIndex={setCurrentImageIndex}
+            timeLeft={timeLeft}
+            formatTime={formatTime}
+            recentOrders={recentOrders}
+          />
+        )}
         {currentStep === 2 && (
           <CheckoutPage
             formData={formData}
@@ -128,11 +261,39 @@ function App() {
         )}
         {currentStep === 4 && <ConfirmationPage orderDetails={orderDetails} />}
       </div>
+
+      {showCODWarning && (
+        <CODWarningModal
+          onClose={() => setShowCODWarning(false)}
+          onConfirm={confirmCOD}
+          onSwitchToPrepaid={() => {
+            setShowCODWarning(false);
+            setPaymentMethod('PREPAID');
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex }) {
+function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLeft, formatTime, recentOrders }) {
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentReviewIndex((prev) => (prev + 1) % REVIEWS.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const nextReview = () => {
+    setCurrentReviewIndex((prev) => (prev + 1) % REVIEWS.length);
+  };
+
+  const prevReview = () => {
+    setCurrentReviewIndex((prev) => (prev - 1 + REVIEWS.length) % REVIEWS.length);
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="relative">
@@ -141,7 +302,7 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex }) {
           alt="Celesta Glow Serum"
           className="w-full h-[400px] object-cover"
         />
-        <div className="absolute top-4 right-4 bg-[#F59E0B] text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+        <div className="absolute top-4 right-4 bg-[#F59E0B] text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg animate-pulse">
           40% OFF
         </div>
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
@@ -159,6 +320,23 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex }) {
       </div>
 
       <div className="p-6 pb-32">
+        <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white p-3 rounded-xl mb-4 flex items-center justify-between animate-pulse">
+          <div className="flex items-center gap-2">
+            <Clock size={20} />
+            <span className="font-semibold">Offer ends in:</span>
+          </div>
+          <div className="text-2xl font-bold" data-testid="countdown-timer">{formatTime(timeLeft)}</div>
+        </div>
+
+        <div className="bg-green-50 border border-green-200 p-3 rounded-xl mb-4 flex items-center gap-2">
+          <div className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold animate-bounce">
+            {recentOrders}
+          </div>
+          <span className="text-green-800 text-sm font-medium">
+            <strong>{recentOrders} people</strong> ordered in the last 24 hours!
+          </span>
+        </div>
+
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-[#1E293B] mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
             Celesta Glow
@@ -188,14 +366,16 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex }) {
 
         <div className="mb-6">
           <h2 className="text-2xl font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Fights Aging from Within
+            Complete Skin Solution
           </h2>
           <div className="grid grid-cols-2 gap-3">
             {[
-              { icon: '✨', text: 'Reduces Fine Lines' },
-              { icon: '💧', text: 'Deep Hydration' },
-              { icon: '🌟', text: 'Boosts Collagen' },
-              { icon: '✨', text: 'Even Skin Tone' }
+              { icon: '✨', text: 'Reduces Fine Lines', color: '#4C1D95' },
+              { icon: '💧', text: 'Deep Hydration', color: '#059669' },
+              { icon: '🌟', text: 'Fades Dark Spots', color: '#F59E0B' },
+              { icon: '✨', text: 'Fights Dullness', color: '#DC2626' },
+              { icon: '🎯', text: 'Clears Pimples', color: '#4C1D95' },
+              { icon: '💎', text: 'Boosts Collagen', color: '#059669' }
             ].map((benefit, idx) => (
               <div key={idx} data-testid={`benefit-${idx}`} className="benefit-card">
                 <div className="text-3xl mb-2">{benefit.icon}</div>
@@ -221,25 +401,52 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex }) {
 
         <div className="mb-6">
           <h3 className="text-xl font-semibold mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>
-            Trusted by 10,000+ Customers
+            Loved by 10,000+ Customers
           </h3>
-          <div className="testimonial-card">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-[#4C1D95] rounded-full flex items-center justify-center text-white font-bold">
-                S
-              </div>
-              <div>
-                <p className="font-semibold text-[#1E293B]">Shahana</p>
-                <div className="flex">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={12} fill="#F59E0B" color="#F59E0B" />
-                  ))}
+          <div className="relative">
+            <div className="testimonial-card overflow-hidden" data-testid="review-carousel">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-[#4C1D95] rounded-full flex items-center justify-center text-white font-bold text-lg">
+                  {REVIEWS[currentReviewIndex].initial}
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-[#1E293B]">{REVIEWS[currentReviewIndex].name}</p>
+                  <p className="text-xs text-[#94A3B8]">{REVIEWS[currentReviewIndex].concern}</p>
+                  <div className="flex mt-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={12} fill="#F59E0B" color="#F59E0B" />
+                    ))}
+                  </div>
                 </div>
               </div>
+              <p className="text-[#475569] italic">"{REVIEWS[currentReviewIndex].text}"</p>
             </div>
-            <p className="text-[#475569] italic">
-              "My skin feels healthier every week. Perfect for Indian climate. Lightweight but effective!"
-            </p>
+            <div className="flex justify-center gap-2 mt-3">
+              <button
+                onClick={prevReview}
+                className="p-2 rounded-full bg-[#4C1D95] text-white hover:bg-[#3b1676] transition-colors"
+                data-testid="prev-review"
+              >
+                <ChevronLeft size={16} />
+              </button>
+              <div className="flex items-center gap-1">
+                {REVIEWS.map((_, idx) => (
+                  <div
+                    key={idx}
+                    className={`h-2 w-2 rounded-full transition-all ${
+                      idx === currentReviewIndex ? 'bg-[#4C1D95] w-6' : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+              <button
+                onClick={nextReview}
+                className="p-2 rounded-full bg-[#4C1D95] text-white hover:bg-[#3b1676] transition-colors"
+                data-testid="next-review"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -321,15 +528,57 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-[#1E293B] mb-2">Complete Address *</label>
-          <textarea
-            data-testid="address-input"
-            name="address"
-            value={formData.address}
+          <label className="block text-sm font-medium text-[#1E293B] mb-2">Email (Optional)</label>
+          <input
+            data-testid="email-input"
+            type="email"
+            name="email"
+            value={formData.email}
             onChange={handleFormChange}
-            placeholder="House No, Street, City, State, PIN Code"
+            placeholder="your.email@example.com"
             className="input-field"
-            rows="4"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#1E293B] mb-2">House/Flat Number *</label>
+          <input
+            data-testid="house-input"
+            type="text"
+            name="houseNumber"
+            value={formData.houseNumber}
+            onChange={handleFormChange}
+            placeholder="Flat 301, Building A"
+            className="input-field"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#1E293B] mb-2">Area/Locality *</label>
+          <input
+            data-testid="area-input"
+            type="text"
+            name="area"
+            value={formData.area}
+            onChange={handleFormChange}
+            placeholder="Indiranagar, Bangalore"
+            className="input-field"
+            required
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-[#1E293B] mb-2">PIN Code *</label>
+          <input
+            data-testid="pincode-input"
+            type="text"
+            name="pincode"
+            value={formData.pincode}
+            onChange={handleFormChange}
+            placeholder="560038"
+            className="input-field"
+            maxLength="6"
             required
           />
         </div>
@@ -457,11 +706,82 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
   );
 }
 
+function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid }) {
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="cod-warning-modal">
+      <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
+        <div className="flex justify-between items-start mb-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-[#F59E0B] rounded-full p-3">
+              <AlertCircle size={24} color="white" />
+            </div>
+            <h3 className="text-xl font-bold text-[#1E293B]" style={{ fontFamily: 'Playfair Display, serif' }}>
+              Wait! Save ₹300 More
+            </h3>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="mb-6">
+          <div className="bg-[#FFFBEB] border-l-4 border-[#F59E0B] p-4 rounded-lg mb-4">
+            <p className="text-[#92400E] font-medium mb-2">
+              You're choosing Cash on Delivery (COD) at ₹1,199
+            </p>
+            <p className="text-sm text-[#78350F]">
+              But you can get it for just <strong>₹899</strong> with online payment!
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="bg-green-100 rounded-full p-1 mt-0.5">
+                <CheckCircle2 size={16} color="#059669" />
+              </div>
+              <div>
+                <p className="font-semibold text-[#1E293B]">Save ₹300 instantly</p>
+                <p className="text-sm text-[#475569]">Pay ₹899 instead of ₹1,199</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <div className="bg-green-100 rounded-full p-1 mt-0.5">
+                <Truck size={16} color="#059669" />
+              </div>
+              <div>
+                <p className="font-semibold text-[#1E293B]">Faster Delivery</p>
+                <p className="text-sm text-[#475569]">Get it in 2-3 days vs 5-7 days</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <button
+            data-testid="switch-to-prepaid-button"
+            onClick={onSwitchToPrepaid}
+            className="btn-primary"
+          >
+            Yes, Pay Online & Save ₹300
+          </button>
+          <button
+            data-testid="confirm-cod-button"
+            onClick={onConfirm}
+            className="w-full py-3 text-[#4C1D95] font-medium hover:bg-gray-50 rounded-full transition-colors border border-gray-200"
+          >
+            No, Continue with COD
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ConfirmationPage({ orderDetails }) {
   return (
     <div className="p-6 flex flex-col items-center justify-center min-h-screen animate-fade-in">
       <div className="text-center mb-8">
-        <div className="w-24 h-24 bg-[#059669] rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-24 h-24 bg-[#059669] rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
           <CheckCircle2 size={48} color="white" />
         </div>
         <h2 className="text-3xl font-bold text-[#1E293B] mb-2" style={{ fontFamily: 'Playfair Display, serif' }}>
@@ -497,7 +817,9 @@ function ConfirmationPage({ orderDetails }) {
           </div>
           <div>
             <p className="text-[#94A3B8] text-xs mb-1">Address</p>
-            <p className="text-[#1E293B] font-medium">{orderDetails?.address}</p>
+            <p className="text-[#1E293B] font-medium">
+              {orderDetails?.house_number}, {orderDetails?.area}, {orderDetails?.pincode}
+            </p>
           </div>
           <div>
             <p className="text-[#94A3B8] text-xs mb-1">Payment Method</p>
@@ -512,7 +834,7 @@ function ConfirmationPage({ orderDetails }) {
 
       <div className="bg-[#FFFBEB] border border-[#F59E0B]/20 rounded-2xl p-4 w-full">
         <p className="text-sm text-[#475569] text-center">
-          📧 Order confirmation has been sent to your registered email
+          📧 Order confirmation has been sent to your email
         </p>
       </div>
     </div>
