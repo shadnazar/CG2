@@ -312,11 +312,19 @@ function App() {
 
 function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLeft, formatTime, recentOrders }) {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [currentBeforeAfterIndex, setCurrentBeforeAfterIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentReviewIndex((prev) => (prev + 1) % REVIEWS.length);
     }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBeforeAfterIndex((prev) => (prev + 1) % BEFORE_AFTER_IMAGES.length);
+    }, 5000);
     return () => clearInterval(interval);
   }, []);
 
