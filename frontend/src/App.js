@@ -1168,7 +1168,7 @@ function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid }) {
         <div className="mb-6">
           <div className="bg-[#FFFBEB] border-l-4 border-[#F59E0B] p-4 rounded-lg mb-4">
             <p className="text-[#92400E] font-medium mb-2">
-              You're choosing Cash on Delivery (COD) at ₹899
+              You're choosing Cash on Delivery (COD) at ₹1,199
             </p>
             <p className="text-sm text-[#78350F]">
               But you can get it for just <strong>₹599</strong> with online payment!
