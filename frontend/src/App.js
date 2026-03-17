@@ -906,8 +906,8 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
               <p className="text-sm text-[#475569] ml-7">UPI, Cards, Netbanking via Razorpay</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-[#059669]">₹899</p>
-              <p className="text-sm text-[#94A3B8] line-through">₹1,199</p>
+              <p className="text-2xl font-bold text-[#059669]">₹{prepaidPrice}</p>
+              <p className="text-sm text-[#94A3B8] line-through">₹{codPrice}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-[#059669] ml-7">
