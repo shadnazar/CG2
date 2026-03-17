@@ -875,7 +875,7 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
       </div>
 
       <div className="bg-[#FFFBEB] border-2 border-[#F59E0B] rounded-xl p-3 mb-4 text-center">
-        <p className="text-[#92400E] font-bold text-sm">⚡ Last Chance: Save ₹300 with Prepaid Payment!</p>
+        <p className="text-[#92400E] font-bold text-sm">⚡ Pay Online & Get for just ₹{prepaidPrice}!</p>
       </div>
 
       <div className="flex items-center justify-center gap-4 mb-4">
