@@ -47,6 +47,8 @@ function App() {
   const [showCODWarning, setShowCODWarning] = useState(false);
   const [showBackPrompt, setShowBackPrompt] = useState(false);
   const [showExitIntent, setShowExitIntent] = useState(false);
+  const [showSurpriseDiscount, setShowSurpriseDiscount] = useState(false);
+  const [specialPrice, setSpecialPrice] = useState(599);
   const [timeLeft, setTimeLeft] = useState(240);
   const [recentOrders, setRecentOrders] = useState(30);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
