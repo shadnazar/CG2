@@ -935,7 +935,7 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
               <p className="text-sm text-[#475569] ml-7">Pay when you receive</p>
             </div>
             <div className="text-right">
-              <p className="text-2xl font-bold text-[#4C1D95]">₹1,199</p>
+              <p className="text-2xl font-bold text-[#4C1D95]">₹{codPrice}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-[#F59E0B] ml-7">
