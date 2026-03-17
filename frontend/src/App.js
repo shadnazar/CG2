@@ -1203,7 +1203,7 @@ function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid }) {
             onClick={onSwitchToPrepaid}
             className="btn-primary"
           >
-            Yes, Pay Online & Save ₹600
+            Yes, Pay Online & Save ₹600!
           </button>
           <button
             data-testid="confirm-cod-button"
