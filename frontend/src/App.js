@@ -243,7 +243,7 @@ function App() {
   const confirmCOD = async () => {
     setShowCODWarning(false);
     setLoading(true);
-    await createOrder('COD', 899);
+    await createOrder('COD', 1199);
     setLoading(false);
   };
 
