@@ -1181,8 +1181,8 @@ function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid }) {
                 <CheckCircle2 size={16} color="#059669" />
               </div>
               <div>
-                <p className="font-semibold text-[#1E293B]">Save ₹300 instantly</p>
-                <p className="text-sm text-[#475569]">Pay ₹599 instead of ₹899</p>
+                <p className="font-semibold text-[#1E293B]">Save ₹600 instantly</p>
+                <p className="text-sm text-[#475569]">Pay ₹599 instead of ₹1,199</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
