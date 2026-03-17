@@ -985,7 +985,7 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
         disabled={loading}
         className="btn-primary"
       >
-        {loading ? 'Processing...' : `Place Order - ₹${paymentMethod === 'COD' ? '1,199' : '899'}`}
+        {loading ? 'Processing...' : `Place Order - ₹${paymentMethod === 'COD' ? codPrice : prepaidPrice}`}
       </button>
 
       <div className="flex items-center justify-center gap-4 mt-3">
