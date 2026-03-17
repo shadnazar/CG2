@@ -703,9 +703,9 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
       <div className="bg-gradient-to-r from-[#4C1D95] to-[#6d28d9] text-white p-3 rounded-2xl mb-4">
         <div className="flex items-center gap-2 mb-1">
           <Sparkles size={18} />
-          <span className="font-bold text-sm">Extra ₹300 OFF on Prepaid!</span>
+          <span className="font-bold text-sm">FLASH SALE: ₹900 OFF Today!</span>
         </div>
-        <p className="text-xs opacity-90">Pay online and save more</p>
+        <p className="text-xs opacity-90">Original ₹1,499 → Now just ₹599 with online payment</p>
       </div>
 
       <div className="space-y-3 mb-6">
