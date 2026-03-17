@@ -448,12 +448,12 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
         <div className="bg-[#FFFBEB] border-2 border-[#F59E0B] rounded-2xl p-4 mb-6">
           <div className="flex items-center gap-2 mb-2">
             <Sparkles size={20} color="#F59E0B" />
-            <span className="font-bold text-[#1E293B]">Special Launch Offer</span>
+            <span className="font-bold text-[#1E293B]">Special Flash Sale - TODAY ONLY!</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-[#4C1D95]">₹899</span>
+            <span className="text-3xl font-bold text-[#4C1D95]">₹599</span>
             <span className="text-xl text-[#94A3B8] line-through">₹1,499</span>
-            <span className="text-sm bg-[#059669] text-white px-2 py-1 rounded-full font-semibold">Save ₹600</span>
+            <span className="text-sm bg-[#DC2626] text-white px-2 py-1 rounded-full font-semibold animate-pulse">60% OFF</span>
           </div>
         </div>
 
