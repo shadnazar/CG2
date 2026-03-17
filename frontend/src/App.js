@@ -55,6 +55,12 @@ function App() {
 
   useEffect(() => {
     axios.post(`${API}/track?page=product&session_id=${sessionId}`).catch(err => console.log(err));
+    
+    const surpriseTimer = setTimeout(() => {
+      setShowSurpriseDiscount(true);
+    }, 3000);
+    
+    return () => clearTimeout(surpriseTimer);
   }, []);
 
   useEffect(() => {
