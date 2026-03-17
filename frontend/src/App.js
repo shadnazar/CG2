@@ -169,7 +169,7 @@ function App() {
 
     try {
       const orderResponse = await axios.post(`${API}/create-razorpay-order`, {
-        amount: 899
+        amount: specialPrice
       });
 
       const options = {
