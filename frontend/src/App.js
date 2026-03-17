@@ -166,6 +166,15 @@ function App() {
     if (validateForm()) {
       setCurrentStep(3);
       axios.post(`${API}/track?page=payment&session_id=${sessionId}`).catch(err => console.log(err));
+      
+      // Meta Pixel: AddPaymentInfo
+      if (window.fbq) {
+        window.fbq('track', 'AddPaymentInfo', {
+          content_name: 'Celesta Glow Anti-Aging Serum',
+          value: specialPrice,
+          currency: 'INR'
+        });
+      }
     }
   };
 
