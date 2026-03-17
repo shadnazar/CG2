@@ -457,40 +457,6 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-[#4C1D95] to-[#6d28d9] text-white rounded-2xl p-5 mb-6">
-          <h3 className="text-lg font-bold mb-3 flex items-center gap-2">
-            <span>💰</span> Why ₹899 is Actually a STEAL!
-          </h3>
-          <p className="text-sm mb-3 opacity-95">If you buy these ingredients separately:</p>
-          <div className="space-y-2 text-sm bg-white/10 rounded-xl p-3 mb-3">
-            <div className="flex justify-between">
-              <span>• Retinol Serum (0.3%)</span>
-              <span className="font-semibold">₹800</span>
-            </div>
-            <div className="flex justify-between">
-              <span>• Niacinamide Serum</span>
-              <span className="font-semibold">₹600</span>
-            </div>
-            <div className="flex justify-between">
-              <span>• Hyaluronic Acid</span>
-              <span className="font-semibold">₹700</span>
-            </div>
-            <div className="flex justify-between">
-              <span>• Vitamin E Serum</span>
-              <span className="font-semibold">₹500</span>
-            </div>
-            <div className="border-t border-white/30 pt-2 mt-2 flex justify-between font-bold text-base">
-              <span>Separate Total:</span>
-              <span className="text-[#F59E0B]">₹2,600</span>
-            </div>
-          </div>
-          <div className="bg-[#059669] rounded-lg p-3 text-center">
-            <p className="text-xs mb-1">You Get ALL 4 Premium Ingredients for JUST</p>
-            <p className="text-2xl font-bold">₹599</p>
-            <p className="text-xs mt-1 opacity-90">That's 77% LESS than buying separately!</p>
-          </div>
-        </div>
-
         <div className="mb-6">
           <h2 className="text-2xl font-semibold mb-4" style={{ fontFamily: 'Playfair Display, serif' }}>
             Complete Skin Solution
