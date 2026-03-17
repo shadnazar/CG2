@@ -251,6 +251,18 @@ function App() {
         amount: amount
       });
       setOrderDetails(response.data);
+      
+      // Meta Pixel: Purchase
+      if (window.fbq) {
+        window.fbq('track', 'Purchase', {
+          content_name: 'Celesta Glow Anti-Aging Serum',
+          content_type: 'product',
+          value: amount,
+          currency: 'INR',
+          transaction_id: response.data.order_id
+        });
+      }
+      
       setCurrentStep(4);
     } catch (error) {
       console.error('Order creation failed:', error);
