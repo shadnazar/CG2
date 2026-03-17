@@ -999,6 +999,60 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
   );
 }
 
+function SurpriseDiscountModal({ onClose, specialPrice }) {
+  return (
+    <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4 animate-fade-in" data-testid="surprise-discount-modal">
+      <div className="bg-gradient-to-br from-[#4C1D95] via-[#6d28d9] to-[#F59E0B] p-1 rounded-3xl max-w-md w-full animate-slide-up">
+        <div className="bg-white rounded-3xl p-6">
+          <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+            <X size={24} />
+          </button>
+          
+          <div className="text-center">
+            <div className="text-6xl mb-4 animate-bounce">🎁</div>
+            <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-[#4C1D95] to-[#F59E0B] bg-clip-text text-transparent" style={{ fontFamily: 'Playfair Display, serif' }}>
+              SURPRISE GIFT!
+            </h2>
+            <p className="text-lg text-[#475569] mb-4">
+              You've been selected for our <strong>SPECIAL FLASH SALE!</strong>
+            </p>
+            
+            <div className="bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-2xl p-6 mb-4 shadow-2xl">
+              <p className="text-sm mb-2 opacity-90">Original Price</p>
+              <p className="text-3xl line-through opacity-75 mb-2">₹1,499</p>
+              <div className="h-1 w-full bg-white/30 mb-3"></div>
+              <p className="text-sm mb-2">YOUR SPECIAL PRICE TODAY</p>
+              <p className="text-6xl font-bold mb-2">₹{specialPrice}</p>
+              <div className="bg-white/20 rounded-lg p-3 mt-3">
+                <p className="text-lg font-bold">Save ₹{1499 - specialPrice} (60% OFF!)</p>
+              </div>
+            </div>
+            
+            <div className="bg-[#FFFBEB] border-2 border-[#F59E0B] rounded-xl p-4 mb-4">
+              <p className="text-sm text-[#92400E] font-bold mb-2">
+                ⚡ This offer expires in 10 minutes!
+              </p>
+              <p className="text-xs text-[#78350F]">
+                Don't miss this limited-time price. Once you close this, regular price applies.
+              </p>
+            </div>
+            
+            <button
+              onClick={onClose}
+              className="btn-primary text-xl py-4"
+              data-testid="claim-surprise-discount"
+            >
+              🎉 CLAIM MY ₹{specialPrice} OFFER NOW!
+            </button>
+            
+            <p className="text-xs text-[#94A3B8] mt-3">Limited to first-time visitors only</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function ExitIntentModal({ onClose, onStay }) {
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" data-testid="exit-intent-modal">
