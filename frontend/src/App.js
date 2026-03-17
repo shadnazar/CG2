@@ -333,6 +333,13 @@ function App() {
         />
       )}
 
+      {showSurpriseDiscount && (
+        <SurpriseDiscountModal
+          onClose={() => setShowSurpriseDiscount(false)}
+          specialPrice={specialPrice}
+        />
+      )}
+
       {showExitIntent && (
         <ExitIntentModal
           onClose={() => setShowExitIntent(false)}
