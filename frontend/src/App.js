@@ -186,7 +186,7 @@ function App() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature
             });
-            await createOrder('PREPAID', 899);
+            await createOrder('PREPAID', specialPrice);
           } catch (error) {
             alert('Payment verification failed');
           }
