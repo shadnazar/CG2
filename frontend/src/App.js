@@ -1216,7 +1216,7 @@ function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid }) {
               </div>
               <div>
                 <p className="font-semibold text-[#1E293B]">Save ₹300 instantly</p>
-                <p className="text-sm text-[#475569]">Pay ₹899 instead of ₹1,199</p>
+                <p className="text-sm text-[#475569]">Pay ₹599 instead of ₹899</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
