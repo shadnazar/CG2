@@ -1157,7 +1157,7 @@ function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid }) {
               <AlertCircle size={24} color="white" />
             </div>
             <h3 className="text-xl font-bold text-[#1E293B]" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Wait! Save ₹300 More
+              Wait! Save ₹600 More
             </h3>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
