@@ -486,8 +486,8 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
           </div>
           <div className="bg-[#059669] rounded-lg p-3 text-center">
             <p className="text-xs mb-1">You Get ALL 4 Premium Ingredients for JUST</p>
-            <p className="text-2xl font-bold">₹899</p>
-            <p className="text-xs mt-1 opacity-90">That's 65% LESS than buying separately!</p>
+            <p className="text-2xl font-bold">₹599</p>
+            <p className="text-xs mt-1 opacity-90">That's 77% LESS than buying separately!</p>
           </div>
         </div>
 
