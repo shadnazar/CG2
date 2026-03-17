@@ -862,6 +862,9 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
 }
 
 function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrder, loading }) {
+  const prepaidPrice = 599;
+  const codPrice = 899;
+  
   return (
     <div className="p-6 animate-slide-up">
       <div className="mb-6">
