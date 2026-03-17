@@ -151,6 +151,15 @@ function App() {
   const handleBuyNow = () => {
     setCurrentStep(2);
     axios.post(`${API}/track?page=checkout&session_id=${sessionId}`).catch(err => console.log(err));
+    
+    // Meta Pixel: InitiateCheckout
+    if (window.fbq) {
+      window.fbq('track', 'InitiateCheckout', {
+        content_name: 'Celesta Glow Anti-Aging Serum',
+        value: specialPrice,
+        currency: 'INR'
+      });
+    }
   };
 
   const handleContinueToPayment = () => {
