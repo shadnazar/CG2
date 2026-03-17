@@ -964,7 +964,7 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
           )}
           <div className="border-t pt-2 flex justify-between font-bold text-lg">
             <span>Total Amount</span>
-            <span className="text-[#4C1D95]">₹{paymentMethod === 'COD' ? '1,199' : '899'}</span>
+            <span className="text-[#4C1D95]">₹{paymentMethod === 'COD' ? codPrice : prepaidPrice}</span>
           </div>
         </div>
       </div>
