@@ -558,7 +558,7 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
           <div className="flex items-baseline gap-2">
             <span className="text-3xl font-bold text-[#4C1D95]">₹{specialPrice}</span>
             <span className="text-xl text-[#94A3B8] line-through">₹1,499</span>
-            <span className="text-sm bg-[#DC2626] text-white px-2 py-1 rounded-full font-semibold animate-pulse">53% OFF</span>
+            <span className="text-sm bg-[#DC2626] text-white px-2 py-1 rounded-full font-semibold animate-pulse">73% OFF</span>
           </div>
         </div>
 
