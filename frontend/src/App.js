@@ -63,7 +63,7 @@ function App() {
       window.fbq('track', 'ViewContent', {
         content_name: 'Celesta Glow Anti-Aging Serum',
         content_category: 'Skincare',
-        value: 599,
+        value: specialPrice,
         currency: 'INR'
       });
     }
