@@ -424,6 +424,8 @@ function App() {
             setShowCODWarning(false);
             setPaymentMethod('PREPAID');
           }}
+          codPrice={codPrice}
+          codAdvance={codAdvance}
           specialPrice={specialPrice}
         />
       )}
