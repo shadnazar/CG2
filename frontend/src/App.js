@@ -399,6 +399,7 @@ function App() {
             formData={formData}
             handleFormChange={handleFormChange}
             handleContinue={handleContinueToPayment}
+            specialPrice={specialPrice}
           />
         )}
         {currentStep === 3 && (
