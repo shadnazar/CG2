@@ -925,8 +925,8 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
   );
 }
 
-function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrder, loading }) {
-  const prepaidPrice = 599;
+function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrder, loading, specialPrice }) {
+  const prepaidPrice = specialPrice;
   const codPrice = 1199;
   
   return (
