@@ -802,7 +802,7 @@ function CheckoutPage({ formData, handleFormChange, handleContinue }) {
           <Sparkles size={18} />
           <span className="font-bold text-sm">FLASH SALE: ₹900 OFF Today!</span>
         </div>
-        <p className="text-xs opacity-90">Original ₹1,499 → Now just ₹599 with online payment</p>
+        <p className="text-xs opacity-90">Original ₹1,499 → Now just ₹{specialPrice} with online payment</p>
       </div>
 
       <div className="space-y-3 mb-6">
