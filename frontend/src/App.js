@@ -453,7 +453,7 @@ function App() {
   );
 }
 
-function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLeft, formatTime, recentOrders }) {
+function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLeft, formatTime, recentOrders, specialPrice }) {
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
   const [currentBeforeAfterIndex, setCurrentBeforeAfterIndex] = useState(0);
 
