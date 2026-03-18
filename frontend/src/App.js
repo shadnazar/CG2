@@ -759,7 +759,7 @@ function ProductPage({ onBuyNow, currentImageIndex, setCurrentImageIndex, timeLe
   );
 }
 
-function CheckoutPage({ formData, handleFormChange, handleContinue }) {
+function CheckoutPage({ formData, handleFormChange, handleContinue, specialPrice }) {
   const [currentBeforeAfterIndex, setCurrentBeforeAfterIndex] = useState(0);
   const [detectedArea, setDetectedArea] = useState('');
 
