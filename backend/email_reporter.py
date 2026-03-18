@@ -31,45 +31,45 @@ async def send_analytics_report(analytics_tracker, business_email: str):
             <div style="max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
               <div style="background: linear-gradient(135deg, #4C1D95, #6d28d9); color: white; padding: 30px; text-align: center; border-radius: 10px;">
                 <h1 style="margin: 0; font-size: 24px;">📊 Celesta Glow Analytics Report</h1>
-                <p style="margin: 10px 0 0; font-size: 14px;">Report Period: Last 12 Hours</p>
+                <p style="margin: 10px 0 0; font-size: 14px;">Report Period: Last 3 Hours</p>
                 <p style="margin: 5px 0 0; font-size: 12px; opacity: 0.9;">{now.strftime("%B %d, %Y at %H:%M UTC")}</p>
               </div>
               
               <div style="background: white; padding: 25px; margin-top: 20px; border-radius: 10px;">
-                <h2 style="color: #4C1D95; margin-bottom: 20px; font-size: 20px;">Last 12 Hours Performance</h2>
+                <h2 style="color: #4C1D95; margin-bottom: 20px; font-size: 20px;">Last 3 Hours Performance</h2>
                 
                 <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
                   <h3 style="color: #1E293B; margin: 0 0 10px 0; font-size: 16px;">👥 Visitor Overview</h3>
                   <table style="width: 100%; border-collapse: collapse;">
                     <tr>
-                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Total Visits (12h):</strong></td>
-                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right; color: #059669; font-weight: bold;">{last_12h_stats['total_visits']}</td>
+                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Total Visits (3h):</strong></td>
+                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right; color: #059669; font-weight: bold;">{last_3h_stats['total_visits']}</td>
                     </tr>
                     <tr>
                       <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Today's Total Visits:</strong></td>
                       <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right; color: #059669; font-weight: bold;">{all_time_stats['today_visits']}</td>
                     </tr>
                     <tr>
-                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Unique Visitors (12h):</strong></td>
-                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right; color: #4C1D95; font-weight: bold;">{last_12h_stats['unique_sessions']}</td>
+                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Unique Visitors (3h):</strong></td>
+                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right; color: #4C1D95; font-weight: bold;">{last_3h_stats['unique_sessions']}</td>
                     </tr>
                   </table>
                 </div>
                 
                 <div style="background: #f3f4f6; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                  <h3 style="color: #1E293B; margin: 0 0 10px 0; font-size: 16px;">📊 Page-by-Page Breakdown (Last 12h)</h3>
+                  <h3 style="color: #1E293B; margin: 0 0 10px 0; font-size: 16px;">📊 Page-by-Page Breakdown (Last 3h)</h3>
                   <table style="width: 100%; border-collapse: collapse;">
                     <tr>
                       <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Product Page:</strong></td>
-                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">{last_12h_stats['page_breakdown']['product_page']} visits</td>
+                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">{last_3h_stats['page_breakdown']['product_page']} visits</td>
                     </tr>
                     <tr>
                       <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Address/Checkout Page:</strong></td>
-                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">{last_12h_stats['page_breakdown']['address_page']} visits</td>
+                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">{last_3h_stats['page_breakdown']['address_page']} visits</td>
                     </tr>
                     <tr>
                       <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;"><strong>Payment Page:</strong></td>
-                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">{last_12h_stats['page_breakdown']['payment_page']} visits</td>
+                      <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb; text-align: right;">{last_3h_stats['page_breakdown']['payment_page']} visits</td>
                     </tr>
                   </table>
                 </div>
