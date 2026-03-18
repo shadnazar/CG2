@@ -391,6 +391,7 @@ function App() {
             timeLeft={timeLeft}
             formatTime={formatTime}
             recentOrders={recentOrders}
+            specialPrice={specialPrice}
           />
         )}
         {currentStep === 2 && (
