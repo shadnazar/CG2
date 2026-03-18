@@ -999,10 +999,11 @@ function PaymentPage({ formData, paymentMethod, setPaymentMethod, handlePlaceOrd
                 />
                 <span className="font-bold text-lg text-[#1E293B]">Cash on Delivery</span>
               </div>
-              <p className="text-sm text-[#475569] ml-7">Pay when you receive</p>
+              <p className="text-sm text-[#475569] ml-7">Pay ₹{codAdvance} now + ₹{codPrice - codAdvance} on delivery</p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-[#4C1D95]">₹{codPrice}</p>
+              <p className="text-xs text-[#059669]">₹{codAdvance} now</p>
             </div>
           </div>
           <div className="flex items-center gap-2 text-[#F59E0B] ml-7">
