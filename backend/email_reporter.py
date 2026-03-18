@@ -9,11 +9,11 @@ async def send_analytics_report(analytics_tracker, business_email: str):
     """Send analytics email report"""
     try:
         now = datetime.now(timezone.utc)
-        twelve_hours_ago = now - timedelta(hours=12)
+        three_hours_ago = now - timedelta(hours=3)
         
         # Get stats
         all_time_stats = await analytics_tracker.get_stats()
-        last_12h_stats = await analytics_tracker.get_stats(twelve_hours_ago)
+        last_3h_stats = await analytics_tracker.get_stats(three_hours_ago)
         
         smtp_host = os.environ['SMTP_HOST']
         smtp_port = int(os.environ['SMTP_PORT'])
