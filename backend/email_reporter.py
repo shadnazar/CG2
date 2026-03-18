@@ -82,7 +82,7 @@ async def send_analytics_report(analytics_tracker, business_email: str):
               </div>
               
               <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
-                <p>Next report will be sent in 12 hours</p>
+                <p>Next report will be sent in 3 hours</p>
                 <p style="margin-top: 10px;">&copy; 2025 Celesta Glow Analytics</p>
               </div>
             </div>
