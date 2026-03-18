@@ -407,6 +407,7 @@ function App() {
             setPaymentMethod={setPaymentMethod}
             handlePlaceOrder={handlePlaceOrder}
             loading={loading}
+            specialPrice={specialPrice}
           />
         )}
         {currentStep === 4 && <ConfirmationPage orderDetails={orderDetails} />}
