@@ -1249,7 +1249,7 @@ function BackPromptModal({ onClose, onConfirm }) {
   );
 }
 
-function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid, specialPrice }) {
+function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid, codPrice, codAdvance, specialPrice }) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="cod-warning-modal">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
@@ -1259,7 +1259,7 @@ function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid, specialPrice }
               <AlertCircle size={24} color="white" />
             </div>
             <h3 className="text-xl font-bold text-[#1E293B]" style={{ fontFamily: 'Playfair Display, serif' }}>
-              Wait! Save ₹600 More
+              Wait! Save ₹{codPrice - specialPrice} More
             </h3>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
@@ -1270,10 +1270,10 @@ function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid, specialPrice }
         <div className="mb-6">
           <div className="bg-[#FFFBEB] border-l-4 border-[#F59E0B] p-4 rounded-lg mb-4">
             <p className="text-[#92400E] font-medium mb-2">
-              You're choosing Cash on Delivery (COD) at ₹1,199
+              COD requires ₹{codAdvance} advance payment now + ₹{codPrice - codAdvance} on delivery = ₹{codPrice} total
             </p>
             <p className="text-sm text-[#78350F]">
-              But you can get it for just <strong>₹{specialPrice}</strong> with online payment!
+              Or get it for just <strong>₹{specialPrice}</strong> with full online payment!
             </p>
           </div>
 
@@ -1283,8 +1283,8 @@ function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid, specialPrice }
                 <CheckCircle2 size={16} color="#059669" />
               </div>
               <div>
-                <p className="font-semibold text-[#1E293B]">Save ₹600 instantly</p>
-                <p className="text-sm text-[#475569]">Pay ₹{specialPrice} instead of ₹1,199</p>
+                <p className="font-semibold text-[#1E293B]">Save ₹{codPrice - specialPrice} instantly</p>
+                <p className="text-sm text-[#475569]">Pay ₹{specialPrice} instead of ₹{codPrice}</p>
               </div>
             </div>
             <div className="flex items-start gap-3">
@@ -1305,14 +1305,14 @@ function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid, specialPrice }
             onClick={onSwitchToPrepaid}
             className="btn-primary"
           >
-            Yes, Pay Online & Save ₹600!
+            Yes, Pay Online & Save ₹{codPrice - specialPrice}!
           </button>
           <button
             data-testid="confirm-cod-button"
             onClick={onConfirm}
             className="w-full py-3 text-[#4C1D95] font-medium hover:bg-gray-50 rounded-full transition-colors border border-gray-200"
           >
-            No, Continue with COD
+            Continue with COD (₹{codAdvance} now + ₹{codPrice - codAdvance} later)
           </button>
         </div>
       </div>
