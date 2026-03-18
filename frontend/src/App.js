@@ -409,6 +409,8 @@ function App() {
             handlePlaceOrder={handlePlaceOrder}
             loading={loading}
             specialPrice={specialPrice}
+            codPrice={codPrice}
+            codAdvance={codAdvance}
           />
         )}
         {currentStep === 4 && <ConfirmationPage orderDetails={orderDetails} />}
