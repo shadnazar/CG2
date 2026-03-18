@@ -1090,7 +1090,7 @@ function SurpriseDiscountModal({ onClose, specialPrice }) {
               <p className="text-sm mb-2">YOUR SPECIAL PRICE TODAY</p>
               <p className="text-6xl font-bold mb-2">₹{specialPrice}</p>
               <div className="bg-white/20 rounded-lg p-3 mt-3">
-                <p className="text-lg font-bold">Save ₹{1499 - specialPrice} (60% OFF!)</p>
+                <p className="text-lg font-bold">Save ₹{1499 - specialPrice} (53% OFF!)</p>
               </div>
             </div>
             
