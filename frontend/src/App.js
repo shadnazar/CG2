@@ -274,11 +274,66 @@ function App() {
 
   const handlePlaceOrder = async () => {
     if (paymentMethod === 'COD') {
-      setShowCODWarning(true);
+      setLoading(true);
+      await handleCODAdvancePayment();
+      setLoading(false);
     } else {
       setLoading(true);
       await handleRazorpayPayment();
       setLoading(false);
+    }
+  };
+
+  const handleCODAdvancePayment = async () => {
+    const res = await loadRazorpay();
+    if (!res) {
+      alert('Payment SDK failed to load');
+      return;
+    }
+
+    try {
+      const orderResponse = await axios.post(`${API}/create-razorpay-order`, {
+        amount: codAdvance
+      });
+
+      const options = {
+        key: RAZORPAY_KEY,
+        amount: orderResponse.data.amount,
+        currency: orderResponse.data.currency,
+        name: 'Celesta Glow',
+        description: 'COD Advance Payment',
+        order_id: orderResponse.data.id,
+        handler: async function (response) {
+          try {
+            await axios.post(`${API}/verify-payment`, {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+            await createOrder('COD', codPrice);
+          } catch (error) {
+            alert('Payment verification failed');
+          }
+        },
+        prefill: {
+          name: formData.name,
+          contact: formData.phone,
+          email: formData.email || 'customer@celestaglow.com'
+        },
+        theme: {
+          color: '#4C1D95'
+        },
+        notes: {
+          payment_type: 'COD_ADVANCE',
+          balance_amount: codPrice - codAdvance
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      console.error('COD advance payment failed:', error);
+      alert('Failed to initiate payment');
     }
   };
 
