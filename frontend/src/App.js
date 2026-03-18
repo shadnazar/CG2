@@ -1246,7 +1246,7 @@ function BackPromptModal({ onClose, onConfirm }) {
   );
 }
 
-function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid }) {
+function CODWarningModal({ onClose, onConfirm, onSwitchToPrepaid, specialPrice }) {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" data-testid="cod-warning-modal">
       <div className="bg-white rounded-2xl max-w-md w-full p-6 animate-slide-up">
