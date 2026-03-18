@@ -48,8 +48,8 @@ function App() {
   const [showBackPrompt, setShowBackPrompt] = useState(false);
   const [showExitIntent, setShowExitIntent] = useState(false);
   const [showSurpriseDiscount, setShowSurpriseDiscount] = useState(false);
-  const [specialPrice, setSpecialPrice] = useState(699);
-  const [codPrice] = useState(899);
+  const [specialPrice, setSpecialPrice] = useState(399);
+  const [codPrice] = useState(450);
   const [codAdvance] = useState(49);
   const [timeLeft, setTimeLeft] = useState(240);
   const [recentOrders, setRecentOrders] = useState(30);
