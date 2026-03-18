@@ -340,7 +340,7 @@ function App() {
   const confirmCOD = async () => {
     setShowCODWarning(false);
     setLoading(true);
-    await createOrder('COD', 1199);
+    await handleCODAdvancePayment();
     setLoading(false);
   };
 
