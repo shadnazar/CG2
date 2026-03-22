@@ -174,7 +174,7 @@ function ProductPage() {
     return (
       <div style={{ background: '#F8F9FA', minHeight: '100vh' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 20px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '60px', alignItems: 'start' }}>
             {/* Product Image */}
             <div style={{ background: 'white', borderRadius: '16px', padding: '40px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
               <img

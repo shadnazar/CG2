@@ -37,7 +37,7 @@ function Homepage() {
       {/* Hero Section */}
       <section className="hero-section" style={{ background: 'linear-gradient(135deg, #F8F9FA 0%, #E3F2FD 100%)', padding: '80px 20px' }}>
         <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '60px', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '60px', alignItems: 'center' }}>
             <div>
               <div style={{ display: 'inline-block', padding: '6px 16px', background: '#E3F2FD', borderRadius: '50px', fontSize: '14px', color: '#0066CC', fontWeight: '600', marginBottom: '20px' }}>
                 Dermatologist-Inspired Formula
