@@ -25,15 +25,15 @@ function BlogList() {
         
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
           {blogs.map(blog => (
-            <Link key={blog._id} to={`/blog/${blog.slug}`} style={{ textDecoration: 'none' }}>
+            <Link key={blog.id || blog.slug} to={`/blog/${blog.slug}`} style={{ textDecoration: 'none' }}>
               <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'transform 0.2s' }}>
                 <div style={{ padding: '24px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#6C757D', fontSize: '14px' }}>
                     <Calendar size={16} />
-                    <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
+                    <span>{new Date(blog.created_at).toLocaleDateString()}</span>
                   </div>
                   <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#212529', marginBottom: '12px' }}>{blog.title}</h3>
-                  <p style={{ color: '#6C757D', fontSize: '14px', lineHeight: '1.6' }}>{blog.metaDescription || blog.content.substring(0, 120)}...</p>
+                  <p style={{ color: '#6C757D', fontSize: '14px', lineHeight: '1.6' }}>{blog.meta_description || blog.content.substring(0, 120)}...</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px', color: '#0066CC', fontWeight: '600', fontSize: '14px' }}>
                     Read More <ArrowRight size={16} />
                   </div>

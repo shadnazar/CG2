@@ -1,9 +1,10 @@
-from fastapi import FastAPI, APIRouter, HTTPException
+from fastapi import FastAPI, APIRouter, HTTPException, Query
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import logging
+import re
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional
@@ -331,6 +332,157 @@ async def track_page_visit(page: str, session_id: str = None):
 async def get_state_by_pincode(pincode: str):
     state = get_state_from_pincode(pincode)
     return {"pincode": pincode, "state": state}
+
+
+# ==================== BLOG API ROUTES ====================
+
+class BlogCreate(BaseModel):
+    title: str
+    content: str
+    meta_description: Optional[str] = None
+    keywords: List[str] = []
+    status: str = "published"
+
+
+class BlogResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str
+    title: str
+    slug: str
+    meta_description: Optional[str] = None
+    content: str
+    keywords: List[str] = []
+    status: str = "published"
+    view_count: int = 0
+    generated_by: str = "Manual"
+    created_at: str
+    updated_at: str
+
+
+def generate_slug(title: str) -> str:
+    """Generate URL-friendly slug from title"""
+    slug = title.lower()
+    slug = re.sub(r'[^a-z0-9]+', '-', slug)
+    slug = re.sub(r'^-|-$', '', slug)
+    return slug
+
+
+@api_router.get("/blogs")
+async def get_blogs():
+    """Get all published blog posts"""
+    blogs = await db.blogs.find({"status": "published"}, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return blogs
+
+
+@api_router.get("/blogs/{slug}")
+async def get_blog_by_slug(slug: str):
+    """Get a single blog post by slug"""
+    blog = await db.blogs.find_one({"slug": slug}, {"_id": 0})
+    if not blog:
+        raise HTTPException(status_code=404, detail="Blog not found")
+    
+    # Increment view count
+    await db.blogs.update_one({"slug": slug}, {"$inc": {"view_count": 1}})
+    return blog
+
+
+@api_router.post("/blogs")
+async def create_blog(blog_data: BlogCreate):
+    """Create a new blog post"""
+    slug = generate_slug(blog_data.title)
+    
+    # Check if slug already exists
+    existing = await db.blogs.find_one({"slug": slug})
+    if existing:
+        slug = f"{slug}-{random.randint(1000, 9999)}"
+    
+    now = datetime.now(timezone.utc).isoformat()
+    blog_doc = {
+        "id": str(uuid.uuid4()),
+        "title": blog_data.title,
+        "slug": slug,
+        "meta_description": blog_data.meta_description,
+        "content": blog_data.content,
+        "keywords": blog_data.keywords,
+        "status": blog_data.status,
+        "view_count": 0,
+        "generated_by": "Manual",
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.blogs.insert_one(blog_doc)
+    del blog_doc["_id"]
+    return blog_doc
+
+
+# ==================== SEARCH API ROUTE ====================
+
+@api_router.get("/search")
+async def search_content(q: str = Query(..., min_length=1)):
+    """Search blog posts by keyword"""
+    # Simple text search on title and content
+    query = {
+        "$or": [
+            {"title": {"$regex": q, "$options": "i"}},
+            {"content": {"$regex": q, "$options": "i"}},
+            {"keywords": {"$in": [q.lower()]}}
+        ],
+        "status": "published"
+    }
+    
+    blogs = await db.blogs.find(query, {"_id": 0}).to_list(20)
+    return blogs
+
+
+# ==================== LOCATION API ROUTES ====================
+
+@api_router.get("/location/{state}")
+async def get_location_state(state: str):
+    """Get location page content for a state"""
+    location = await db.locations.find_one({"state": {"$regex": f"^{state}$", "$options": "i"}}, {"_id": 0})
+    
+    if not location:
+        # Return default content for the state
+        return {
+            "state": state.title(),
+            "city": None,
+            "content": {
+                "title": f"Anti-Aging Skincare in {state.title()}",
+                "description": f"Discover premium anti-aging solutions for {state.title()}. Celesta Glow is trusted by thousands.",
+                "climate": "Varies by region",
+                "skin_issues": ["wrinkles", "fine lines", "dryness"],
+                "recommendations": "Use Celesta Glow daily for best results"
+            }
+        }
+    
+    return location
+
+
+@api_router.get("/location/{state}/{city}")
+async def get_location_city(state: str, city: str):
+    """Get location page content for a specific city"""
+    location = await db.locations.find_one({
+        "state": {"$regex": f"^{state}$", "$options": "i"},
+        "city": {"$regex": f"^{city}$", "$options": "i"}
+    }, {"_id": 0})
+    
+    if not location:
+        # Return default content for the city
+        return {
+            "state": state.title(),
+            "city": city.title(),
+            "content": {
+                "title": f"Anti-Aging Skincare in {city.title()}, {state.title()}",
+                "description": f"Get Celesta Glow Anti-Aging Serum delivered to {city.title()}. Free shipping available.",
+                "climate": "Varies by season",
+                "skin_issues": ["wrinkles", "fine lines", "pollution damage"],
+                "recommendations": "Use Celesta Glow twice daily for optimal results"
+            }
+        }
+    
+    return location
 
 
 app.include_router(api_router)

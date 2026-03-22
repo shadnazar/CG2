@@ -33,7 +33,7 @@ function SearchResults() {
         ) : (
           <div style={{ display: 'grid', gap: '24px' }}>
             {results.map(blog => (
-              <Link key={blog._id} to={`/blog/${blog.slug}`} style={{ textDecoration: 'none' }}>
+              <Link key={blog.id || blog.slug} to={`/blog/${blog.slug}`} style={{ textDecoration: 'none' }}>
                 <div style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
                   <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#212529', marginBottom: '12px' }}>{blog.title}</h3>
                   <p style={{ color: '#6C757D', fontSize: '14px' }}>{blog.content.substring(0, 150)}...</p>
