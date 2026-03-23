@@ -37,7 +37,7 @@ function ProductPage() {
     }
 
     const handleScroll = () => {
-      setShowStickyBar(window.scrollY > 400);
+      setShowStickyBar(window.scrollY > 200);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
@@ -272,7 +272,7 @@ function ProductPage() {
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) => { setFormData(prev => ({ ...prev, name: e.target.value })); setErrors(prev => ({ ...prev, name: '' })); }}
                 placeholder="Enter your name"
                 className={`w-full h-12 px-4 rounded-xl border ${errors.name ? 'border-red-300 bg-red-50' : 'border-slate-200'} text-base outline-none focus:ring-2 focus:ring-sky-200`}
                 data-testid="name-input"
@@ -286,7 +286,7 @@ function ProductPage() {
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                onChange={(e) => { setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })); setErrors(prev => ({ ...prev, phone: '' })); }}
                 placeholder="10-digit mobile number"
                 className={`w-full h-12 px-4 rounded-xl border ${errors.phone ? 'border-red-300 bg-red-50' : 'border-slate-200'} text-base outline-none focus:ring-2 focus:ring-sky-200`}
                 data-testid="phone-input"
@@ -313,7 +313,7 @@ function ProductPage() {
               <input
                 type="text"
                 value={formData.house_number}
-                onChange={(e) => setFormData(prev => ({ ...prev, house_number: e.target.value }))}
+                onChange={(e) => { setFormData(prev => ({ ...prev, house_number: e.target.value })); setErrors(prev => ({ ...prev, house_number: '' })); }}
                 placeholder="House no., Building"
                 className={`w-full h-12 px-4 rounded-xl border ${errors.house_number ? 'border-red-300 bg-red-50' : 'border-slate-200'} text-base outline-none focus:ring-2 focus:ring-sky-200`}
                 data-testid="house-input"
@@ -326,7 +326,7 @@ function ProductPage() {
               <input
                 type="text"
                 value={formData.area}
-                onChange={(e) => setFormData(prev => ({ ...prev, area: e.target.value }))}
+                onChange={(e) => { setFormData(prev => ({ ...prev, area: e.target.value })); setErrors(prev => ({ ...prev, area: '' })); }}
                 placeholder="Street, Colony, Area"
                 className={`w-full h-12 px-4 rounded-xl border ${errors.area ? 'border-red-300 bg-red-50' : 'border-slate-200'} text-base outline-none focus:ring-2 focus:ring-sky-200`}
                 data-testid="area-input"
