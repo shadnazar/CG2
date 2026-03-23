@@ -1,71 +1,64 @@
-# Celesta Glow - Premium Luxury Skincare E-Commerce
+# Celesta Glow - E-Commerce Platform
 
 ## Original Problem Statement
-Build a mobile-first e-commerce web application for an anti-aging face serum called "Celesta Glow". Evolved into a premium luxury skincare platform with:
-- Premium design inspired by luxury cosmetic brands (Lushy, Cetaphil)
-- AI-generated premium product photography
-- Mobile-first responsive design
-- Razorpay payment integration
-- SEO-optimized content system
+Build a mobile-first e-commerce web application for "Celesta Glow" anti-aging face serum that exactly matches the brand style of celestaglow.com.
 
-## Design System (Updated March 23, 2026)
+## Brand Design System (March 23, 2026)
 
-### Color Palette
-- **Primary (Sage Green)**: #5f7350 - buttons, icons, accents
-- **Gold Accent**: #c9a962 - badges, labels, highlights
-- **Cream Background**: #fdfcfa - page backgrounds
-- **Dark Green**: #1a2e1a - headings, dark sections
-- **Light Sage**: #f6f7f4 - cards, light backgrounds
+### Colors (Exact Match with celestaglow.com)
+- **Primary Green**: #22C55E - buttons, badges, checkmarks, accents
+- **Dark Navy**: #1E293B - announcement bar, secondary buttons
+- **Yellow/Gold**: #FACC15 - star ratings
+- **Light Green**: #DCFCE7 - ingredient number backgrounds
+- **White**: #FFFFFF - page background
+- **Gray-50**: #F8FAFC - input backgrounds, section backgrounds
+- **Gray-100**: #F1F5F9 - card borders
 
 ### Typography
-- **Headings**: Outfit (serif-like, elegant)
-- **Body**: DM Sans (clean, readable)
-- **Tracking**: Uppercase labels use 0.15-0.2em letter-spacing
+- **Logo**: "CELESTA" bold + "GLOW" smaller tracking
+- **Headings**: Outfit font, bold
+- **Body**: DM Sans
 
-### Premium UI Components
-- `btn-premium`: Sage green gradient button with shadow
-- `btn-gold`: Gold gradient button for special CTAs
-- `card-premium`: Glass-morphism card with backdrop blur
-- `selection-premium`: Elegant selection states
-- `input-premium`: Large touch-target inputs (56px height)
+### Product Image
+- Source: celestaglow.com CDN
+- URL: https://celestaglow.com/cdn/shop/files/IMG_0538.png
 
-### Generated Images (Nano Banana Pro)
-- Hero texture: Serum drops macro photography
-- Lifestyle: Woman applying skincare
-- Product: Premium serum bottle on marble
-- Ingredients: Botanical flat lay
+### UI Components
+- `btn-cg-primary`: Green (#22C55E) rounded-full button with arrow
+- `btn-cg-dark`: Dark navy (#1E293B) rounded-full button
+- `badge-cg`: Green pill badge ("NO MORE SKIN PROBLEMS")
+- `card-cg`: White card with gray border
+- `check-item`: Green circle checkmark with benefit text
+- `star-gold`: Yellow star for ratings
+- `announcement-bar`: Dark navy full-width bar
 
-## User Personas
-1. **End Customer**: Women 30-55 interested in premium anti-aging skincare
-2. **Business Owner**: Track orders, analytics, manage content
-3. **Content Manager**: Create/manage blog posts and SEO pages
+## Pricing
+- Prepaid: ₹399
+- COD: ₹450 (₹49 advance + ₹401 on delivery)
+- MRP: ₹1,499
 
-## Core Requirements
-- Product page with premium checkout flow
-- Prepaid (₹399) and COD (₹450 with ₹49 advance)
-- Razorpay payment gateway
-- SMTP email notifications
-- Blog system for SEO
+## Core Features
+- Homepage with announcement bar, badge, benefits, testimonials, 4-in-1 section, FAQ
+- Product page with CDN image, pricing, benefits, accordions
+- Checkout with payment method toggle (Prepaid/COD)
+- Order confirmation page
+- Blog/Beauty Tips section
 - Search functionality
-- Location-based landing pages
-- Meta Pixel integration
+- Location-based pages
 
 ## Technical Architecture
 ### Frontend
-- **Framework**: React with react-router-dom
-- **Styling**: Tailwind CSS + Premium theme
-- **Fonts**: Outfit, DM Sans
-- **Key Pages**: Homepage, ProductPage, BlogList, BlogPost, SearchResults, LocationPage
+- React with react-router-dom
+- Tailwind CSS with Celesta Glow brand variables
+- Mobile-first (390px viewport)
 
 ### Backend
-- **Framework**: FastAPI (Python)
-- **Database**: MongoDB
-- **Payment**: Razorpay
-- **Email**: SMTP
+- FastAPI (Python)
+- MongoDB
+- Razorpay integration
 
 ### API Endpoints
 - `/api/blogs` - Blog CRUD
-- `/api/blogs/{slug}` - Single blog
 - `/api/search?q={query}` - Search
 - `/api/location/{state}` - Location pages
 - `/api/orders` - Order management
@@ -74,35 +67,32 @@ Build a mobile-first e-commerce web application for an anti-aging face serum cal
 ## Implementation Status
 
 ### ✅ Completed
-- [x] Premium luxury design system
-- [x] Nano Banana Pro image generation (4 premium images)
-- [x] Homepage with hero, lifestyle section, benefits, testimonials
-- [x] Product page with premium serum image, pricing card, accordions
-- [x] Checkout flow with elegant form styling
-- [x] Payment method toggle (Prepaid/COD)
-- [x] Premium navigation with slide-in menu
-- [x] Search overlay with suggestions
-- [x] Blog pages with premium cards
-- [x] Sticky bottom bar on product page
-- [x] Mobile-first responsive design (390px)
+- [x] Exact brand alignment with celestaglow.com
+- [x] Homepage: announcement bar, badge, hero, product image, benefits, testimonials, 4-in-1 section, FAQ
+- [x] Product page with CDN image, pricing, benefits, accordions
+- [x] Checkout form with green payment selection
+- [x] Order confirmation page
+- [x] Navigation with CELESTA GLOW logo style
+- [x] Blog pages
+- [x] Search functionality
+- [x] Location pages
 - [x] All backend APIs functional
 
 ### 📋 Upcoming Tasks (P0)
 1. AI Content Engine with LLM integration
 2. Admin interface for content management
-3. Automated blog generation from keywords
+3. Automated blog generation
 
 ### 📋 Future Tasks (P1)
 1. Location Page Generator for programmatic SEO
-2. AI Search with auto-content creation
-3. Multi-language support (Hindi)
-4. Advanced analytics & A/B testing
+2. AI Search with auto-content
+3. Multi-language support
+4. Analytics & A/B testing
 
 ## Testing Status
-- Backend: 100% pass
-- Frontend: 100% pass (iteration_3.json)
-- Premium styling verified: 44 sage green elements, 26 gold elements
-- All Nano Banana images loading correctly
+- Frontend: 100% pass
+- Brand alignment: 100% verified
+- Colors verified: #22C55E, #1E293B, #FACC15, #DCFCE7
 
 ## Environment Variables
 ### Frontend (.env)
@@ -112,8 +102,8 @@ Build a mobile-first e-commerce web application for an anti-aging face serum cal
 ### Backend (.env)
 - `MONGO_URL`, `DB_NAME`
 - `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`
+- `SMTP_*` for email notifications
 - `BUSINESS_EMAIL`
 
 ## Last Updated
-March 23, 2026 - Premium luxury redesign with Nano Banana generated images
+March 23, 2026 - Complete brand alignment with celestaglow.com
