@@ -23,27 +23,29 @@ function SearchResults() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-3 border-sky-500 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#5f7350] border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="px-6 py-8 pb-24">
-      <div className="flex items-center gap-3 mb-6">
-        <Search size={20} className="text-slate-400" />
+    <div className="px-6 py-10 pb-28 bg-[#fdfcfa] min-h-screen">
+      <div className="flex items-center gap-4 mb-8">
+        <div className="w-12 h-12 rounded-full bg-[#f6f7f4] flex items-center justify-center">
+          <Search size={20} className="text-[#5f7350]" />
+        </div>
         <div>
-          <h1 className="font-heading text-xl font-bold text-slate-900" data-testid="search-results-title">
+          <h1 className="text-premium-heading text-xl font-semibold" data-testid="search-results-title">
             "{query}"
           </h1>
-          <p className="text-slate-500 text-sm">{results.length} result{results.length !== 1 ? 's' : ''} found</p>
+          <p className="text-[#96a883] text-sm">{results.length} result{results.length !== 1 ? 's' : ''} found</p>
         </div>
       </div>
       
       {results.length === 0 ? (
-        <div className="text-center py-12">
-          <p className="text-slate-500 mb-4">No articles found for your search.</p>
-          <Link to="/blog" className="text-sky-600 font-medium">Browse all articles →</Link>
+        <div className="text-center py-16">
+          <p className="text-[#4a5a3f] mb-4">No articles found for your search.</p>
+          <Link to="/blog" className="text-[#5f7350] font-medium">Browse all articles →</Link>
         </div>
       ) : (
         <div className="space-y-4">
@@ -54,14 +56,14 @@ function SearchResults() {
               className="block"
               data-testid={`search-result-${i}`}
             >
-              <article className="bg-white border border-slate-100 rounded-2xl p-5 transition-all hover:shadow-md">
-                <h2 className="font-heading font-semibold text-lg text-slate-900 mb-2">
+              <article className="card-premium p-5 transition-all hover:shadow-lg">
+                <h2 className="text-premium-heading text-lg font-semibold mb-2">
                   {blog.title}
                 </h2>
-                <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-3">
+                <p className="text-premium-body text-sm line-clamp-2 mb-3">
                   {blog.content.substring(0, 150)}...
                 </p>
-                <div className="flex items-center gap-1 text-sky-600 text-sm font-medium">
+                <div className="flex items-center gap-1 text-[#5f7350] text-sm font-medium">
                   Read More <ChevronRight size={16} />
                 </div>
               </article>

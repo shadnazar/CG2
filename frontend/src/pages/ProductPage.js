@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Star, Check, Truck, Shield, ChevronDown, ChevronUp } from 'lucide-react';
+import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, Leaf } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
@@ -10,6 +10,9 @@ const PREPAID_PRICE = 399;
 const COD_PRICE = 450;
 const COD_ADVANCE = 49;
 const MRP = 1499;
+
+// Premium product image
+const PRODUCT_IMAGE = 'https://static.prod-images.emergentagent.com/jobs/fc697aed-c4ed-4c4b-8eec-b51bdf774715/images/27894ae9ca30caf0fab852aa459f72223733d28b3a81b8979f89dd19fe6fe798.png';
 
 function ProductPage() {
   const navigate = useNavigate();
@@ -36,9 +39,7 @@ function ProductPage() {
       });
     }
 
-    const handleScroll = () => {
-      setShowStickyBar(window.scrollY > 200);
-    };
+    const handleScroll = () => setShowStickyBar(window.scrollY > 200);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -56,12 +57,11 @@ function ProductPage() {
 
   const handlePincodeChange = async (pincode) => {
     setFormData(prev => ({ ...prev, pincode }));
+    setErrors(prev => ({ ...prev, pincode: '' }));
     if (pincode.length === 6) {
       try {
         const response = await axios.get(`${API}/pincode/${pincode}/state`);
-        if (response.data.state) {
-          setFormData(prev => ({ ...prev, state: response.data.state }));
-        }
+        if (response.data.state) setFormData(prev => ({ ...prev, state: response.data.state }));
       } catch (error) {}
     }
   };
@@ -122,7 +122,7 @@ function ProductPage() {
           setLoading(false);
         },
         prefill: { name: formData.name, contact: formData.phone, email: formData.email },
-        theme: { color: '#0ea5e9' },
+        theme: { color: '#5f7350' },
         modal: { ondismiss: () => setLoading(false) }
       };
 
@@ -138,96 +138,121 @@ function ProductPage() {
   if (step === 'product') {
     return (
       <div className="pb-28">
-        {/* Product Image */}
-        <div className="aspect-square bg-slate-50 flex items-center justify-center">
-          <img
-            src="https://customer-assets.emergentagent.com/job_3e020a22-98fc-4fee-b377-5bacdddf46ce/artifacts/ig243hne_IMG_9115.png"
-            alt="Celesta Glow Anti-Aging Serum"
-            className="w-4/5 max-w-xs object-contain"
-            data-testid="product-image"
-          />
+        {/* Product Image - Premium */}
+        <div className="relative bg-gradient-to-b from-[#fdfcfa] to-white">
+          <div className="aspect-square flex items-center justify-center p-8">
+            <img
+              src={PRODUCT_IMAGE}
+              alt="Celesta Glow Anti-Aging Serum"
+              className="w-full max-w-[280px] object-contain animate-float"
+              data-testid="product-image"
+            />
+          </div>
+          {/* Premium Badge */}
+          <div className="absolute top-4 left-4 bg-[#1a2e1a] text-white text-xs px-3 py-1.5 rounded-full">
+            Bestseller
+          </div>
         </div>
 
-        {/* Product Info */}
-        <div className="px-6 py-6">
-          <p className="text-sky-600 text-sm font-medium mb-2" data-testid="product-tag">Anti-Aging Serum • 30ml</p>
-          <h1 className="font-heading text-2xl font-bold text-slate-900 mb-3" data-testid="product-title">
+        {/* Product Info - Premium */}
+        <div className="px-6 py-8">
+          {/* Tag */}
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-6 h-[1px] bg-[#c9a962]" />
+            <p className="text-xs tracking-[0.15em] uppercase text-[#5f7350]" data-testid="product-tag">
+              Anti-Aging Serum • 30ml
+            </p>
+          </div>
+
+          <h1 className="text-premium-heading text-2xl font-semibold mb-4" data-testid="product-title">
             Celesta Glow Face Serum
           </h1>
           
           {/* Rating */}
-          <div className="flex items-center gap-2 mb-4" data-testid="product-rating">
+          <div className="flex items-center gap-3 mb-6" data-testid="product-rating">
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} size={16} className="fill-amber-400 text-amber-400" />
+                <Star key={i} size={14} className="fill-[#c9a962] text-[#c9a962]" />
               ))}
             </div>
-            <span className="text-slate-500 text-sm">4.8 (2,340 reviews)</span>
+            <span className="text-sm text-[#96a883]">4.8 (2,340 reviews)</span>
           </div>
 
-          {/* Price */}
-          <div className="flex items-baseline gap-3 mb-6" data-testid="product-price">
-            <span className="text-3xl font-bold text-slate-900">₹{PREPAID_PRICE}</span>
-            <span className="text-lg text-slate-400 line-through">₹{MRP}</span>
-            <span className="text-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-              {Math.round((1 - PREPAID_PRICE/MRP) * 100)}% OFF
-            </span>
+          {/* Price - Premium */}
+          <div className="card-premium p-5 mb-6" data-testid="product-price">
+            <div className="flex items-baseline gap-4">
+              <span className="text-3xl font-semibold text-[#1a2e1a]">₹{PREPAID_PRICE}</span>
+              <span className="text-lg text-[#b5c0a5] line-through">₹{MRP}</span>
+            </div>
+            <div className="flex items-center gap-2 mt-2">
+              <span className="text-xs font-medium text-white bg-[#c9a962] px-2 py-1 rounded">
+                SAVE {Math.round((1 - PREPAID_PRICE/MRP) * 100)}%
+              </span>
+              <span className="text-xs text-[#5f7350]">Limited time offer</span>
+            </div>
           </div>
 
-          {/* Key Benefits */}
-          <div className="space-y-3 mb-6">
+          {/* Key Benefits - Premium */}
+          <div className="space-y-4 mb-8">
             {[
               'Reduces fine lines & wrinkles in 4 weeks',
-              'Deep hydration with Hyaluronic Acid',
-              'Boosts collagen with Retinol',
+              '72-hour deep hydration with Hyaluronic Acid',
+              'Boosts collagen naturally with Retinol',
             ].map((benefit, i) => (
-              <div key={i} className="flex items-center gap-3" data-testid={`product-benefit-${i}`}>
-                <Check size={18} className="text-emerald-500 flex-shrink-0" />
-                <span className="text-slate-600 text-sm">{benefit}</span>
+              <div key={i} className="flex items-start gap-3" data-testid={`product-benefit-${i}`}>
+                <div className="w-5 h-5 rounded-full bg-[#f6f7f4] flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <Check size={12} className="text-[#5f7350]" />
+                </div>
+                <span className="text-premium-body text-sm">{benefit}</span>
               </div>
             ))}
           </div>
 
-          {/* Trust Badges */}
-          <div className="flex gap-4 py-4 border-y border-slate-100 mb-6">
-            <div className="flex items-center gap-2 text-slate-600">
-              <Truck size={18} className="text-sky-500" />
-              <span className="text-xs">Free Delivery</span>
-            </div>
-            <div className="flex items-center gap-2 text-slate-600">
-              <Shield size={18} className="text-sky-500" />
-              <span className="text-xs">Genuine Product</span>
-            </div>
+          {/* Trust Badges - Premium */}
+          <div className="flex gap-6 py-5 border-y border-[#f3efe6] mb-8">
+            {[
+              { icon: Truck, label: 'Free Delivery' },
+              { icon: Shield, label: 'Genuine Product' },
+              { icon: Leaf, label: 'Organic' },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-2 text-[#4a5a3f]">
+                <item.icon size={16} className="text-[#5f7350]" />
+                <span className="text-xs font-medium">{item.label}</span>
+              </div>
+            ))}
           </div>
 
-          {/* Buy Button */}
+          {/* Buy Button - Premium */}
           <button
             onClick={() => setStep('checkout')}
-            className="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-4 rounded-full shadow-lg shadow-sky-500/25 transition-all btn-active"
+            className="btn-premium w-full text-white font-medium py-4 rounded-full"
             data-testid="buy-now-button"
           >
             Buy Now — ₹{PREPAID_PRICE}
           </button>
 
-          {/* Accordion Details */}
-          <div className="mt-8 space-y-2">
+          {/* Accordion Details - Premium */}
+          <div className="mt-10 space-y-3">
             {[
-              { title: 'Key Ingredients', content: 'Retinol (0.5%), Hyaluronic Acid (2%), Niacinamide (5%), Vitamin E, Peptide Complex' },
-              { title: 'How to Use', content: 'Apply 2-3 drops on clean face every night. Gently massage in upward motions. Follow with moisturizer.' },
-              { title: 'Clinical Results', content: '94% saw reduced fine lines in 4 weeks. 89% reported improved hydration. Dermatologist tested.' },
+              { title: 'Key Ingredients', content: 'Retinol (0.5%) for cell renewal, Hyaluronic Acid (2%) for deep hydration, Niacinamide (5%) for skin barrier, Vitamin E for protection, Premium Peptide Complex for firmness.' },
+              { title: 'How to Use', content: 'Apply 2-3 drops on clean face every evening. Gently massage in upward circular motions. Allow to absorb for 2 minutes. Follow with your favorite moisturizer.' },
+              { title: 'Clinical Results', content: '94% experienced improved hydration. 89% saw reduction in fine lines. 91% reported firmer skin. Results based on 8-week clinical study with 200 participants.' },
             ].map((section, i) => (
-              <div key={i} className="border border-slate-100 rounded-xl overflow-hidden">
+              <div key={i} className="border border-[#f3efe6] rounded-2xl overflow-hidden">
                 <button
                   onClick={() => setExpandedSection(expandedSection === i ? null : i)}
-                  className="w-full flex items-center justify-between p-4 text-left"
+                  className="w-full flex items-center justify-between p-5 text-left bg-[#fdfcfa]"
                   data-testid={`accordion-${i}`}
                 >
-                  <span className="font-medium text-slate-900">{section.title}</span>
-                  {expandedSection === i ? <ChevronUp size={18} className="text-slate-400" /> : <ChevronDown size={18} className="text-slate-400" />}
+                  <span className="font-medium text-[#1a2e1a]">{section.title}</span>
+                  {expandedSection === i 
+                    ? <ChevronUp size={18} className="text-[#96a883]" /> 
+                    : <ChevronDown size={18} className="text-[#96a883]" />
+                  }
                 </button>
                 {expandedSection === i && (
-                  <div className="px-4 pb-4 text-sm text-slate-600 leading-relaxed">
-                    {section.content}
+                  <div className="px-5 pb-5 bg-white">
+                    <p className="text-premium-body text-sm">{section.content}</p>
                   </div>
                 )}
               </div>
@@ -235,17 +260,17 @@ function ProductPage() {
           </div>
         </div>
 
-        {/* Sticky Bottom Bar */}
+        {/* Sticky Bottom Bar - Premium */}
         {showStickyBar && (
           <div className="sticky-bottom-bar">
-            <div className="flex items-center justify-between px-5 py-3">
+            <div className="flex items-center justify-between px-6 py-4">
               <div>
-                <p className="text-xs text-slate-500">Price</p>
-                <p className="font-bold text-slate-900">₹{PREPAID_PRICE}</p>
+                <p className="text-xs text-[#96a883]">Price</p>
+                <p className="text-lg font-semibold text-[#1a2e1a]">₹{PREPAID_PRICE}</p>
               </div>
               <button
                 onClick={() => setStep('checkout')}
-                className="bg-sky-500 text-white font-semibold py-3 px-8 rounded-full btn-active"
+                className="btn-premium text-white font-medium py-3 px-8 rounded-full"
                 data-testid="sticky-buy-button"
               >
                 Buy Now
@@ -257,24 +282,39 @@ function ProductPage() {
     );
   }
 
-  // Checkout Form
+  // Checkout Form - Premium
   if (step === 'checkout') {
     return (
-      <div className="pb-8">
-        <div className="px-6 py-6">
-          <h1 className="font-heading text-2xl font-bold text-slate-900 mb-2" data-testid="checkout-title">Checkout</h1>
-          <p className="text-slate-500 text-sm mb-6">Complete your order</p>
+      <div className="pb-8 bg-[#fdfcfa] min-h-screen">
+        <div className="px-6 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <p className="text-xs tracking-[0.15em] uppercase text-[#c9a962] mb-2">Checkout</p>
+            <h1 className="text-premium-heading text-2xl font-semibold" data-testid="checkout-title">
+              Complete Your Order
+            </h1>
+          </div>
 
-          <div className="space-y-4">
+          {/* Order Summary Mini */}
+          <div className="card-premium p-4 mb-8 flex items-center gap-4">
+            <img src={PRODUCT_IMAGE} alt="Product" className="w-16 h-16 object-contain" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-[#1a2e1a]">Celesta Glow Serum</p>
+              <p className="text-xs text-[#96a883]">30ml • Anti-Aging</p>
+            </div>
+            <p className="font-semibold text-[#5f7350]">₹{paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_PRICE}</p>
+          </div>
+
+          <div className="space-y-5">
             {/* Name */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Full Name *</label>
+              <label className="block text-sm font-medium text-[#4a5a3f] mb-2">Full Name *</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => { setFormData(prev => ({ ...prev, name: e.target.value })); setErrors(prev => ({ ...prev, name: '' })); }}
                 placeholder="Enter your name"
-                className={`w-full h-12 px-4 rounded-xl border ${errors.name ? 'border-red-300 bg-red-50' : 'border-slate-200'} text-base outline-none focus:ring-2 focus:ring-sky-200`}
+                className={`input-premium ${errors.name ? 'border-red-300 bg-red-50' : ''}`}
                 data-testid="name-input"
               />
               {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
@@ -282,13 +322,13 @@ function ProductPage() {
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number *</label>
+              <label className="block text-sm font-medium text-[#4a5a3f] mb-2">Phone Number *</label>
               <input
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => { setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })); setErrors(prev => ({ ...prev, phone: '' })); }}
                 placeholder="10-digit mobile number"
-                className={`w-full h-12 px-4 rounded-xl border ${errors.phone ? 'border-red-300 bg-red-50' : 'border-slate-200'} text-base outline-none focus:ring-2 focus:ring-sky-200`}
+                className={`input-premium ${errors.phone ? 'border-red-300 bg-red-50' : ''}`}
                 data-testid="phone-input"
               />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
@@ -296,115 +336,107 @@ function ProductPage() {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Email (Optional)</label>
+              <label className="block text-sm font-medium text-[#4a5a3f] mb-2">Email (Optional)</label>
               <input
                 type="email"
                 value={formData.email}
                 onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 placeholder="For order updates"
-                className="w-full h-12 px-4 rounded-xl border border-slate-200 text-base outline-none focus:ring-2 focus:ring-sky-200"
+                className="input-premium"
                 data-testid="email-input"
               />
             </div>
 
             {/* Address */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">House/Flat No. *</label>
+              <label className="block text-sm font-medium text-[#4a5a3f] mb-2">House/Flat No. *</label>
               <input
                 type="text"
                 value={formData.house_number}
                 onChange={(e) => { setFormData(prev => ({ ...prev, house_number: e.target.value })); setErrors(prev => ({ ...prev, house_number: '' })); }}
                 placeholder="House no., Building"
-                className={`w-full h-12 px-4 rounded-xl border ${errors.house_number ? 'border-red-300 bg-red-50' : 'border-slate-200'} text-base outline-none focus:ring-2 focus:ring-sky-200`}
+                className={`input-premium ${errors.house_number ? 'border-red-300 bg-red-50' : ''}`}
                 data-testid="house-input"
               />
               {errors.house_number && <p className="text-red-500 text-xs mt-1">{errors.house_number}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Area/Locality *</label>
+              <label className="block text-sm font-medium text-[#4a5a3f] mb-2">Area/Locality *</label>
               <input
                 type="text"
                 value={formData.area}
                 onChange={(e) => { setFormData(prev => ({ ...prev, area: e.target.value })); setErrors(prev => ({ ...prev, area: '' })); }}
                 placeholder="Street, Colony, Area"
-                className={`w-full h-12 px-4 rounded-xl border ${errors.area ? 'border-red-300 bg-red-50' : 'border-slate-200'} text-base outline-none focus:ring-2 focus:ring-sky-200`}
+                className={`input-premium ${errors.area ? 'border-red-300 bg-red-50' : ''}`}
                 data-testid="area-input"
               />
               {errors.area && <p className="text-red-500 text-xs mt-1">{errors.area}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Pincode *</label>
+                <label className="block text-sm font-medium text-[#4a5a3f] mb-2">Pincode *</label>
                 <input
                   type="text"
                   value={formData.pincode}
                   onChange={(e) => handlePincodeChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="6-digit"
-                  className={`w-full h-12 px-4 rounded-xl border ${errors.pincode ? 'border-red-300 bg-red-50' : 'border-slate-200'} text-base outline-none focus:ring-2 focus:ring-sky-200`}
+                  className={`input-premium ${errors.pincode ? 'border-red-300 bg-red-50' : ''}`}
                   data-testid="pincode-input"
                 />
                 {errors.pincode && <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">State</label>
+                <label className="block text-sm font-medium text-[#4a5a3f] mb-2">State</label>
                 <input
                   type="text"
                   value={formData.state}
                   readOnly
                   placeholder="Auto-detect"
-                  className="w-full h-12 px-4 rounded-xl border border-slate-200 bg-slate-50 text-base"
+                  className="input-premium bg-[#f6f7f4]"
                   data-testid="state-input"
                 />
               </div>
             </div>
           </div>
 
-          {/* Payment Method */}
-          <div className="mt-8">
-            <h2 className="font-heading font-semibold text-slate-900 mb-4">Payment Method</h2>
+          {/* Payment Method - Premium */}
+          <div className="mt-10">
+            <p className="text-xs tracking-[0.15em] uppercase text-[#c9a962] mb-4">Payment Method</p>
             
             <div className="space-y-3">
-              <label 
-                className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'prepaid' ? 'border-sky-500 bg-sky-50' : 'border-slate-200'}`}
+              <div 
+                onClick={() => setPaymentMethod('prepaid')}
+                className={`selection-premium ${paymentMethod === 'prepaid' ? 'active' : ''}`}
                 data-testid="prepaid-option"
               >
-                <input
-                  type="radio"
-                  name="payment"
-                  checked={paymentMethod === 'prepaid'}
-                  onChange={() => setPaymentMethod('prepaid')}
-                  className="sr-only"
-                />
-                <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${paymentMethod === 'prepaid' ? 'border-sky-500' : 'border-slate-300'}`}>
-                  {paymentMethod === 'prepaid' && <div className="w-3 h-3 rounded-full bg-sky-500" />}
+                <div className="flex items-center gap-4">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'prepaid' ? 'border-[#5f7350]' : 'border-[#d4daca]'}`}>
+                    {paymentMethod === 'prepaid' && <div className="w-2.5 h-2.5 rounded-full bg-[#5f7350]" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-[#1a2e1a]">Pay Online — ₹{PREPAID_PRICE}</p>
+                    <p className="text-sm text-[#5f7350]">Save ₹{COD_PRICE - PREPAID_PRICE} + Fast Delivery</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-slate-900">Pay Online — ₹{PREPAID_PRICE}</p>
-                  <p className="text-emerald-600 text-sm">Save ₹{COD_PRICE - PREPAID_PRICE} + Fast Delivery</p>
-                </div>
-              </label>
+              </div>
 
-              <label 
-                className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-sky-500 bg-sky-50' : 'border-slate-200'}`}
+              <div 
+                onClick={() => setPaymentMethod('cod')}
+                className={`selection-premium ${paymentMethod === 'cod' ? 'active' : ''}`}
                 data-testid="cod-option"
               >
-                <input
-                  type="radio"
-                  name="payment"
-                  checked={paymentMethod === 'cod'}
-                  onChange={() => setPaymentMethod('cod')}
-                  className="sr-only"
-                />
-                <div className={`w-5 h-5 rounded-full border-2 mr-4 flex items-center justify-center ${paymentMethod === 'cod' ? 'border-sky-500' : 'border-slate-300'}`}>
-                  {paymentMethod === 'cod' && <div className="w-3 h-3 rounded-full bg-sky-500" />}
+                <div className="flex items-center gap-4">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'cod' ? 'border-[#5f7350]' : 'border-[#d4daca]'}`}>
+                    {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-[#5f7350]" />}
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-medium text-[#1a2e1a]">Cash on Delivery — ₹{COD_PRICE}</p>
+                    <p className="text-sm text-[#96a883]">Pay ₹{COD_ADVANCE} now + ₹{COD_PRICE - COD_ADVANCE} on delivery</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-slate-900">Cash on Delivery — ₹{COD_PRICE}</p>
-                  <p className="text-slate-500 text-sm">Pay ₹{COD_ADVANCE} now + ₹{COD_PRICE - COD_ADVANCE} on delivery</p>
-                </div>
-              </label>
+              </div>
             </div>
           </div>
 
@@ -412,7 +444,7 @@ function ProductPage() {
           <button
             onClick={handlePayment}
             disabled={loading}
-            className={`w-full mt-8 py-4 rounded-full font-semibold transition-all btn-active ${loading ? 'bg-slate-300 text-slate-500' : 'bg-sky-500 hover:bg-sky-600 text-white shadow-lg shadow-sky-500/25'}`}
+            className={`w-full mt-10 py-4 rounded-full font-medium transition-all ${loading ? 'bg-[#d4daca] text-[#96a883]' : 'btn-premium text-white'}`}
             data-testid="place-order-button"
           >
             {loading ? 'Processing...' : `Pay ₹${paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_ADVANCE} & Place Order`}
@@ -420,7 +452,7 @@ function ProductPage() {
 
           <button
             onClick={() => setStep('product')}
-            className="w-full mt-3 py-3 text-slate-500 text-sm"
+            className="w-full mt-4 py-3 text-[#96a883] text-sm"
             data-testid="back-button"
           >
             ← Back to Product
@@ -430,49 +462,51 @@ function ProductPage() {
     );
   }
 
-  // Order Confirmation
+  // Order Confirmation - Premium
   if (step === 'confirmation' && orderConfirmed) {
     return (
-      <div className="px-6 py-10">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check size={32} className="text-emerald-600" />
+      <div className="px-6 py-10 min-h-screen bg-[#fdfcfa]">
+        <div className="text-center mb-10">
+          <div className="w-20 h-20 bg-gradient-to-br from-[#e8ebe3] to-[#d4daca] rounded-full flex items-center justify-center mx-auto mb-5">
+            <Check size={36} className="text-[#5f7350]" />
           </div>
-          <h1 className="font-heading text-2xl font-bold text-slate-900 mb-2" data-testid="confirmation-title">Order Confirmed!</h1>
-          <p className="text-slate-500">Thank you for your purchase</p>
+          <h1 className="text-premium-heading text-2xl font-semibold mb-2" data-testid="confirmation-title">
+            Order Confirmed
+          </h1>
+          <p className="text-[#96a883]">Thank you for choosing Celesta Glow</p>
         </div>
 
-        <div className="bg-sky-500 text-white rounded-2xl p-6 text-center mb-6" data-testid="order-id-card">
-          <p className="text-sky-100 text-sm mb-1">Order ID</p>
-          <p className="text-2xl font-bold tracking-wider">{orderConfirmed.order_id}</p>
+        <div className="card-premium p-6 text-center mb-8" data-testid="order-id-card">
+          <p className="text-xs text-[#96a883] mb-2">Order ID</p>
+          <p className="text-2xl font-bold text-[#5f7350] tracking-wider">{orderConfirmed.order_id}</p>
         </div>
 
         <div className="space-y-4">
-          <div className="bg-slate-50 rounded-xl p-4">
-            <h3 className="font-medium text-slate-900 mb-3">Order Details</h3>
-            <div className="space-y-2 text-sm">
+          <div className="card-premium p-5">
+            <p className="text-xs text-[#c9a962] tracking-wider uppercase mb-4">Order Details</p>
+            <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-slate-500">Product</span>
-                <span className="text-slate-900">Celesta Glow Serum</span>
+                <span className="text-[#96a883]">Product</span>
+                <span className="text-[#1a2e1a] font-medium">Celesta Glow Serum</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Amount</span>
-                <span className="text-emerald-600 font-semibold">₹{orderConfirmed.amount}</span>
+                <span className="text-[#96a883]">Amount</span>
+                <span className="text-[#5f7350] font-semibold">₹{orderConfirmed.amount}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Payment</span>
-                <span className="text-slate-900">{orderConfirmed.payment_method}</span>
+                <span className="text-[#96a883]">Payment</span>
+                <span className="text-[#1a2e1a]">{orderConfirmed.payment_method}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Delivery</span>
-                <span className="text-slate-900">{orderConfirmed.delivery_timeline}</span>
+                <span className="text-[#96a883]">Delivery</span>
+                <span className="text-[#1a2e1a]">{orderConfirmed.delivery_timeline}</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-xl p-4">
-            <h3 className="font-medium text-slate-900 mb-3">Delivery Address</h3>
-            <p className="text-sm text-slate-600">
+          <div className="card-premium p-5">
+            <p className="text-xs text-[#c9a962] tracking-wider uppercase mb-4">Delivery Address</p>
+            <p className="text-sm text-[#4a5a3f] leading-relaxed">
               {orderConfirmed.name}<br />
               +91 {orderConfirmed.phone}<br />
               {orderConfirmed.house_number}, {orderConfirmed.area}<br />
@@ -483,7 +517,7 @@ function ProductPage() {
 
         <button
           onClick={() => navigate('/')}
-          className="w-full mt-8 bg-sky-500 hover:bg-sky-600 text-white font-semibold py-4 rounded-full btn-active"
+          className="btn-premium w-full mt-10 text-white font-medium py-4 rounded-full"
           data-testid="continue-shopping-button"
         >
           Continue Shopping
