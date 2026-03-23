@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { MapPin, Truck, Shield, ChevronRight, Leaf } from 'lucide-react';
+import { MapPin, Truck, Shield, ChevronRight, Check } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Premium lifestyle image
-const LIFESTYLE_IMAGE = 'https://static.prod-images.emergentagent.com/jobs/fc697aed-c4ed-4c4b-8eec-b51bdf774715/images/6a465034e43062f476193afe6aee476c21a704998eefa78c8353d03d44be2c37.png';
+// Actual Celesta Glow product image
+const PRODUCT_IMAGE = 'https://celestaglow.com/cdn/shop/files/IMG_0538.png?v=1771463966&width=1000';
 
 function LocationPage() {
   const { state, city } = useParams();
@@ -23,7 +23,7 @@ function LocationPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="w-8 h-8 border-2 border-[#5f7350] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -32,65 +32,60 @@ function LocationPage() {
   const locationTitle = location.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 
   return (
-    <div className="pb-28 bg-white">
+    <div className="pb-24">
       {/* Hero */}
-      <div className="relative h-64 overflow-hidden">
-        <img 
-          src={LIFESTYLE_IMAGE}
-          alt="Premium skincare"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1a2e1a]/80 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6">
-          <div className="flex items-center gap-2 text-[#c9a962] text-xs font-medium mb-2">
-            <MapPin size={14} />
-            <span data-testid="location-tag">{locationTitle}</span>
-          </div>
-          <h1 className="text-white text-2xl font-semibold" data-testid="location-title">
-            Premium Skincare in {locationTitle}
-          </h1>
+      <div className="px-5 py-10 bg-gray-50 text-center">
+        <div className="inline-flex items-center gap-2 text-green-500 text-sm font-medium mb-3">
+          <MapPin size={16} />
+          <span data-testid="location-tag">{locationTitle}</span>
         </div>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4" data-testid="location-title">
+          Celesta Glow in {locationTitle}
+        </h1>
+        <p className="text-gray-600 text-sm">
+          Get India's first 4-in-1 anti-aging serum delivered to your doorstep in {locationTitle}.
+        </p>
       </div>
 
-      {/* Content */}
-      <div className="px-6 py-10">
-        <p className="text-premium-body text-base mb-8">
-          Discover premium anti-aging solutions tailored for {locationTitle}'s unique climate. Celesta Glow is trusted by thousands of customers in your area for visibly younger, radiant skin.
-        </p>
+      {/* Product Preview */}
+      <div className="px-5 py-8 flex justify-center">
+        <img src={PRODUCT_IMAGE} alt="Celesta Glow" className="w-48 h-auto" />
+      </div>
 
-        {/* Benefits */}
-        <div className="space-y-3 mb-10">
+      {/* Benefits */}
+      <div className="px-5 py-8">
+        <h2 className="font-bold text-lg text-gray-900 mb-4">Why Choose Celesta Glow?</h2>
+        <div className="space-y-3">
           {[
-            { icon: Shield, text: 'Clinically tested for Indian skin types' },
+            { icon: Shield, text: 'Dermatologist tested for all skin types' },
             { icon: Truck, text: `Free delivery across ${locationTitle}` },
-            { icon: Leaf, text: 'Premium organic ingredients' },
+            { icon: Check, text: 'Cash on Delivery available' },
           ].map((item, i) => (
             <div 
               key={i} 
-              className="flex items-center gap-4 p-4 card-premium"
+              className="flex items-center gap-3 p-4 card-cg"
               data-testid={`location-benefit-${i}`}
             >
-              <div className="w-10 h-10 rounded-full bg-[#f6f7f4] flex items-center justify-center flex-shrink-0">
-                <item.icon size={18} className="text-[#5f7350]" />
+              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <item.icon size={18} className="text-green-500" />
               </div>
-              <span className="text-[#4a5a3f] text-sm font-medium">{item.text}</span>
+              <span className="text-gray-700 text-sm">{item.text}</span>
             </div>
           ))}
         </div>
       </div>
 
       {/* CTA */}
-      <div className="mx-6 p-8 bg-gradient-to-br from-[#5f7350] to-[#3d4935] rounded-3xl text-center">
-        <p className="text-[#c9a962] text-xs tracking-wider uppercase mb-3">Exclusive Offer</p>
-        <h3 className="text-white text-xl font-semibold mb-2">
-          Start Your Anti-Aging Journey
+      <div className="mx-5 p-6 bg-green-500 rounded-2xl text-center">
+        <h3 className="text-white text-lg font-bold mb-2">
+          Order Now in {locationTitle}
         </h3>
-        <p className="text-white/70 text-sm mb-6">
-          Special offer for {locationTitle} customers
+        <p className="text-green-100 text-sm mb-4">
+          Limited time offer - Save 73% today!
         </p>
         <Link 
           to="/product/anti-aging-serum"
-          className="inline-flex items-center gap-2 bg-white text-[#5f7350] font-semibold py-3 px-8 rounded-full transition-transform hover:scale-105"
+          className="inline-flex items-center gap-2 bg-white text-green-600 font-semibold py-3 px-6 rounded-full"
           data-testid="location-cta"
         >
           Order Now — ₹399 <ChevronRight size={18} />

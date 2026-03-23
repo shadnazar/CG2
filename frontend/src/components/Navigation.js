@@ -21,88 +21,90 @@ function Navigation() {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/product/anti-aging-serum', label: 'Shop' },
-    { path: '/blog', label: 'Journal' },
+    { path: '/blog', label: 'Beauty Tips' },
   ];
 
   return (
     <>
-      {/* Main Header - Premium */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-[#f3efe6]">
-        <div className="flex items-center justify-between px-5 h-16">
+      {/* Main Header - Celesta Glow Style */}
+      <header className="header-cg">
+        <div className="flex items-center justify-between">
           {/* Menu Button */}
           <button
             onClick={() => setIsMenuOpen(true)}
-            className="p-2 -ml-2 transition-opacity hover:opacity-70"
+            className="p-2 -ml-2"
             data-testid="menu-button"
             aria-label="Open menu"
           >
-            <Menu size={22} className="text-[#4a5a3f]" />
+            <Menu size={24} className="text-gray-900" />
           </button>
 
-          {/* Logo - Premium */}
+          {/* Logo - Celesta Glow Style */}
           <Link 
             to="/" 
-            className="font-heading font-semibold text-lg tracking-tight"
-            style={{ color: '#1a2e1a' }}
+            className="text-center"
             data-testid="logo-link"
           >
-            <span className="text-[#5f7350]">Celesta</span> Glow
+            <span className="font-heading text-xl font-bold tracking-wide text-gray-900">CELESTA</span>
+            <span className="block text-xs tracking-[0.3em] text-gray-500 -mt-1">GLOW</span>
           </Link>
 
           {/* Right Actions */}
           <div className="flex items-center gap-1">
             <button
               onClick={() => setIsSearchOpen(true)}
-              className="p-2 transition-opacity hover:opacity-70"
+              className="p-2"
               data-testid="search-button"
               aria-label="Search"
             >
-              <Search size={20} className="text-[#4a5a3f]" />
+              <Search size={22} className="text-gray-900" />
             </button>
             <Link
               to="/product/anti-aging-serum"
-              className="p-2 transition-opacity hover:opacity-70"
+              className="p-2"
               data-testid="cart-button"
               aria-label="Shop"
             >
-              <ShoppingBag size={20} className="text-[#4a5a3f]" />
+              <ShoppingBag size={22} className="text-gray-900" />
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu Overlay - Premium */}
+      {/* Mobile Menu Overlay */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 bg-black/30" onClick={() => setIsMenuOpen(false)}>
           <div 
-            className="absolute left-0 top-0 bottom-0 w-80 bg-[#fdfcfa] shadow-2xl"
+            className="absolute left-0 top-0 bottom-0 w-80 bg-white shadow-xl"
             onClick={e => e.stopPropagation()}
-            style={{ animation: 'slideIn 0.3s ease-out' }}
           >
-            <div className="flex items-center justify-between p-6 border-b border-[#f3efe6]">
-              <span className="font-heading font-semibold text-lg text-[#1a2e1a]">Menu</span>
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <div>
+                <span className="font-heading text-lg font-bold tracking-wide text-gray-900">CELESTA</span>
+                <span className="block text-[10px] tracking-[0.3em] text-gray-500 -mt-1">GLOW</span>
+              </div>
               <button
                 onClick={() => setIsMenuOpen(false)}
-                className="p-2 -mr-2 transition-opacity hover:opacity-70"
+                className="p-2 -mr-2"
                 data-testid="close-menu-button"
               >
-                <X size={22} className="text-[#4a5a3f]" />
+                <X size={24} className="text-gray-900" />
               </button>
             </div>
             
-            <nav className="p-6">
-              <ul className="space-y-2">
+            <nav className="p-5">
+              <ul className="space-y-1">
                 {navLinks.map(link => (
                   <li key={link.path}>
                     <Link
                       to={link.path}
                       onClick={() => setIsMenuOpen(false)}
-                      className={`block py-4 px-5 rounded-xl text-base font-medium transition-all ${
+                      className={`block py-4 px-4 rounded-xl text-base font-medium transition-all ${
                         location.pathname === link.path
-                          ? 'bg-[#e8ebe3] text-[#5f7350]'
-                          : 'text-[#4a5a3f] hover:bg-[#f6f7f4]'
+                          ? 'bg-green-50 text-green-600'
+                          : 'text-gray-700 hover:bg-gray-50'
                       }`}
-                      data-testid={`nav-link-${link.label.toLowerCase()}`}
+                      data-testid={`nav-link-${link.label.toLowerCase().replace(' ', '-')}`}
                     >
                       {link.label}
                     </Link>
@@ -110,27 +112,20 @@ function Navigation() {
                 ))}
               </ul>
             </nav>
-
-            {/* Menu Footer */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-[#f3efe6]">
-              <p className="text-xs text-[#96a883] text-center">
-                Luxury Skincare Since 2024
-              </p>
-            </div>
           </div>
         </div>
       )}
 
-      {/* Search Overlay - Premium */}
+      {/* Search Overlay */}
       {isSearchOpen && (
-        <div className="fixed inset-0 z-50 bg-[#fdfcfa]">
-          <div className="flex items-center gap-4 px-5 h-16 border-b border-[#f3efe6]">
+        <div className="fixed inset-0 z-50 bg-white">
+          <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
             <button
               onClick={() => setIsSearchOpen(false)}
-              className="p-2 -ml-2 transition-opacity hover:opacity-70"
+              className="p-2 -ml-2"
               data-testid="close-search-button"
             >
-              <X size={22} className="text-[#4a5a3f]" />
+              <X size={24} className="text-gray-900" />
             </button>
             <form onSubmit={handleSearch} className="flex-1">
               <input
@@ -138,23 +133,23 @@ function Navigation() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search skincare tips..."
-                className="w-full h-12 px-5 bg-[#f6f7f4] rounded-full text-base outline-none focus:ring-2 focus:ring-[#d4daca] text-[#1a2e1a] placeholder-[#96a883]"
+                className="w-full h-12 px-4 bg-gray-50 rounded-full text-base outline-none focus:ring-2 focus:ring-green-200"
                 autoFocus
                 data-testid="search-input"
               />
             </form>
           </div>
-          <div className="p-6">
-            <p className="text-xs text-[#96a883] uppercase tracking-wider mb-4">Popular Searches</p>
-            <div className="flex flex-wrap gap-3">
-              {['anti-aging', 'wrinkles', 'hydration', 'retinol'].map(term => (
+          <div className="p-5">
+            <p className="text-xs text-gray-500 uppercase tracking-wider mb-4">Popular Searches</p>
+            <div className="flex flex-wrap gap-2">
+              {['anti-aging', 'retinol', 'hydration', 'niacinamide'].map(term => (
                 <button
                   key={term}
                   onClick={() => {
                     navigate(`/search?q=${term}`);
                     setIsSearchOpen(false);
                   }}
-                  className="px-5 py-2.5 bg-white border border-[#e8ebe3] rounded-full text-sm text-[#4a5a3f] transition-all hover:bg-[#f6f7f4] hover:border-[#d4daca]"
+                  className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
                   data-testid={`search-suggestion-${term}`}
                 >
                   {term}
@@ -164,13 +159,6 @@ function Navigation() {
           </div>
         </div>
       )}
-
-      <style>{`
-        @keyframes slideIn {
-          from { transform: translateX(-100%); opacity: 0; }
-          to { transform: translateX(0); opacity: 1; }
-        }
-      `}</style>
     </>
   );
 }
