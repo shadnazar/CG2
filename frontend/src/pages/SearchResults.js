@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { Search, ChevronRight } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -12,37 +13,62 @@ function SearchResults() {
 
   useEffect(() => {
     if (query) {
+      setLoading(true);
       axios.get(`${API}/search?q=${encodeURIComponent(query)}`)
         .then(res => { setResults(res.data); setLoading(false); })
         .catch(() => setLoading(false));
     }
   }, [query]);
 
-  if (loading) return <div style={{ padding: '100px 20px', textAlign: 'center' }}>Searching...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-3 border-sky-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div style={{ background: '#F8F9FA', minHeight: '100vh', padding: '60px 20px' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '32px', fontWeight: '700', marginBottom: '12px', color: '#212529' }}>Search Results for "{query}"</h1>
-        <p style={{ color: '#6C757D', marginBottom: '40px' }}>{results.length} results found</p>
-        
-        {results.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <p style={{ fontSize: '18px', color: '#495057' }}>Generating content for your search...</p>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gap: '24px' }}>
-            {results.map(blog => (
-              <Link key={blog.id || blog.slug} to={`/blog/${blog.slug}`} style={{ textDecoration: 'none' }}>
-                <div style={{ background: 'white', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                  <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#212529', marginBottom: '12px' }}>{blog.title}</h3>
-                  <p style={{ color: '#6C757D', fontSize: '14px' }}>{blog.content.substring(0, 150)}...</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+    <div className="px-6 py-8 pb-24">
+      <div className="flex items-center gap-3 mb-6">
+        <Search size={20} className="text-slate-400" />
+        <div>
+          <h1 className="font-heading text-xl font-bold text-slate-900" data-testid="search-results-title">
+            "{query}"
+          </h1>
+          <p className="text-slate-500 text-sm">{results.length} result{results.length !== 1 ? 's' : ''} found</p>
+        </div>
       </div>
+      
+      {results.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-slate-500 mb-4">No articles found for your search.</p>
+          <Link to="/blog" className="text-sky-600 font-medium">Browse all articles →</Link>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {results.map((blog, i) => (
+            <Link 
+              key={blog.id || blog.slug} 
+              to={`/blog/${blog.slug}`}
+              className="block"
+              data-testid={`search-result-${i}`}
+            >
+              <article className="bg-white border border-slate-100 rounded-2xl p-5 transition-all hover:shadow-md">
+                <h2 className="font-heading font-semibold text-lg text-slate-900 mb-2">
+                  {blog.title}
+                </h2>
+                <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-3">
+                  {blog.content.substring(0, 150)}...
+                </p>
+                <div className="flex items-center gap-1 text-sky-600 text-sm font-medium">
+                  Read More <ChevronRight size={16} />
+                </div>
+              </article>
+            </Link>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

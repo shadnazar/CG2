@@ -7,21 +7,21 @@ import BlogList from './pages/BlogList';
 import BlogPost from './pages/BlogPost';
 import LocationPage from './pages/LocationPage';
 import SearchResults from './pages/SearchResults';
-import './theme.css';
-import './App.css';
 
 function App() {
   return (
     <Router>
-      <Navigation />
-      <Routes>
-        <Route path="/" element={<Homepage />} />
-        <Route path="/product/:slug" element={<ProductPage />} />
-        <Route path="/blog" element={<BlogList />} />
-        <Route path="/blog/:slug" element={<BlogPost />} />
-        <Route path="/search" element={<SearchResults />} />
-        <Route path="/:state/:city?" element={<LocationPage />} />
-      </Routes>
+      <div className="app-container">
+        <Navigation />
+        <Routes>
+          <Route path="/" element={<Homepage />} />
+          <Route path="/product/:slug" element={<ProductPage />} />
+          <Route path="/blog" element={<BlogList />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
+          <Route path="/search" element={<SearchResults />} />
+          <Route path="/:state/:city?" element={<LocationPage />} />
+        </Routes>
+      </div>
     </Router>
   );
 }

@@ -1,43 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { MapPin, Truck, Shield, ChevronRight } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function LocationPage() {
   const { state, city } = useParams();
   const [content, setContent] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${API}/location/${state}/${city || ''}`)
-      .then(res => setContent(res.data))
-      .catch(err => console.log(err));
+    const url = city ? `${API}/location/${state}/${city}` : `${API}/location/${state}`;
+    axios.get(url)
+      .then(res => { setContent(res.data); setLoading(false); })
+      .catch(() => setLoading(false));
   }, [state, city]);
 
-  const location = city || state;
-  const title = `Anti-Aging Serum in ${location} | Celesta Glow`;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-3 border-sky-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  const location = city ? `${city}, ${state}` : state;
+  const locationTitle = location.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 
   return (
-    <div style={{ background: 'white', minHeight: '100vh', padding: '60px 20px' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '40px', fontWeight: '700', marginBottom: '24px', color: '#212529' }}>{title}</h1>
-        <p style={{ fontSize: '18px', color: '#495057', lineHeight: '1.8', marginBottom: '40px' }}>Discover the best anti-aging solutions tailored for {location}'s climate. Our Celesta Glow Anti-Aging Serum is trusted by thousands across India.</p>
-        
-        <div style={{ background: '#F8F9FA', padding: '40px', borderRadius: '12px', marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '28px', fontWeight: '600', marginBottom: '20px', color: '#212529' }}>Why Choose Celesta Glow in {location}?</h2>
-          <ul style={{ fontSize: '16px', lineHeight: '1.8', color: '#495057' }}>
-            <li>Clinically tested for Indian skin types</li>
-            <li>Free delivery across {location}</li>
-            <li>COD available</li>
-            <li>Trusted by 10,000+ customers</li>
-          </ul>
+    <div className="pb-24">
+      {/* Hero */}
+      <div className="px-6 py-10 bg-gradient-to-b from-sky-50 to-white">
+        <div className="flex items-center gap-2 text-sky-600 text-sm font-medium mb-3">
+          <MapPin size={16} />
+          <span data-testid="location-tag">{locationTitle}</span>
         </div>
-        
-        <div style={{ textAlign: 'center', padding: '60px 20px', background: 'linear-gradient(135deg, #0066CC 0%, #004C99 100%)', borderRadius: '12px', color: 'white' }}>
-          <h3 style={{ fontSize: '32px', fontWeight: '600', marginBottom: '16px', color: 'white' }}>Start Your Anti-Aging Journey</h3>
-          <p style={{ fontSize: '18px', marginBottom: '32px', opacity: 0.9 }}>Special offer for {location} customers</p>
-          <button style={{ padding: '16px 48px', background: 'white', color: '#0066CC', border: 'none', borderRadius: '8px', fontSize: '18px', fontWeight: '600', cursor: 'pointer' }}>Order Now - ₹399</button>
+        <h1 className="font-heading text-2xl font-bold text-slate-900 mb-4" data-testid="location-title">
+          Anti-Aging Skincare in {locationTitle}
+        </h1>
+        <p className="text-slate-600 text-sm leading-relaxed">
+          Discover premium anti-aging solutions tailored for {locationTitle}'s climate. Celesta Glow is trusted by thousands of customers in your area.
+        </p>
+      </div>
+
+      {/* Benefits */}
+      <div className="px-6 py-8">
+        <h2 className="font-heading font-semibold text-lg text-slate-900 mb-4">
+          Why Choose Celesta Glow in {locationTitle}?
+        </h2>
+        <div className="space-y-3">
+          {[
+            { icon: Shield, text: 'Clinically tested for Indian skin types' },
+            { icon: Truck, text: `Free delivery across ${locationTitle}` },
+            { icon: MapPin, text: 'Cash on Delivery available' },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl" data-testid={`location-benefit-${i}`}>
+              <item.icon size={20} className="text-sky-500 flex-shrink-0" />
+              <span className="text-slate-700 text-sm">{item.text}</span>
+            </div>
+          ))}
         </div>
+      </div>
+
+      {/* CTA */}
+      <div className="mx-6 p-6 bg-sky-500 rounded-2xl text-center">
+        <h3 className="font-heading font-semibold text-white text-lg mb-2">
+          Start Your Anti-Aging Journey
+        </h3>
+        <p className="text-sky-100 text-sm mb-4">
+          Special offer for {locationTitle} customers
+        </p>
+        <Link 
+          to="/product/anti-aging-serum"
+          className="inline-flex items-center gap-2 bg-white text-sky-600 font-semibold py-3 px-6 rounded-full btn-active"
+          data-testid="location-cta"
+        >
+          Order Now — ₹399 <ChevronRight size={18} />
+        </Link>
       </div>
     </div>
   );

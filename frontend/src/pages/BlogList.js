@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Calendar, ArrowRight } from 'lucide-react';
+import { Clock, ChevronRight } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -15,34 +15,55 @@ function BlogList() {
       .catch(() => setLoading(false));
   }, []);
 
-  if (loading) return <div style={{ padding: '100px 20px', textAlign: 'center' }}>Loading...</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <div className="w-8 h-8 border-3 border-sky-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div style={{ background: '#F8F9FA', minHeight: '100vh', padding: '60px 20px' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '40px', fontWeight: '700', marginBottom: '16px', color: '#212529' }}>Skincare Blog</h1>
-        <p style={{ fontSize: '18px', color: '#495057', marginBottom: '48px' }}>Expert tips and guides for anti-aging skincare</p>
-        
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px' }}>
-          {blogs.map(blog => (
-            <Link key={blog.id || blog.slug} to={`/blog/${blog.slug}`} style={{ textDecoration: 'none' }}>
-              <div style={{ background: 'white', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.05)', transition: 'transform 0.2s' }}>
-                <div style={{ padding: '24px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', color: '#6C757D', fontSize: '14px' }}>
-                    <Calendar size={16} />
-                    <span>{new Date(blog.created_at).toLocaleDateString()}</span>
-                  </div>
-                  <h3 style={{ fontSize: '20px', fontWeight: '600', color: '#212529', marginBottom: '12px' }}>{blog.title}</h3>
-                  <p style={{ color: '#6C757D', fontSize: '14px', lineHeight: '1.6' }}>{blog.meta_description || blog.content.substring(0, 120)}...</p>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '16px', color: '#0066CC', fontWeight: '600', fontSize: '14px' }}>
-                    Read More <ArrowRight size={16} />
-                  </div>
+    <div className="px-6 py-8 pb-24">
+      <h1 className="font-heading text-2xl font-bold text-slate-900 mb-2" data-testid="blog-title">
+        Skincare Journal
+      </h1>
+      <p className="text-slate-500 text-sm mb-8">Expert tips for healthy, youthful skin</p>
+      
+      {blogs.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-slate-500">No articles yet. Check back soon!</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {blogs.map((blog, i) => (
+            <Link 
+              key={blog.id || blog.slug} 
+              to={`/blog/${blog.slug}`} 
+              className="block"
+              data-testid={`blog-card-${i}`}
+            >
+              <article className="bg-white border border-slate-100 rounded-2xl p-5 transition-all hover:shadow-md">
+                <div className="flex items-center gap-2 text-slate-400 text-xs mb-3">
+                  <Clock size={14} />
+                  <span>{new Date(blog.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  <span>•</span>
+                  <span>5 min read</span>
                 </div>
-              </div>
+                <h2 className="font-heading font-semibold text-lg text-slate-900 mb-2 leading-tight">
+                  {blog.title}
+                </h2>
+                <p className="text-slate-500 text-sm leading-relaxed line-clamp-2 mb-4">
+                  {blog.meta_description || blog.content.substring(0, 120)}...
+                </p>
+                <div className="flex items-center gap-1 text-sky-600 text-sm font-medium">
+                  Read Article <ChevronRight size={16} />
+                </div>
+              </article>
             </Link>
           ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }
