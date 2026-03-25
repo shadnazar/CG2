@@ -1,8 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift } from 'lucide-react';
 import RecentPurchaseNotification from '../components/RecentPurchaseNotification';
+import {
+  trackViewContent,
+  trackAddToCart,
+  trackInitiateCheckout,
+  trackAddPaymentInfo,
+  trackPurchase,
+  trackCTAClick,
+  trackFAQInteraction,
+  trackTimeOnPage
+} from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
@@ -31,6 +41,7 @@ function ProductPage() {
   const [viewingNow, setViewingNow] = useState(18);
   const [stockLeft, setStockLeft] = useState(7);
   const [sessionId, setSessionId] = useState('');
+  const pageStartTime = useRef(Date.now());
   
   // Discount state
   const [hasDiscount, setHasDiscount] = useState(false);
@@ -47,16 +58,8 @@ function ProductPage() {
     // Also track with old endpoint
     axios.post(`${API}/track?page=product&session_id=${newSessionId}`).catch(() => {});
     
-    // Meta Pixel tracking with detailed parameters
-    if (window.fbq) {
-      window.fbq('track', 'ViewContent', {
-        content_name: 'Celesta Glow Advanced Face Serum',
-        content_type: 'product',
-        content_ids: ['celesta-glow-serum'],
-        value: PREPAID_PRICE,
-        currency: 'INR'
-      });
-    }
+    // Meta Pixel - ViewContent (product page)
+    trackViewContent('Celesta Glow Advanced Face Serum', PREPAID_PRICE);
 
     // Check if user has claimed discount
     checkDiscountStatus();
@@ -78,7 +81,13 @@ function ProductPage() {
       setViewingNow(prev => Math.max(12, prev + Math.floor(Math.random() * 5) - 2));
     }, 4000);
 
-    return () => { clearInterval(timer); clearInterval(viewerInterval); };
+    // Track time on page when leaving
+    return () => { 
+      const timeOnPage = Math.round((Date.now() - pageStartTime.current) / 1000);
+      trackTimeOnPage('product', timeOnPage);
+      clearInterval(timer); 
+      clearInterval(viewerInterval); 
+    };
   }, []);
 
   // Check if user has a discount - Auto apply if claimed
@@ -161,11 +170,21 @@ function ProductPage() {
     const baseAmount = paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_ADVANCE;
     const amount = discountApplied ? Math.max(baseAmount - DISCOUNT_AMOUNT, 0) : baseAmount;
     
+    // Track InitiateCheckout
+    trackInitiateCheckout(
+      paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice(),
+      paymentMethod,
+      discountApplied
+    );
+    
     try {
       const loaded = await loadRazorpay();
       if (!loaded) { alert('Failed to load payment gateway.'); setLoading(false); return; }
 
       const orderResponse = await axios.post(`${API}/create-razorpay-order`, { amount: amount > 0 ? amount : 1 });
+      
+      // Track AddPaymentInfo
+      trackAddPaymentInfo(paymentMethod, amount);
       
       const options = {
         key: RAZORPAY_KEY,
@@ -193,9 +212,13 @@ function ProductPage() {
             setOrderConfirmed(order.data);
             setStep('confirmation');
             
-            if (window.fbq) {
-              window.fbq('track', 'Purchase', { value: finalPrice, currency: 'INR' });
-            }
+            // Track Purchase with granular data
+            trackPurchase(
+              order.data.order_id,
+              finalPrice,
+              paymentMethod,
+              discountApplied
+            );
           } catch (error) {
             alert('Order creation failed. Please contact support.');
           }
@@ -379,7 +402,11 @@ function ProductPage() {
 
           {/* Buy Button */}
           <button
-            onClick={() => setStep('checkout')}
+            onClick={() => {
+              trackAddToCart('Celesta Glow Advanced Face Serum', PREPAID_PRICE);
+              trackCTAClick('buy_now_main', 'product_page');
+              setStep('checkout');
+            }}
             className="btn-cg-primary w-full py-4"
             data-testid="buy-now-button"
           >
@@ -467,7 +494,11 @@ function ProductPage() {
               <p className="font-bold text-gray-900">₹{PREPAID_PRICE} <span className="text-sm text-gray-400 line-through">₹{MRP}</span></p>
             </div>
             <button
-              onClick={() => setStep('checkout')}
+              onClick={() => {
+                trackAddToCart('Celesta Glow Advanced Face Serum', PREPAID_PRICE);
+                trackCTAClick('buy_now_sticky', 'product_page_sticky');
+                setStep('checkout');
+              }}
               className="btn-cg-primary py-3 px-5"
               data-testid="sticky-buy-button"
             >

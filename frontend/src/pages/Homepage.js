@@ -1,8 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Check, Star, ChevronRight, ChevronDown, ChevronUp, Clock, Users, ShieldCheck, Truck, Flame, MapPin } from 'lucide-react';
 import DiscountPopup from '../components/DiscountPopup';
+import { 
+  trackViewContent, 
+  trackCTAClick, 
+  trackViewTestimonials, 
+  trackFAQInteraction,
+  trackExitIntent,
+  trackTimeOnPage,
+  trackPopupShown
+} from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -26,6 +35,8 @@ function Homepage() {
   const [showDiscountPopup, setShowDiscountPopup] = useState(false);
   const [userLocation, setUserLocation] = useState({ state: 'India', customerCount: 10000 });
   const [sessionId, setSessionId] = useState('');
+  const pageStartTime = useRef(Date.now());
+  const testimonialsTracked = useRef(false);
 
   useEffect(() => {
     // Generate unique session ID
@@ -38,21 +49,15 @@ function Homepage() {
     // Also track with old endpoint for backward compatibility
     axios.post(`${API}/track?page=homepage&session_id=${newSessionId}`).catch(() => {});
     
-    // Meta Pixel tracking
-    if (window.fbq) {
-      window.fbq('track', 'ViewContent', { 
-        content_name: 'Homepage',
-        content_category: 'Landing Page',
-        value: PREPAID_PRICE,
-        currency: 'INR'
-      });
-    }
+    // Meta Pixel tracking - ViewContent for homepage
+    trackViewContent('Celesta Glow Homepage', PREPAID_PRICE);
 
     // Show discount popup after 5 seconds if not already claimed
     const discountTimer = setTimeout(() => {
       if (!localStorage.getItem('discountClaimed') && !sessionStorage.getItem('discountPopupShown')) {
         setShowDiscountPopup(true);
         sessionStorage.setItem('discountPopupShown', 'true');
+        trackPopupShown('discount_popup');
       }
     }, 5000);
 
@@ -73,23 +78,41 @@ function Homepage() {
       setViewingNow(prev => Math.max(15, prev + Math.floor(Math.random() * 5) - 2));
     }, 5000);
 
-    // Exit intent detection
+    // Exit intent detection with pixel tracking
     const handleMouseLeave = (e) => {
       if (e.clientY < 10 && !sessionStorage.getItem('exitPopupShown')) {
         setShowExitPopup(true);
         sessionStorage.setItem('exitPopupShown', 'true');
+        trackExitIntent('homepage');
       }
     };
     document.addEventListener('mouseleave', handleMouseLeave);
 
+    // Track testimonials section view
+    const handleScroll = () => {
+      const testimonialsSection = document.querySelector('.testimonial-scroll-container');
+      if (testimonialsSection && !testimonialsTracked.current) {
+        const rect = testimonialsSection.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          trackViewTestimonials();
+          testimonialsTracked.current = true;
+        }
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+
     // Get user location for social proof
     detectUserLocation();
 
+    // Track time on page when leaving
     return () => {
+      const timeOnPage = Math.round((Date.now() - pageStartTime.current) / 1000);
+      trackTimeOnPage('homepage', timeOnPage);
       clearTimeout(discountTimer);
       clearInterval(timer);
       clearInterval(viewerInterval);
       document.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, []);
 
@@ -484,7 +507,12 @@ function Homepage() {
           {faqs.map((faq, i) => (
             <div key={i} className="faq-item" data-testid={`faq-${i}`}>
               <button
-                onClick={() => setExpandedFaq(expandedFaq === i ? null : i)}
+                onClick={() => {
+                  setExpandedFaq(expandedFaq === i ? null : i);
+                  if (expandedFaq !== i) {
+                    trackFAQInteraction(faq.q);
+                  }
+                }}
                 className="faq-header"
               >
                 <span className="text-sm">{faq.q}</span>

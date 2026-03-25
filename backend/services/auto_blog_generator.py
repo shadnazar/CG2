@@ -10,6 +10,7 @@ import asyncio
 from datetime import datetime, timezone
 from typing import List
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+from services.image_service import get_image_for_category, get_image_for_keywords
 
 # Indian locations for SEO targeting
 INDIAN_LOCATIONS = [
@@ -164,6 +165,9 @@ Remember: Write like a helpful friend sharing beauty secrets, not like a corpora
             "blogs": []
         }
         
+        # Track used images to avoid duplicates
+        used_images = []
+        
         try:
             # Get trending topics
             topics = await self.get_trending_topics()
@@ -188,6 +192,18 @@ Remember: Write like a helpful friend sharing beauty secrets, not like a corpora
                     if existing:
                         slug = f"{slug}-{uuid.uuid4().hex[:6]}"
                     
+                    # Get relevant image for this blog
+                    category = blog_data.get('category', topic.get('category', 'tips'))
+                    keywords = blog_data.get('keywords', topic.get('keywords', []))
+                    title = blog_data.get('title', topic['title'])
+                    
+                    # Try category-based image first, then keywords
+                    image_url = get_image_for_category(category, used_images)
+                    if not image_url:
+                        image_url = get_image_for_keywords(keywords, title)
+                    
+                    used_images.append(image_url)
+                    
                     # Save to database
                     now = datetime.now(timezone.utc).isoformat()
                     blog_doc = {
@@ -204,6 +220,7 @@ Remember: Write like a helpful friend sharing beauty secrets, not like a corpora
                         "view_count": 0,
                         "generated_by": "AI-Auto",
                         "target_location": topic.get('target_location', 'India'),
+                        "image_url": image_url,  # Add image URL
                         "created_at": now,
                         "updated_at": now,
                         "published_at": now
@@ -214,7 +231,8 @@ Remember: Write like a helpful friend sharing beauty secrets, not like a corpora
                     results["blogs"].append({
                         "title": blog_doc["title"],
                         "slug": blog_doc["slug"],
-                        "category": blog_doc["category"]
+                        "category": blog_doc["category"],
+                        "image_url": image_url
                     })
                     
                     # Small delay between generations to avoid rate limits

@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://celesta-seo-hub.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://beauty-hub-preview-2.preview.emergentagent.com')
 ADMIN_PASSWORD = "celestaglow2024"
 TEST_PHONE_WITH_DISCOUNT = "6238688650"
 

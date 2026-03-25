@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Clock, ChevronRight } from 'lucide-react';
+import { trackBlogView, trackCTAClick } from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -12,7 +13,12 @@ function BlogPost() {
 
   useEffect(() => {
     axios.get(`${API}/blogs/${slug}`)
-      .then(res => { setBlog(res.data); setLoading(false); })
+      .then(res => { 
+        setBlog(res.data); 
+        setLoading(false);
+        // Track blog view
+        trackBlogView(res.data.title, res.data.category);
+      })
       .catch(() => setLoading(false));
   }, [slug]);
 
@@ -49,13 +55,29 @@ function BlogPost() {
           <Clock size={14} />
           <span>{new Date(blog.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
           <span>•</span>
-          <span>5 min read</span>
+          <span>{blog.read_time || '5 min read'}</span>
         </div>
         
         <h1 className="text-2xl font-bold text-gray-900 leading-tight" data-testid="blog-post-title">
           {blog.title}
         </h1>
       </div>
+
+      {/* Hero Image */}
+      {blog.image_url && (
+        <div className="w-full h-56 sm:h-72 bg-gray-100 overflow-hidden">
+          <img 
+            src={blog.image_url} 
+            alt={blog.title}
+            className="w-full h-full object-cover"
+            data-testid="blog-hero-image"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.parentElement.style.display = 'none';
+            }}
+          />
+        </div>
+      )}
 
       {/* Product CTA */}
       <div className="mx-5 mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
@@ -94,8 +116,9 @@ function BlogPost() {
           to="/product/anti-aging-serum"
           className="btn-cg-primary inline-flex"
           data-testid="blog-cta"
+          onClick={() => trackCTAClick('shop_now_blog_post', 'blog_post_cta')}
         >
-          Shop Now — ₹399 <ChevronRight size={18} />
+          Shop Now — ₹599 <ChevronRight size={18} />
         </Link>
       </div>
     </div>

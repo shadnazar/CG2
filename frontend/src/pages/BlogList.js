@@ -5,6 +5,7 @@ import {
   Clock, Eye, ChevronRight, Search, TrendingUp, Sparkles,
   Star, Filter, ArrowRight, MapPin, Globe
 } from 'lucide-react';
+import { trackSearch, trackCTAClick } from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -144,7 +145,13 @@ function BlogList() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  // Track search when user types more than 2 characters
+                  if (e.target.value.length > 2) {
+                    trackSearch(e.target.value);
+                  }
+                }}
                 placeholder="Search beauty tips, trends, celebrity secrets..."
                 className="w-full pl-12 pr-4 py-4 rounded-2xl text-gray-900 placeholder-gray-500 focus:ring-4 focus:ring-green-300 outline-none"
                 data-testid="blog-search"
@@ -221,8 +228,23 @@ function BlogList() {
               data-testid="featured-blog"
             >
               <div className="lg:flex">
-                <div className="lg:w-1/2 h-64 lg:h-auto bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center">
-                  <Sparkles className="w-24 h-24 text-white/30" />
+                <div className="lg:w-1/2 h-64 lg:h-80 bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center relative overflow-hidden">
+                  {featuredBlog.image_url ? (
+                    <img 
+                      src={featuredBlog.image_url} 
+                      alt={featuredBlog.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.style.display = 'none';
+                        e.target.parentElement.querySelector('.fallback-icon')?.classList.remove('hidden');
+                      }}
+                    />
+                  ) : (
+                    <Sparkles className="w-24 h-24 text-white/30" />
+                  )}
+                  <Sparkles className="fallback-icon hidden w-24 h-24 text-white/30 absolute" />
                 </div>
                 <div className="lg:w-1/2 p-6 lg:p-8">
                   <div className="flex items-center gap-2 mb-3">
@@ -276,9 +298,24 @@ function BlogList() {
                   className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all group"
                   data-testid={`blog-card-${blog.slug}`}
                 >
-                  {/* Card Image Placeholder */}
-                  <div className="h-40 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative">
-                    <Sparkles className="w-12 h-12 text-gray-300" />
+                  {/* Card Image */}
+                  <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
+                    {blog.image_url ? (
+                      <img 
+                        src={blog.image_url} 
+                        alt={blog.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        loading="lazy"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.style.display = 'none';
+                          e.target.parentElement.querySelector('.fallback-icon')?.classList.remove('hidden');
+                        }}
+                      />
+                    ) : (
+                      <Sparkles className="w-12 h-12 text-gray-300" />
+                    )}
+                    <Sparkles className="fallback-icon hidden w-12 h-12 text-gray-300 absolute" />
                     <div className="absolute top-3 left-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getCategoryStyle(blog.category).bg} ${getCategoryStyle(blog.category).text}`}>
                         {getCategoryStyle(blog.category).label}
@@ -327,6 +364,7 @@ function BlogList() {
               to="/product/anti-aging-serum"
               className="inline-flex items-center gap-2 bg-white text-green-600 px-8 py-4 rounded-full font-bold hover:bg-green-50 transition-colors"
               data-testid="blog-cta"
+              onClick={() => trackCTAClick('shop_now_blog', 'blog_page_cta')}
             >
               Shop Now — ₹599 <ChevronRight size={20} />
             </Link>

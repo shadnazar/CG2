@@ -22,6 +22,7 @@ from routes import i18n as i18n_routes
 from services.enhanced_analytics import EnhancedAnalyticsTracker, VisitorLeadTracker
 from services.ai_content_generator import AIContentGenerator
 from services.auto_blog_generator import AutoBlogGenerator
+from services.image_service import get_image_for_category, get_image_for_keywords
 
 
 ROOT_DIR = Path(__file__).parent
@@ -691,6 +692,46 @@ async def get_blog_generation_history(x_admin_token: str = Header(None)):
     
     history = await auto_blog_generator.get_generation_history()
     return {"history": history}
+
+
+@api_router.post("/admin/blogs/backfill-images")
+async def backfill_blog_images(x_admin_token: str = Header(None)):
+    """Backfill images for blogs that don't have them"""
+    verify_admin_token(x_admin_token)
+    
+    # Find blogs without images
+    blogs_without_images = await db.blogs.find(
+        {"$or": [{"image_url": {"$exists": False}}, {"image_url": None}, {"image_url": ""}]},
+        {"_id": 0}
+    ).to_list(100)
+    
+    updated = 0
+    used_images = []
+    
+    for blog in blogs_without_images:
+        category = blog.get("category", "tips")
+        keywords = blog.get("keywords", [])
+        title = blog.get("title", "")
+        
+        # Get appropriate image
+        image_url = get_image_for_category(category, used_images)
+        if not image_url:
+            image_url = get_image_for_keywords(keywords, title)
+        
+        used_images.append(image_url)
+        
+        # Update blog with image
+        await db.blogs.update_one(
+            {"id": blog.get("id"), "slug": blog.get("slug")},
+            {"$set": {"image_url": image_url}}
+        )
+        updated += 1
+    
+    return {
+        "success": True,
+        "updated_count": updated,
+        "message": f"Added images to {updated} blogs"
+    }
 
 
 # ==================== DISCOUNT VALIDATION ENDPOINT ====================

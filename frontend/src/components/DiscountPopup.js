@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { X, Gift, Phone, Check, Loader2 } from 'lucide-react';
+import { trackLead, trackPopupDismissed } from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -10,6 +11,13 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [discountCode, setDiscountCode] = useState('');
+
+  const handleClose = () => {
+    if (!success) {
+      trackPopupDismissed('discount_popup');
+    }
+    onClose();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,6 +45,9 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
         // Store in localStorage so popup doesn't show again
         localStorage.setItem('discountClaimed', 'true');
         localStorage.setItem('discountCode', res.data.discount_code);
+        
+        // Track Lead event
+        trackLead('discount_claimed');
       } else if (res.data.already_claimed) {
         setError('This number has already claimed the discount');
       }
@@ -62,7 +73,7 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
             {/* Header */}
             <div className="bg-gradient-to-r from-green-500 to-emerald-600 p-6 text-white text-center relative">
               <button 
-                onClick={onClose}
+                onClick={handleClose}
                 className="absolute top-3 right-3 text-white/80 hover:text-white"
               >
                 <X size={20} />

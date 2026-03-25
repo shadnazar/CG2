@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
+import ScrollToTop from './components/ScrollToTop';
 import Homepage from './pages/Homepage';
 import ProductPage from './pages/ProductPage';
 import BlogList from './pages/BlogList';
@@ -31,6 +32,7 @@ function PublicLayout({ children }) {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <Routes>
         {/* Admin Routes (no navigation) */}
         <Route path="/admin" element={<AdminLogin />} />
