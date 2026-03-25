@@ -16,6 +16,7 @@ import AdminBlogEditor from './pages/admin/AdminBlogEditor';
 import AdminLocations from './pages/admin/AdminLocations';
 import AdminLocationEditor from './pages/admin/AdminLocationEditor';
 import AdminOrders from './pages/admin/AdminOrders';
+import AdminAIStudio from './pages/admin/AdminAIStudio';
 
 // Layout component for public pages with navigation
 function PublicLayout({ children }) {
@@ -41,6 +42,7 @@ function App() {
         <Route path="/admin/locations/new" element={<AdminLocationEditor />} />
         <Route path="/admin/locations/edit/:id" element={<AdminLocationEditor />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
+        <Route path="/admin/ai-studio" element={<AdminAIStudio />} />
         
         {/* Public Routes (with navigation) */}
         <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Check, Star, ChevronRight, ChevronDown, ChevronUp, Clock, Users, ShieldCheck, Truck, Flame, MapPin } from 'lucide-react';
+import DiscountPopup from '../components/DiscountPopup';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -9,8 +10,11 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PREPAID_PRICE = 599;
 const MRP = 1499;
 
-// New Celesta Glow product image
-const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_fc697aed-c4ed-4c4b-8eec-b51bdf774715/artifacts/8mw94eq5_IMG_9115.png';
+// Age Regression Score Image for Homepage - Using the product showcase image
+const HERO_IMAGE = 'https://celestaglow.com/cdn/shop/files/IMG_0538.png?v=1771463966&width=1000';
+
+// Bottle Product Image
+const PRODUCT_IMAGE = 'https://celestaglow.com/cdn/shop/files/IMG_0538.png?v=1771463966&width=1000';
 
 function Homepage() {
   const navigate = useNavigate();
@@ -19,15 +23,38 @@ function Homepage() {
   const [viewingNow, setViewingNow] = useState(23);
   const [soldToday, setSoldToday] = useState(47);
   const [showExitPopup, setShowExitPopup] = useState(false);
+  const [showDiscountPopup, setShowDiscountPopup] = useState(false);
   const [userLocation, setUserLocation] = useState({ state: 'India', customerCount: 10000 });
+  const [sessionId, setSessionId] = useState('');
 
   useEffect(() => {
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    axios.post(`${API}/track?page=homepage&session_id=${sessionId}`).catch(() => {});
+    // Generate unique session ID
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
     
+    // Track page visit with enhanced analytics
+    axios.post(`${API}/track-visit?page=homepage&session_id=${newSessionId}`).catch(() => {});
+    
+    // Also track with old endpoint for backward compatibility
+    axios.post(`${API}/track?page=homepage&session_id=${newSessionId}`).catch(() => {});
+    
+    // Meta Pixel tracking
     if (window.fbq) {
-      window.fbq('track', 'ViewContent', { content_name: 'Homepage' });
+      window.fbq('track', 'ViewContent', { 
+        content_name: 'Homepage',
+        content_category: 'Landing Page',
+        value: PREPAID_PRICE,
+        currency: 'INR'
+      });
     }
+
+    // Show discount popup after 5 seconds if not already claimed
+    const discountTimer = setTimeout(() => {
+      if (!localStorage.getItem('discountClaimed') && !sessionStorage.getItem('discountPopupShown')) {
+        setShowDiscountPopup(true);
+        sessionStorage.setItem('discountPopupShown', 'true');
+      }
+    }, 5000);
 
     // Countdown timer
     const timer = setInterval(() => {
@@ -59,6 +86,7 @@ function Homepage() {
     detectUserLocation();
 
     return () => {
+      clearTimeout(discountTimer);
       clearInterval(timer);
       clearInterval(viewerInterval);
       document.removeEventListener('mouseleave', handleMouseLeave);
@@ -209,13 +237,13 @@ function Homepage() {
         </div>
       </section>
 
-      {/* Product Image */}
+      {/* Product Image - Age Regression Score */}
       <section className="px-5 py-6">
         <div className="flex justify-center">
           <img 
-            src={PRODUCT_IMAGE}
-            alt="Celesta Glow Advanced Face Serum"
-            className="w-64 h-auto"
+            src={HERO_IMAGE}
+            alt="Celesta Glow - 95 Age Regression Score"
+            className="w-80 h-auto max-w-full"
             data-testid="hero-product-image"
           />
         </div>
@@ -481,6 +509,15 @@ function Homepage() {
         }
         .animate-bounce-in { animation: bounce-in 0.3s ease-out; }
       `}</style>
+
+      {/* ₹50 Discount Popup */}
+      {showDiscountPopup && (
+        <DiscountPopup 
+          sessionId={sessionId}
+          currentPage="homepage"
+          onClose={() => setShowDiscountPopup(false)}
+        />
+      )}
     </div>
   );
 }

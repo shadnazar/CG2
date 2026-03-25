@@ -11,8 +11,8 @@ const COD_PRICE = 699;
 const COD_ADVANCE = 99;
 const MRP = 1499;
 
-// New product image provided by user
-const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_fc697aed-c4ed-4c4b-8eec-b51bdf774715/artifacts/8mw94eq5_IMG_9115.png';
+// Bottle product image - larger size
+const PRODUCT_IMAGE = 'https://celestaglow.com/cdn/shop/files/IMG_0538.png?v=1771463966&width=1000';
 
 function ProductPage() {
   const navigate = useNavigate();
@@ -28,14 +28,25 @@ function ProductPage() {
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 47, seconds: 33 });
   const [viewingNow, setViewingNow] = useState(18);
   const [stockLeft, setStockLeft] = useState(7);
+  const [sessionId, setSessionId] = useState('');
 
   useEffect(() => {
-    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    axios.post(`${API}/track?page=product&session_id=${sessionId}`).catch(() => {});
+    // Generate unique session ID
+    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    setSessionId(newSessionId);
     
+    // Track page visit with enhanced analytics
+    axios.post(`${API}/track-visit?page=product&session_id=${newSessionId}`).catch(() => {});
+    
+    // Also track with old endpoint
+    axios.post(`${API}/track?page=product&session_id=${newSessionId}`).catch(() => {});
+    
+    // Meta Pixel tracking with detailed parameters
     if (window.fbq) {
       window.fbq('track', 'ViewContent', {
         content_name: 'Celesta Glow Advanced Face Serum',
+        content_type: 'product',
+        content_ids: ['celesta-glow-serum'],
         value: PREPAID_PRICE,
         currency: 'INR'
       });
@@ -166,12 +177,12 @@ function ProductPage() {
           </div>
         </div>
 
-        {/* Product Image - New Image */}
-        <div className="bg-gradient-to-b from-gray-50 to-white py-6 flex justify-center relative">
+        {/* Product Image - Bottle Image - Larger Size */}
+        <div className="bg-gradient-to-b from-gray-50 to-white py-8 flex justify-center relative">
           <img
             src={PRODUCT_IMAGE}
             alt="Celesta Glow Advanced Face Serum"
-            className="w-72 h-auto"
+            className="w-80 h-auto max-w-full"
             data-testid="product-image"
           />
           <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">

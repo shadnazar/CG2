@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Header
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -19,6 +19,8 @@ from pincode_data import get_state_from_pincode
 from analytics_tracker import AnalyticsTracker
 from routes import admin as admin_routes
 from routes import i18n as i18n_routes
+from services.enhanced_analytics import EnhancedAnalyticsTracker, VisitorLeadTracker
+from services.ai_content_generator import AIContentGenerator
 
 
 ROOT_DIR = Path(__file__).parent
@@ -28,6 +30,11 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 analytics_tracker = AnalyticsTracker(db)
+
+# Initialize enhanced analytics
+enhanced_analytics = EnhancedAnalyticsTracker(db)
+visitor_lead_tracker = VisitorLeadTracker(db)
+ai_content_generator = AIContentGenerator(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
@@ -488,6 +495,176 @@ async def get_location_city(state: str, city: str):
         }
     
     return location
+
+
+# ==================== ENHANCED ANALYTICS ENDPOINTS ====================
+
+class VisitorLeadCreate(BaseModel):
+    phone: str
+    session_id: str
+    page: str
+
+
+@api_router.post("/track-visit")
+async def track_page_visit(
+    page: str = Query(...),
+    session_id: str = Query(...),
+    user_agent: Optional[str] = Query(None),
+    referrer: Optional[str] = Query(None)
+):
+    """Track a page visit with enhanced analytics"""
+    return await enhanced_analytics.track_page_visit(page, session_id, user_agent, referrer)
+
+
+@api_router.get("/live-visitors")
+async def get_live_visitors(page: Optional[str] = None):
+    """Get live visitors count"""
+    if page:
+        count = enhanced_analytics.get_live_visitors_count(page)
+        return {"page": page, "live_visitors": count}
+    
+    by_page = enhanced_analytics.get_live_visitors_by_page()
+    total = enhanced_analytics.get_live_visitors_count()
+    return {"total_live_visitors": total, "by_page": by_page}
+
+
+@api_router.post("/claim-discount")
+async def claim_visitor_discount(lead: VisitorLeadCreate):
+    """Claim ₹50 discount by providing phone number"""
+    # Validate phone number
+    phone = lead.phone.strip()
+    if not re.match(r'^[6-9]\d{9}$', phone):
+        raise HTTPException(status_code=400, detail="Invalid phone number")
+    
+    result = await visitor_lead_tracker.save_visitor_lead(
+        phone=phone,
+        session_id=lead.session_id,
+        page=lead.page,
+        discount_code="WELCOME50"
+    )
+    return result
+
+
+# ==================== ADMIN ANALYTICS ENDPOINTS ====================
+
+def verify_admin_token(x_admin_token: str = Header(None)):
+    """Verify admin token"""
+    import hashlib
+    ADMIN_PASSWORD_HASH = hashlib.sha256("celestaglow2024".encode()).hexdigest()
+    if not x_admin_token:
+        raise HTTPException(status_code=401, detail="Admin token required")
+    if hashlib.sha256(x_admin_token.encode()).hexdigest() != ADMIN_PASSWORD_HASH:
+        raise HTTPException(status_code=403, detail="Invalid admin token")
+    return True
+
+
+@api_router.get("/admin/analytics/live")
+async def get_live_analytics(x_admin_token: str = Header(None)):
+    """Get real-time analytics for admin dashboard"""
+    verify_admin_token(x_admin_token)
+    
+    live_by_page = enhanced_analytics.get_live_visitors_by_page()
+    total_live = enhanced_analytics.get_live_visitors_count()
+    total_stats = await enhanced_analytics.get_total_stats()
+    
+    return {
+        "live_visitors": {
+            "total": total_live,
+            "by_page": live_by_page
+        },
+        "total_visits": total_stats.get("total_visits", 0),
+        "last_updated": datetime.now(timezone.utc).isoformat()
+    }
+
+
+@api_router.get("/admin/analytics/pages")
+async def get_page_analytics(
+    x_admin_token: str = Header(None),
+    days: int = Query(7, ge=1, le=90)
+):
+    """Get detailed page-wise analytics"""
+    verify_admin_token(x_admin_token)
+    
+    analytics = await enhanced_analytics.get_page_analytics(days=days)
+    hourly = await enhanced_analytics.get_hourly_distribution(days=days)
+    
+    return {
+        "page_analytics": analytics,
+        "hourly_distribution": hourly
+    }
+
+
+@api_router.get("/admin/analytics/leads")
+async def get_visitor_leads(x_admin_token: str = Header(None)):
+    """Get all visitor leads (phone numbers)"""
+    verify_admin_token(x_admin_token)
+    
+    leads = await visitor_lead_tracker.get_all_leads()
+    stats = await visitor_lead_tracker.get_leads_stats()
+    
+    return {
+        "leads": leads,
+        "stats": stats
+    }
+
+
+# ==================== AI CONTENT GENERATION ENDPOINTS ====================
+
+class BlogGenerateRequest(BaseModel):
+    topic: str
+    keywords: Optional[List[str]] = None
+    target_audience: Optional[str] = "Indian adults 28+"
+
+
+class LocationGenerateRequest(BaseModel):
+    state: str
+    city: Optional[str] = None
+
+
+@api_router.post("/admin/ai/generate-blog")
+async def generate_blog_with_ai(request: BlogGenerateRequest, x_admin_token: str = Header(None)):
+    """Generate a blog article using AI (costs credits)"""
+    verify_admin_token(x_admin_token)
+    
+    result = await ai_content_generator.generate_blog_article(
+        topic=request.topic,
+        keywords=request.keywords,
+        target_audience=request.target_audience
+    )
+    
+    if not result["success"]:
+        raise HTTPException(status_code=500, detail=result.get("error", "AI generation failed"))
+    
+    return result
+
+
+@api_router.post("/admin/ai/generate-location")
+async def generate_location_with_ai(request: LocationGenerateRequest, x_admin_token: str = Header(None)):
+    """Generate location page content using AI (costs credits)"""
+    verify_admin_token(x_admin_token)
+    
+    result = await ai_content_generator.generate_location_content(
+        state=request.state,
+        city=request.city
+    )
+    
+    if not result["success"]:
+        raise HTTPException(status_code=500, detail=result.get("error", "AI generation failed"))
+    
+    return result
+
+
+@api_router.get("/admin/ai/suggest-topics")
+async def suggest_blog_topics(x_admin_token: str = Header(None), count: int = Query(5, ge=1, le=10)):
+    """Get AI-suggested blog topics"""
+    verify_admin_token(x_admin_token)
+    
+    result = await ai_content_generator.suggest_blog_topics(count=count)
+    
+    if not result["success"]:
+        raise HTTPException(status_code=500, detail=result.get("error", "AI generation failed"))
+    
+    return result
 
 
 app.include_router(api_router)
