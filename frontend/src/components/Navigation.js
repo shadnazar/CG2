@@ -26,31 +26,31 @@ function Navigation() {
 
   return (
     <>
-      {/* Main Header - Celesta Glow Style */}
-      <header className="header-cg">
-        <div className="flex items-center justify-between">
+      {/* Main Header - Centered Logo */}
+      <header className="sticky top-0 z-40 bg-white border-b border-gray-100">
+        <div className="flex items-center justify-between px-4 h-14">
           {/* Menu Button */}
           <button
             onClick={() => setIsMenuOpen(true)}
-            className="p-2 -ml-2"
+            className="p-2 -ml-2 w-10"
             data-testid="menu-button"
             aria-label="Open menu"
           >
             <Menu size={24} className="text-gray-900" />
           </button>
 
-          {/* Logo - Celesta Glow Style */}
+          {/* Centered Logo */}
           <Link 
             to="/" 
-            className="text-center"
+            className="absolute left-1/2 transform -translate-x-1/2 text-center"
             data-testid="logo-link"
           >
-            <span className="font-heading text-xl font-bold tracking-wide text-gray-900">CELESTA</span>
-            <span className="block text-xs tracking-[0.3em] text-gray-500 -mt-1">GLOW</span>
+            <span className="font-heading text-xl font-bold tracking-[0.15em] text-gray-900">CELESTA</span>
+            <span className="block text-[10px] tracking-[0.4em] text-gray-500 -mt-0.5">G L O W</span>
           </Link>
 
           {/* Right Actions */}
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0">
             <button
               onClick={() => setIsSearchOpen(true)}
               className="p-2"
@@ -79,9 +79,9 @@ function Navigation() {
             onClick={e => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <div>
-                <span className="font-heading text-lg font-bold tracking-wide text-gray-900">CELESTA</span>
-                <span className="block text-[10px] tracking-[0.3em] text-gray-500 -mt-1">GLOW</span>
+              <div className="text-center">
+                <span className="font-heading text-lg font-bold tracking-[0.15em] text-gray-900">CELESTA</span>
+                <span className="block text-[9px] tracking-[0.4em] text-gray-500 -mt-0.5">G L O W</span>
               </div>
               <button
                 onClick={() => setIsMenuOpen(false)}
@@ -142,7 +142,7 @@ function Navigation() {
           <div className="p-5">
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-4">Popular Searches</p>
             <div className="flex flex-wrap gap-2">
-              {['anti-aging', 'retinol', 'hydration', 'niacinamide'].map(term => (
+              {['anti-aging', 'retinol', 'wrinkles', 'fine lines'].map(term => (
                 <button
                   key={term}
                   onClick={() => {

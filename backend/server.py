@@ -17,6 +17,8 @@ from email.mime.multipart import MIMEMultipart
 import razorpay
 from pincode_data import get_state_from_pincode
 from analytics_tracker import AnalyticsTracker
+from routes import admin as admin_routes
+from routes import i18n as i18n_routes
 
 
 ROOT_DIR = Path(__file__).parent
@@ -26,6 +28,9 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 analytics_tracker = AnalyticsTracker(db)
+
+# Initialize admin routes with database
+admin_routes.set_db(db)
 
 razorpay_client = razorpay.Client(auth=(os.environ['RAZORPAY_KEY_ID'], os.environ['RAZORPAY_KEY_SECRET']))
 
@@ -486,6 +491,8 @@ async def get_location_city(state: str, city: str):
 
 
 app.include_router(api_router)
+app.include_router(admin_routes.router, prefix="/api")
+app.include_router(i18n_routes.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,

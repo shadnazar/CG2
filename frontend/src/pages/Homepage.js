@@ -5,8 +5,8 @@ import { Check, Star, ChevronRight, ChevronDown, ChevronUp, Clock, Users, Shield
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Actual Celesta Glow product images
-const PRODUCT_IMAGE = 'https://celestaglow.com/cdn/shop/files/IMG_0538.png?v=1771463966&width=1000';
+// New Celesta Glow product image
+const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_fc697aed-c4ed-4c4b-8eec-b51bdf774715/artifacts/8mw94eq5_IMG_9115.png';
 
 function Homepage() {
   const navigate = useNavigate();
