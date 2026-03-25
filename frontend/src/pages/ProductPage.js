@@ -368,34 +368,83 @@ function ProductPage() {
             <p className="text-xs text-gray-500 mt-3 text-center">*Based on 8-week clinical trial with 200 participants</p>
           </div>
 
-          {/* Powerful Ingredients - NEW */}
-          <div className="mb-5">
-            <h3 className="font-bold text-gray-900 mb-3">Powerful Anti-Aging Ingredients</h3>
-            <div className="grid grid-cols-2 gap-3">
+          {/* Powerful Ingredients - ENHANCED VISUAL */}
+          <div className="mb-6">
+            <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <span className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+                <Sparkles size={16} className="text-white" />
+              </span>
+              Powerful Active Ingredients
+            </h3>
+            <div className="space-y-3">
               {[
-                { name: '0.3% Retinol', benefit: 'Reduces wrinkles', color: 'bg-purple-50 border-purple-200' },
-                { name: 'Hyaluronic Acid', benefit: '72hr hydration', color: 'bg-blue-50 border-blue-200' },
-                { name: 'Niacinamide', benefit: 'Brightens skin', color: 'bg-yellow-50 border-yellow-200' },
-                { name: 'Vitamin E', benefit: 'Protects & heals', color: 'bg-orange-50 border-orange-200' },
+                { 
+                  name: '0.3% Retinol', 
+                  benefit: 'Gold standard for wrinkle reduction', 
+                  detail: 'Clinically proven to boost collagen',
+                  gradient: 'from-purple-500 to-indigo-600',
+                  bgGradient: 'from-purple-50 to-indigo-50',
+                  icon: '✨'
+                },
+                { 
+                  name: 'Hyaluronic Acid', 
+                  benefit: '72-hour deep hydration', 
+                  detail: 'Holds 1000x its weight in water',
+                  gradient: 'from-blue-500 to-cyan-500',
+                  bgGradient: 'from-blue-50 to-cyan-50',
+                  icon: '💧'
+                },
+                { 
+                  name: '5% Niacinamide', 
+                  benefit: 'Brightens & evens skin tone', 
+                  detail: 'Minimizes pores & dark spots',
+                  gradient: 'from-amber-500 to-orange-500',
+                  bgGradient: 'from-amber-50 to-orange-50',
+                  icon: '☀️'
+                },
+                { 
+                  name: 'Vitamin E Complex', 
+                  benefit: 'Protects against damage', 
+                  detail: 'Powerful antioxidant shield',
+                  gradient: 'from-green-500 to-emerald-500',
+                  bgGradient: 'from-green-50 to-emerald-50',
+                  icon: '🛡️'
+                },
               ].map((item, i) => (
-                <div key={i} className={`p-3 rounded-xl border ${item.color}`}>
-                  <p className="font-semibold text-gray-900 text-sm">{item.name}</p>
-                  <p className="text-xs text-gray-600">{item.benefit}</p>
+                <div key={i} className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${item.bgGradient} border border-gray-100`}>
+                  <div className="p-4">
+                    <div className="flex items-start gap-3">
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white text-xl shadow-lg`}>
+                        {item.icon}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-900">{item.name}</p>
+                        <p className="text-sm text-gray-700 font-medium">{item.benefit}</p>
+                        <p className="text-xs text-gray-500 mt-1">{item.detail}</p>
+                      </div>
+                      <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center">
+                        <Check size={14} className="text-white" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Trust Badges */}
-          <div className="flex gap-3 py-4 border-y border-gray-100 mb-5">
+          {/* Trust Badges - ENHANCED */}
+          <div className="grid grid-cols-3 gap-2 py-5 border-y border-gray-100 mb-5">
             {[
-              { icon: Truck, label: 'Free Delivery' },
-              { icon: ShieldCheck, label: 'Genuine' },
-              { icon: Clock, label: '2-3 Days' },
+              { icon: Truck, label: 'Free Delivery', sublabel: 'All India' },
+              { icon: ShieldCheck, label: '100% Genuine', sublabel: 'Authentic' },
+              { icon: Clock, label: 'Fast Shipping', sublabel: '2-3 Days' },
             ].map((item, i) => (
-              <div key={i} className="flex items-center gap-1.5 text-gray-600">
-                <item.icon size={16} className="text-green-500" />
-                <span className="text-xs">{item.label}</span>
+              <div key={i} className="text-center">
+                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-1">
+                  <item.icon size={18} className="text-green-600" />
+                </div>
+                <p className="text-xs font-semibold text-gray-900">{item.label}</p>
+                <p className="text-[10px] text-gray-500">{item.sublabel}</p>
               </div>
             ))}
           </div>
@@ -437,52 +486,103 @@ function ProductPage() {
             </div>
           </div>
 
-          {/* Why Choose Us - NEW */}
-          <div className="mt-6 p-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl">
-            <h3 className="font-bold text-gray-900 mb-4 text-center">Why 10,000+ Choose Celesta Glow</h3>
+          {/* Why Choose Us - ENHANCED */}
+          <div className="mt-6 p-5 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl text-white">
+            <h3 className="font-bold mb-4 text-center flex items-center justify-center gap-2">
+              <Award className="text-green-400" size={20} />
+              Why 10,000+ Choose Celesta Glow
+            </h3>
             <div className="space-y-3">
               {[
-                { icon: TrendingUp, title: 'Visible Results', desc: 'See younger skin in just 2-4 weeks' },
-                { icon: Shield, title: 'Safe Formula', desc: 'Dermatologist tested, no harsh chemicals' },
-                { icon: Award, title: 'Award Winning', desc: "India's #1 rated anti-aging serum" },
+                { icon: TrendingUp, title: 'Visible Results', desc: 'See younger skin in just 2-4 weeks', stat: '94%' },
+                { icon: Shield, title: 'Safe Formula', desc: 'Dermatologist tested, no harsh chemicals', stat: '100%' },
+                { icon: Award, title: 'Award Winning', desc: "India's #1 rated anti-aging serum", stat: '#1' },
               ].map((item, i) => (
-                <div key={i} className="flex items-start gap-3 bg-white p-3 rounded-xl">
-                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                    <item.icon size={18} className="text-green-600" />
+                <div key={i} className="flex items-center gap-3 bg-white/10 backdrop-blur p-3 rounded-xl">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                    <item.icon size={20} className="text-white" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm">{item.title}</p>
-                    <p className="text-xs text-gray-600">{item.desc}</p>
+                  <div className="flex-1">
+                    <p className="font-semibold text-white text-sm">{item.title}</p>
+                    <p className="text-xs text-gray-300">{item.desc}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xl font-bold text-green-400">{item.stat}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Accordion Details */}
-          <div className="mt-6 space-y-2">
+          {/* Accordion Details - ENHANCED VISUAL */}
+          <div className="mt-6 space-y-3">
+            <h3 className="font-bold text-gray-900 mb-2">Product Details</h3>
             {[
-              { title: 'Key Ingredients', content: '0.3% Retinol for cell renewal, Niacinamide for brightening, Hyaluronic Acid for deep hydration, Vitamin E for protection against environmental damage.' },
-              { title: 'How to Use', content: 'Cleanse face, apply 2-3 drops to face and neck avoiding eye area, follow with moisturizer. Use sunscreen during daytime. For retinol beginners, start 2-3 times per week.' },
-              { title: 'Clinical Results', content: '94% saw improved hydration. 89% noticed reduced fine lines. 91% reported brighter, more youthful skin. Results from 8-week clinical study with 200 participants.' },
+              { 
+                title: '🧪 Key Ingredients', 
+                content: '0.3% Retinol for cell renewal, Niacinamide for brightening, Hyaluronic Acid for deep hydration, Vitamin E for protection against environmental damage.',
+                highlight: '4-in-1 Formula'
+              },
+              { 
+                title: '📝 How to Use', 
+                content: 'Cleanse face, apply 2-3 drops to face and neck avoiding eye area, follow with moisturizer. Use sunscreen during daytime. For retinol beginners, start 2-3 times per week.',
+                highlight: 'Night Use Only'
+              },
+              { 
+                title: '📊 Clinical Results', 
+                content: '94% saw improved hydration. 89% noticed reduced fine lines. 91% reported brighter, more youthful skin. Results from 8-week clinical study with 200 participants.',
+                highlight: '8-Week Study'
+              },
+              { 
+                title: '📦 What\'s Included', 
+                content: '30ml Premium Anti-Aging Serum in airless pump bottle, detailed usage guide, satisfaction guarantee card. Package includes protective box for safe delivery.',
+                highlight: '30ml Bottle'
+              },
             ].map((section, i) => (
-              <div key={i} className="faq-item">
+              <div key={i} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                 <button
-                  onClick={() => setExpandedSection(expandedSection === i ? null : i)}
-                  className="faq-header"
+                  onClick={() => {
+                    setExpandedSection(expandedSection === i ? null : i);
+                    trackFAQInteraction(section.title);
+                  }}
+                  className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
                   data-testid={`accordion-${i}`}
                 >
-                  <span className="text-sm">{section.title}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-semibold text-gray-900">{section.title}</span>
+                    <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">
+                      {section.highlight}
+                    </span>
+                  </div>
                   {expandedSection === i 
-                    ? <ChevronUp size={18} className="text-gray-400" /> 
+                    ? <ChevronUp size={18} className="text-green-500" /> 
                     : <ChevronDown size={18} className="text-gray-400" />
                   }
                 </button>
                 {expandedSection === i && (
-                  <div className="faq-content text-xs">{section.content}</div>
+                  <div className="px-4 pb-4 pt-0">
+                    <div className="p-3 bg-gray-50 rounded-xl">
+                      <p className="text-sm text-gray-600 leading-relaxed">{section.content}</p>
+                    </div>
+                  </div>
                 )}
               </div>
             ))}
+          </div>
+
+          {/* Final Trust Section */}
+          <div className="mt-6 text-center pb-6">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />
+              ))}
+            </div>
+            <p className="text-sm text-gray-600">Rated 4.8/5 by 2,340+ customers</p>
+            <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-500">
+              <span>✓ FDA Approved</span>
+              <span>✓ Cruelty Free</span>
+              <span>✓ Made in India</span>
+            </div>
           </div>
         </div>
 
