@@ -110,24 +110,31 @@ Category: {topic.get('category', 'tips')}
 Target Keywords: {keywords_str}
 Hook: {topic.get('hook', '')}
 
-Requirements:
-1. Write 800-1200 words of engaging content
-2. Use proper HTML formatting (h2, h3, p, ul, li, strong)
-3. Include practical, actionable advice
-4. Naturally mention how a good anti-aging serum (like one with Retinol, Niacinamide, Vitamin E, Hyaluronic Acid) can help
-5. Add a subtle CTA encouraging readers to try Celesta Glow serum
-6. Optimize for Indian readers and local SEO
-7. Make it current and timely
+IMPORTANT WRITING GUIDELINES:
+1. Write 800-1200 words in SIMPLE, conversational language
+2. Write like you're talking to a friend - warm, friendly, relatable
+3. Use short paragraphs (2-3 sentences max)
+4. Use bullet points and numbered lists for easy reading
+5. Include subheadings every 150-200 words
+6. Use proper HTML formatting (h2, h3, p, ul, li, strong)
+7. Avoid jargon - explain any technical terms simply
+8. Include practical, actionable advice anyone can follow
+9. Naturally mention how a good anti-aging serum can help
+10. Add a subtle CTA for Celesta Glow serum
+11. Make it feel like advice from a caring friend, not a textbook
 
 Return as JSON:
 {{
-    "title": "Final SEO-optimized title",
-    "meta_description": "150-160 character meta description",
-    "content": "Full HTML content here",
+    "title": "Final SEO-optimized title (catchy, under 60 chars)",
+    "meta_description": "150-160 character meta description that makes people want to read",
+    "content": "Full HTML content - organized, easy to scan, human-friendly",
     "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
     "category": "{topic.get('category', 'tips')}",
-    "read_time": "X min read"
-}}"""
+    "read_time": "X min read",
+    "image_prompt": "A detailed prompt to generate a relevant blog header image"
+}}
+
+Remember: Write like a helpful friend sharing beauty secrets, not like a corporate blog!"""
 
         try:
             chat = LlmChat(

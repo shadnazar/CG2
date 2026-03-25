@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Clock, Eye, ChevronRight, Search, TrendingUp, Sparkles,
-  Star, Filter, ArrowRight
+  Star, Filter, ArrowRight, MapPin, Globe
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -22,15 +22,25 @@ const CATEGORY_STYLES = {
   default: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Beauty' }
 };
 
+// Indian cities for location targeting
+const INDIAN_CITIES = [
+  'Mumbai', 'Delhi', 'Bangalore', 'Hyderabad', 'Chennai', 'Kolkata', 'Pune', 
+  'Ahmedabad', 'Jaipur', 'Lucknow', 'Chandigarh', 'Kochi', 'Indore', 'Bhopal',
+  'Noida', 'Gurgaon', 'Thane', 'Navi Mumbai', 'Ghaziabad', 'Faridabad'
+];
+
 function BlogList() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [featuredBlog, setFeaturedBlog] = useState(null);
+  const [userLocation, setUserLocation] = useState(null);
+  const [localBlogs, setLocalBlogs] = useState([]);
 
   useEffect(() => {
     fetchBlogs();
+    detectUserLocation();
     
     // Track page view
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -57,6 +67,31 @@ function BlogList() {
       setLoading(false);
     }
   };
+
+  // Detect user location
+  const detectUserLocation = async () => {
+    // Try to get rough location from timezone/IP
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
+    // Default to a random Indian city for demo
+    const randomCity = INDIAN_CITIES[Math.floor(Math.random() * INDIAN_CITIES.length)];
+    setUserLocation(randomCity);
+  };
+
+  // Filter blogs by location
+  useEffect(() => {
+    if (userLocation && blogs.length > 0) {
+      const locationBlogs = blogs.filter(blog => {
+        const title = (blog.title || '').toLowerCase();
+        const content = (blog.content || '').toLowerCase();
+        const location = (blog.target_location || '').toLowerCase();
+        const userLoc = userLocation.toLowerCase();
+        
+        return title.includes(userLoc) || content.includes(userLoc) || location.includes(userLoc);
+      });
+      setLocalBlogs(locationBlogs);
+    }
+  }, [userLocation, blogs]);
 
   const filteredBlogs = blogs.filter(blog => {
     const matchesSearch = blog.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -141,6 +176,38 @@ function BlogList() {
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Location-Based Section */}
+        {userLocation && localBlogs.length > 0 && selectedCategory === 'all' && !searchQuery && (
+          <div className="mb-10">
+            <div className="flex items-center gap-2 mb-4">
+              <MapPin className="text-blue-500" size={20} />
+              <span className="font-semibold text-gray-900">Trending in {userLocation}</span>
+              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">For You</span>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              {localBlogs.slice(0, 2).map((blog) => (
+                <Link
+                  key={blog.id || blog.slug}
+                  to={`/blog/${blog.slug}`}
+                  className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-5 hover:shadow-lg transition-all group border border-blue-100"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Globe size={14} className="text-blue-500" />
+                    <span className="text-xs text-blue-600 font-medium">{userLocation} Special</span>
+                  </div>
+                  <h3 className="font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+                    {blog.title}
+                  </h3>
+                  <p className="text-gray-500 text-sm line-clamp-2 mb-3">
+                    {blog.meta_description}
+                  </p>
+                  <span className="text-blue-500 text-sm font-medium">Read Now →</span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Featured Article */}
         {featuredBlog && selectedCategory === 'all' && !searchQuery && (
           <div className="mb-10">

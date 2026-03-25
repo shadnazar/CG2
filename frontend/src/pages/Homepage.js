@@ -302,33 +302,61 @@ function Homepage() {
         </button>
       </section>
 
-      {/* Testimonials - Scrollable */}
-      <section className="py-8">
+      {/* Testimonials - Auto-scrolling Carousel */}
+      <section className="py-8 overflow-hidden">
         <div className="px-5 mb-4">
           <h2 className="text-2xl font-bold text-gray-900">What Our Customers Say</h2>
           <p className="text-gray-500 text-sm">2,340+ verified reviews</p>
         </div>
         
-        <div className="flex gap-4 overflow-x-auto hide-scrollbar px-5 pb-4">
-          {testimonials.map((t, i) => (
-            <div key={i} className="testimonial-card min-w-[280px] flex-shrink-0" data-testid={`testimonial-${i}`}>
-              <div className="flex gap-1 mb-3">
-                {[...Array(5)].map((_, j) => (
-                  <Star key={j} size={16} className="star-gold" />
-                ))}
-              </div>
-              <p className="text-gray-700 text-sm mb-4 leading-relaxed">"{t.text}"</p>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                  <span className="text-green-600 font-semibold">{t.name[0]}</span>
+        {/* Auto-scrolling container */}
+        <div className="testimonial-scroll-container">
+          <div className="testimonial-scroll-track">
+            {/* First set of testimonials */}
+            {testimonials.map((t, i) => (
+              <div key={`a-${i}`} className="testimonial-card min-w-[280px] flex-shrink-0 mx-2" data-testid={`testimonial-${i}`}>
+                <div className="flex gap-1 mb-3">
+                  {[...Array(5)].map((_, j) => (
+                    <Star key={j} size={16} className="star-gold" />
+                  ))}
                 </div>
-                <div>
-                  <p className="font-semibold text-gray-900">{t.name}</p>
-                  <p className="text-gray-500 text-xs">{t.location}</p>
+                <p className="text-gray-700 text-sm mb-4 leading-relaxed">"{t.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <span className="text-green-600 font-semibold">{t.name[0]}</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">{t.name}</p>
+                    <p className="text-gray-500 text-xs flex items-center gap-1">
+                      <Check size={12} className="text-green-500" /> Verified Buyer • {t.location}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ))}
+            {/* Duplicate for seamless loop */}
+            {testimonials.map((t, i) => (
+              <div key={`b-${i}`} className="testimonial-card min-w-[280px] flex-shrink-0 mx-2">
+                <div className="flex gap-1 mb-3">
+                  {[...Array(5)].map((_, j) => (
+                    <Star key={j} size={16} className="star-gold" />
+                  ))}
+                </div>
+                <p className="text-gray-700 text-sm mb-4 leading-relaxed">"{t.text}"</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                    <span className="text-green-600 font-semibold">{t.name[0]}</span>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900">{t.name}</p>
+                    <p className="text-gray-500 text-xs flex items-center gap-1">
+                      <Check size={12} className="text-green-500" /> Verified Buyer • {t.location}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -508,6 +536,24 @@ function Homepage() {
           100% { transform: scale(1); opacity: 1; }
         }
         .animate-bounce-in { animation: bounce-in 0.3s ease-out; }
+        
+        /* Auto-scrolling testimonials */
+        .testimonial-scroll-container {
+          overflow: hidden;
+          width: 100%;
+        }
+        .testimonial-scroll-track {
+          display: flex;
+          animation: scroll-testimonials 30s linear infinite;
+          width: max-content;
+        }
+        .testimonial-scroll-track:hover {
+          animation-play-state: paused;
+        }
+        @keyframes scroll-testimonials {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
       `}</style>
 
       {/* ₹50 Discount Popup */}

@@ -81,30 +81,31 @@ function ProductPage() {
     return () => { clearInterval(timer); clearInterval(viewerInterval); };
   }, []);
 
-  // Check if user has a discount
+  // Check if user has a discount - Auto apply if claimed
   const checkDiscountStatus = async () => {
-    // Check localStorage for claimed discount
+    // Check localStorage for claimed discount - AUTO APPLY
     if (localStorage.getItem('discountClaimed')) {
       setHasDiscount(true);
+      setDiscountApplied(true); // Auto-apply discount!
     }
   };
 
-  // Calculate prices with discount
+  // Calculate prices with discount - ALWAYS apply if has discount
   const getFinalPrepaidPrice = () => {
-    if (hasDiscount && discountApplied) {
+    if (hasDiscount) {
       return PREPAID_PRICE - DISCOUNT_AMOUNT;
     }
     return PREPAID_PRICE;
   };
 
   const getFinalCodPrice = () => {
-    if (hasDiscount && discountApplied) {
+    if (hasDiscount) {
       return COD_PRICE - DISCOUNT_AMOUNT;
     }
     return COD_PRICE;
   };
 
-  // Auto-apply discount when phone matches
+  // Check for discount when phone entered (for users who didn't use popup)
   const checkPhoneDiscount = async (phone) => {
     if (phone.length === 10) {
       try {
@@ -518,16 +519,49 @@ function ProductPage() {
             </div>
           </div>
 
-          {/* Discount Applied Banner */}
-          {discountApplied && (
-            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
-              <Gift className="w-5 h-5 text-green-600" />
-              <div>
-                <p className="text-green-700 font-semibold text-sm">₹{DISCOUNT_AMOUNT} Discount Applied!</p>
-                <p className="text-green-600 text-xs">Your exclusive welcome discount</p>
+          {/* Discount Applied Banner - More Prominent */}
+          {hasDiscount && (
+            <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center">
+                  <Gift className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-green-800 font-bold text-base">🎉 ₹{DISCOUNT_AMOUNT} Discount Applied!</p>
+                  <p className="text-green-600 text-sm">Your exclusive welcome offer is active</p>
+                </div>
               </div>
             </div>
           )}
+
+          {/* Savings Summary Box */}
+          <div className="mb-5 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
+            <p className="font-bold text-gray-900 mb-2">💰 Your Savings Today</p>
+            <div className="space-y-1 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">MRP</span>
+                <span className="text-gray-400 line-through">₹{MRP}</span>
+              </div>
+              <div className="flex justify-between text-green-600">
+                <span>Festive Discount (60%)</span>
+                <span>-₹{MRP - PREPAID_PRICE}</span>
+              </div>
+              {hasDiscount && (
+                <div className="flex justify-between text-green-600">
+                  <span>Welcome Offer</span>
+                  <span>-₹{DISCOUNT_AMOUNT}</span>
+                </div>
+              )}
+              <div className="flex justify-between text-green-600">
+                <span>Free Delivery</span>
+                <span>FREE</span>
+              </div>
+              <div className="border-t border-yellow-300 pt-2 mt-2 flex justify-between font-bold">
+                <span className="text-gray-900">Total Savings</span>
+                <span className="text-green-600">₹{MRP - getFinalPrepaidPrice()} ({Math.round((1 - getFinalPrepaidPrice()/MRP) * 100)}% OFF)</span>
+              </div>
+            </div>
+          </div>
 
           <div className="space-y-4">
             {/* Name */}
