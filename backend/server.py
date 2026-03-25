@@ -21,6 +21,7 @@ from routes import admin as admin_routes
 from routes import i18n as i18n_routes
 from services.enhanced_analytics import EnhancedAnalyticsTracker, VisitorLeadTracker
 from services.ai_content_generator import AIContentGenerator
+from services.auto_blog_generator import AutoBlogGenerator
 
 
 ROOT_DIR = Path(__file__).parent
@@ -35,6 +36,7 @@ analytics_tracker = AnalyticsTracker(db)
 enhanced_analytics = EnhancedAnalyticsTracker(db)
 visitor_lead_tracker = VisitorLeadTracker(db)
 ai_content_generator = AIContentGenerator(db)
+auto_blog_generator = AutoBlogGenerator(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
@@ -665,6 +667,101 @@ async def suggest_blog_topics(x_admin_token: str = Header(None), count: int = Qu
         raise HTTPException(status_code=500, detail=result.get("error", "AI generation failed"))
     
     return result
+
+
+# ==================== AUTO BLOG GENERATION ENDPOINTS ====================
+
+class AutoGenerateBlogsRequest(BaseModel):
+    count: int = 12
+
+
+@api_router.post("/admin/ai/auto-generate-blogs")
+async def auto_generate_blogs(request: AutoGenerateBlogsRequest, x_admin_token: str = Header(None)):
+    """Auto-generate multiple SEO blogs (12 by default)"""
+    verify_admin_token(x_admin_token)
+    
+    result = await auto_blog_generator.generate_and_save_blogs(count=request.count)
+    return result
+
+
+@api_router.get("/admin/ai/generation-history")
+async def get_blog_generation_history(x_admin_token: str = Header(None)):
+    """Get blog generation history"""
+    verify_admin_token(x_admin_token)
+    
+    history = await auto_blog_generator.get_generation_history()
+    return {"history": history}
+
+
+# ==================== DISCOUNT VALIDATION ENDPOINT ====================
+
+@api_router.get("/validate-discount")
+async def validate_discount_code(phone: str = Query(...)):
+    """Validate if a phone number has a valid discount"""
+    # Check if phone has claimed discount
+    lead = await db.visitor_leads.find_one({"phone": phone}, {"_id": 0})
+    
+    if lead and not lead.get("converted"):
+        return {
+            "valid": True,
+            "discount_code": lead.get("discount_code", "WELCOME50"),
+            "discount_amount": lead.get("discount_amount", 50),
+            "message": "Discount applied!"
+        }
+    elif lead and lead.get("converted"):
+        return {
+            "valid": False,
+            "message": "Discount already used"
+        }
+    else:
+        return {
+            "valid": False,
+            "message": "No discount found for this number"
+        }
+
+
+# ==================== RECENT PURCHASES FOR SOCIAL PROOF ====================
+
+@api_router.get("/recent-purchases")
+async def get_recent_purchases():
+    """Get recent purchases for social proof notifications"""
+    # Get recent orders (last 24 hours, anonymized)
+    from datetime import timedelta
+    cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    
+    orders = await db.orders.find(
+        {"created_at": {"$gte": cutoff}},
+        {"_id": 0, "name": 1, "state": 1, "created_at": 1}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    # Anonymize names (first name + initial)
+    purchases = []
+    for order in orders:
+        name = order.get("name", "Someone")
+        name_parts = name.split()
+        if len(name_parts) > 1:
+            display_name = f"{name_parts[0]} {name_parts[1][0]}."
+        else:
+            display_name = name_parts[0] if name_parts else "Someone"
+        
+        purchases.append({
+            "name": display_name,
+            "location": order.get("state", "India"),
+            "time_ago": order.get("created_at")
+        })
+    
+    # If no recent orders, return sample data
+    if not purchases:
+        sample_names = [
+            {"name": "Priya S.", "location": "Mumbai"},
+            {"name": "Anita R.", "location": "Delhi"},
+            {"name": "Kavya P.", "location": "Bangalore"},
+            {"name": "Neha K.", "location": "Chennai"},
+            {"name": "Divya M.", "location": "Hyderabad"}
+        ]
+        purchases = sample_names[:3]
+    
+    return {"purchases": purchases}
 
 
 app.include_router(api_router)

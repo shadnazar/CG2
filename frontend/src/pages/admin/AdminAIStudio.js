@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   ChevronLeft, Sparkles, FileText, MapPin, Lightbulb, 
-  Loader2, Check, AlertCircle, Copy, Save
+  Loader2, Check, AlertCircle, Copy, Save, Zap, Clock, History
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -12,10 +12,11 @@ function AdminAIStudio() {
   const navigate = useNavigate();
   const adminToken = localStorage.getItem('adminToken');
   
-  const [activeMode, setActiveMode] = useState('blog');
+  const [activeMode, setActiveMode] = useState('auto');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [generationHistory, setGenerationHistory] = useState([]);
   
   // Blog generation
   const [blogTopic, setBlogTopic] = useState('');
@@ -28,6 +29,50 @@ function AdminAIStudio() {
   
   // Topic suggestions
   const [suggestedTopics, setSuggestedTopics] = useState([]);
+  
+  // Auto generation
+  const [autoGenerating, setAutoGenerating] = useState(false);
+  const [autoResult, setAutoResult] = useState(null);
+  const [blogCount, setBlogCount] = useState(12);
+
+  useEffect(() => {
+    if (!adminToken) {
+      navigate('/admin');
+      return;
+    }
+    fetchGenerationHistory();
+  }, [adminToken, navigate]);
+
+  const fetchGenerationHistory = async () => {
+    try {
+      const res = await axios.get(`${API}/admin/ai/generation-history`, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      setGenerationHistory(res.data.history || []);
+    } catch (err) {
+      console.error('Failed to fetch history');
+    }
+  };
+
+  const handleAutoGenerateBlogs = async () => {
+    setAutoGenerating(true);
+    setError('');
+    setAutoResult(null);
+    
+    try {
+      const res = await axios.post(`${API}/admin/ai/auto-generate-blogs`, 
+        { count: blogCount },
+        { headers: { 'X-Admin-Token': adminToken } }
+      );
+      
+      setAutoResult(res.data);
+      fetchGenerationHistory();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate blogs');
+    } finally {
+      setAutoGenerating(false);
+    }
+  };
 
   const handleGenerateBlog = async () => {
     if (!blogTopic.trim()) {
@@ -187,7 +232,17 @@ function AdminAIStudio() {
         </div>
 
         {/* Mode Tabs */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-6 flex-wrap">
+          <button
+            onClick={() => { setActiveMode('auto'); setResult(null); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
+              activeMode === 'auto' 
+                ? 'bg-green-500 text-white' 
+                : 'bg-white text-gray-600 border border-gray-200'
+            }`}
+          >
+            <Zap size={18} /> Auto Generate (12 Blogs)
+          </button>
           <button
             onClick={() => { setActiveMode('blog'); setResult(null); }}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
@@ -196,7 +251,7 @@ function AdminAIStudio() {
                 : 'bg-white text-gray-600 border border-gray-200'
             }`}
           >
-            <FileText size={18} /> Generate Blog
+            <FileText size={18} /> Single Blog
           </button>
           <button
             onClick={() => { setActiveMode('location'); setResult(null); }}
@@ -206,7 +261,7 @@ function AdminAIStudio() {
                 : 'bg-white text-gray-600 border border-gray-200'
             }`}
           >
-            <MapPin size={18} /> Generate Location
+            <MapPin size={18} /> Location Page
           </button>
           <button
             onClick={() => { setActiveMode('topics'); handleSuggestTopics(); }}
@@ -225,6 +280,147 @@ function AdminAIStudio() {
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-600 flex items-center gap-2">
             <AlertCircle size={18} />
             {error}
+          </div>
+        )}
+
+        {/* Auto Generate Section */}
+        {activeMode === 'auto' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-6 text-white">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Zap className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Auto Blog Generator</h2>
+                  <p className="text-green-100 text-sm">Generate 12 SEO-optimized beauty blogs instantly</p>
+                </div>
+              </div>
+              
+              <div className="bg-white/10 rounded-xl p-4 mb-4">
+                <p className="text-sm text-green-100 mb-3">What you'll get:</p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <Check size={16} /> 12 unique, trending beauty topics
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} /> SEO-optimized titles & meta descriptions
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} /> Location-targeted content for Indian audience
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} /> Auto-published to your blog
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} /> Conversion-optimized with product mentions
+                  </li>
+                </ul>
+              </div>
+              
+              <div className="flex items-center gap-4 mb-4">
+                <label className="text-sm">Number of blogs:</label>
+                <select
+                  value={blogCount}
+                  onChange={(e) => setBlogCount(parseInt(e.target.value))}
+                  className="bg-white/20 border-0 rounded-lg px-3 py-2 text-white"
+                >
+                  <option value="6">6 blogs</option>
+                  <option value="12">12 blogs</option>
+                </select>
+              </div>
+              
+              <button
+                onClick={handleAutoGenerateBlogs}
+                disabled={autoGenerating}
+                className="w-full py-4 bg-white text-green-600 font-bold rounded-xl hover:bg-green-50 disabled:opacity-50 flex items-center justify-center gap-2"
+                data-testid="auto-generate-btn"
+              >
+                {autoGenerating ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Generating {blogCount} blogs... (This may take a few minutes)
+                  </>
+                ) : (
+                  <>
+                    <Zap size={20} />
+                    Generate {blogCount} Blogs Now
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Auto Generation Result */}
+            {autoResult && (
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
+                <div className="flex items-center gap-2 mb-4">
+                  <Check className="text-green-500" size={24} />
+                  <h3 className="font-semibold text-gray-900">
+                    Generated {autoResult.generated} blogs successfully!
+                  </h3>
+                </div>
+                
+                {autoResult.failed > 0 && (
+                  <p className="text-amber-600 text-sm mb-4">{autoResult.failed} blogs failed to generate</p>
+                )}
+                
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {autoResult.blogs?.map((blog, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{blog.title}</p>
+                        <span className="text-xs text-gray-500">{blog.category}</span>
+                      </div>
+                      <Link 
+                        to={`/blog/${blog.slug}`}
+                        target="_blank"
+                        className="text-green-500 text-sm hover:underline"
+                      >
+                        View →
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+                
+                <Link
+                  to="/admin/blogs"
+                  className="block w-full mt-4 py-3 bg-gray-900 text-white text-center rounded-xl font-medium hover:bg-gray-800"
+                >
+                  View All Blogs
+                </Link>
+              </div>
+            )}
+
+            {/* Generation History */}
+            {generationHistory.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <History size={18} />
+                  Generation History
+                </h3>
+                <div className="space-y-2">
+                  {generationHistory.map((log, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl text-sm">
+                      <div className="flex items-center gap-2">
+                        <Clock size={14} className="text-gray-400" />
+                        <span className="text-gray-600">
+                          {new Date(log.timestamp).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-600 font-medium">{log.generated} generated</span>
+                        {log.failed > 0 && <span className="text-red-500">{log.failed} failed</span>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

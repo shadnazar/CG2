@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp } from 'lucide-react';
+import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift } from 'lucide-react';
+import RecentPurchaseNotification from '../components/RecentPurchaseNotification';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
@@ -10,9 +11,10 @@ const PREPAID_PRICE = 599;
 const COD_PRICE = 699;
 const COD_ADVANCE = 99;
 const MRP = 1499;
+const DISCOUNT_AMOUNT = 50;
 
-// Bottle product image - larger size
-const PRODUCT_IMAGE = 'https://celestaglow.com/cdn/shop/files/IMG_0538.png?v=1771463966&width=1000';
+// User uploaded bottle product image - with packaging
+const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_050b785b-bdfe-40d2-9088-b4c5bddc18c5/artifacts/f3fkk4tr_IMG_9115.png';
 
 function ProductPage() {
   const navigate = useNavigate();
@@ -29,6 +31,10 @@ function ProductPage() {
   const [viewingNow, setViewingNow] = useState(18);
   const [stockLeft, setStockLeft] = useState(7);
   const [sessionId, setSessionId] = useState('');
+  
+  // Discount state
+  const [hasDiscount, setHasDiscount] = useState(false);
+  const [discountApplied, setDiscountApplied] = useState(false);
 
   useEffect(() => {
     // Generate unique session ID
@@ -52,6 +58,9 @@ function ProductPage() {
       });
     }
 
+    // Check if user has claimed discount
+    checkDiscountStatus();
+
     // Countdown timer
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -71,6 +80,44 @@ function ProductPage() {
 
     return () => { clearInterval(timer); clearInterval(viewerInterval); };
   }, []);
+
+  // Check if user has a discount
+  const checkDiscountStatus = async () => {
+    // Check localStorage for claimed discount
+    if (localStorage.getItem('discountClaimed')) {
+      setHasDiscount(true);
+    }
+  };
+
+  // Calculate prices with discount
+  const getFinalPrepaidPrice = () => {
+    if (hasDiscount && discountApplied) {
+      return PREPAID_PRICE - DISCOUNT_AMOUNT;
+    }
+    return PREPAID_PRICE;
+  };
+
+  const getFinalCodPrice = () => {
+    if (hasDiscount && discountApplied) {
+      return COD_PRICE - DISCOUNT_AMOUNT;
+    }
+    return COD_PRICE;
+  };
+
+  // Auto-apply discount when phone matches
+  const checkPhoneDiscount = async (phone) => {
+    if (phone.length === 10) {
+      try {
+        const res = await axios.get(`${API}/validate-discount?phone=${phone}`);
+        if (res.data.valid) {
+          setHasDiscount(true);
+          setDiscountApplied(true);
+        }
+      } catch (err) {
+        // Silent fail
+      }
+    }
+  };
 
   const validateForm = () => {
     const newErrors = {};
@@ -109,13 +156,15 @@ function ProductPage() {
     if (!validateForm()) return;
     setLoading(true);
 
-    const amount = paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_ADVANCE;
+    // Calculate final amount with discount
+    const baseAmount = paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_ADVANCE;
+    const amount = discountApplied ? Math.max(baseAmount - DISCOUNT_AMOUNT, 0) : baseAmount;
     
     try {
       const loaded = await loadRazorpay();
       if (!loaded) { alert('Failed to load payment gateway.'); setLoading(false); return; }
 
-      const orderResponse = await axios.post(`${API}/create-razorpay-order`, { amount });
+      const orderResponse = await axios.post(`${API}/create-razorpay-order`, { amount: amount > 0 ? amount : 1 });
       
       const options = {
         key: RAZORPAY_KEY,
@@ -132,17 +181,19 @@ function ProductPage() {
               razorpay_signature: response.razorpay_signature
             });
 
+            const finalPrice = paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice();
             const order = await axios.post(`${API}/orders`, {
               ...formData,
               payment_method: paymentMethod === 'prepaid' ? 'Prepaid' : 'COD (Advance Paid)',
-              amount: paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_PRICE
+              amount: finalPrice,
+              discount_applied: discountApplied ? DISCOUNT_AMOUNT : 0
             });
             
             setOrderConfirmed(order.data);
             setStep('confirmation');
             
             if (window.fbq) {
-              window.fbq('track', 'Purchase', { value: paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_PRICE, currency: 'INR' });
+              window.fbq('track', 'Purchase', { value: finalPrice, currency: 'INR' });
             }
           } catch (error) {
             alert('Order creation failed. Please contact support.');
@@ -423,6 +474,9 @@ function ProductPage() {
             </button>
           </div>
         </div>
+
+        {/* Recent Purchase Notification */}
+        <RecentPurchaseNotification />
       </div>
     );
   }
@@ -456,8 +510,24 @@ function ProductPage() {
               <p className="font-semibold text-gray-900 text-sm">Super Anti-Aging Serum</p>
               <p className="text-gray-500 text-xs">30ml • 4-in-1 Formula</p>
             </div>
-            <p className="font-bold text-green-600">₹{paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_PRICE}</p>
+            <div className="text-right">
+              {discountApplied && (
+                <p className="text-xs text-gray-400 line-through">₹{paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_PRICE}</p>
+              )}
+              <p className="font-bold text-green-600">₹{paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice()}</p>
+            </div>
           </div>
+
+          {/* Discount Applied Banner */}
+          {discountApplied && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl flex items-center gap-2">
+              <Gift className="w-5 h-5 text-green-600" />
+              <div>
+                <p className="text-green-700 font-semibold text-sm">₹{DISCOUNT_AMOUNT} Discount Applied!</p>
+                <p className="text-green-600 text-xs">Your exclusive welcome discount</p>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-4">
             {/* Name */}
@@ -480,12 +550,23 @@ function ProductPage() {
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => { setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) })); setErrors(prev => ({ ...prev, phone: '' })); }}
+                onChange={(e) => { 
+                  const phone = e.target.value.replace(/\D/g, '').slice(0, 10);
+                  setFormData(prev => ({ ...prev, phone })); 
+                  setErrors(prev => ({ ...prev, phone: '' }));
+                  // Auto-check discount when phone is entered
+                  if (phone.length === 10) {
+                    checkPhoneDiscount(phone);
+                  }
+                }}
                 placeholder="10-digit mobile number"
                 className={`input-cg ${errors.phone ? 'border-red-300 bg-red-50' : ''}`}
                 data-testid="phone-input"
               />
               {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+              {!discountApplied && hasDiscount && (
+                <p className="text-green-600 text-xs mt-1">💰 You have a ₹50 discount waiting!</p>
+              )}
             </div>
 
             {/* Email */}
@@ -575,8 +656,10 @@ function ProductPage() {
                   {paymentMethod === 'prepaid' && <div className="w-2.5 h-2.5 rounded-full bg-green-500" />}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900 text-sm">Pay Online — ₹{PREPAID_PRICE}</p>
-                  <p className="text-green-600 text-xs">💰 Save ₹{COD_PRICE - PREPAID_PRICE} + Fast Delivery</p>
+                  <p className="font-semibold text-gray-900 text-sm">
+                    Pay Online — {discountApplied && <span className="line-through text-gray-400">₹{PREPAID_PRICE}</span>} ₹{getFinalPrepaidPrice()}
+                  </p>
+                  <p className="text-green-600 text-xs">💰 {discountApplied ? 'Extra ₹50 discount applied!' : `Save ₹${COD_PRICE - PREPAID_PRICE} + Fast Delivery`}</p>
                 </div>
                 <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded">BEST</span>
               </label>
@@ -596,8 +679,10 @@ function ProductPage() {
                   {paymentMethod === 'cod' && <div className="w-2.5 h-2.5 rounded-full bg-green-500" />}
                 </div>
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900 text-sm">Cash on Delivery — ₹{COD_PRICE}</p>
-                  <p className="text-gray-500 text-xs">Pay ₹{COD_ADVANCE} now + ₹{COD_PRICE - COD_ADVANCE} on delivery</p>
+                  <p className="font-semibold text-gray-900 text-sm">
+                    Cash on Delivery — {discountApplied && <span className="line-through text-gray-400">₹{COD_PRICE}</span>} ₹{getFinalCodPrice()}
+                  </p>
+                  <p className="text-gray-500 text-xs">Pay ₹{Math.max(COD_ADVANCE - (discountApplied ? DISCOUNT_AMOUNT : 0), 49)} now + ₹{getFinalCodPrice() - Math.max(COD_ADVANCE - (discountApplied ? DISCOUNT_AMOUNT : 0), 49)} on delivery</p>
                 </div>
                 <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">53% OFF</span>
               </label>
@@ -611,7 +696,7 @@ function ProductPage() {
             className={`w-full mt-6 py-4 rounded-full font-semibold transition-all ${loading ? 'bg-gray-300 text-gray-500' : 'btn-cg-primary'}`}
             data-testid="place-order-button"
           >
-            {loading ? 'Processing...' : `Pay ₹${paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_ADVANCE} & Place Order`}
+            {loading ? 'Processing...' : `Pay ₹${paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : Math.max(COD_ADVANCE - (discountApplied ? DISCOUNT_AMOUNT : 0), 49)} & Place Order`}
           </button>
 
           {/* Trust Signals */}
