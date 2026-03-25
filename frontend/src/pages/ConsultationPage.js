@@ -1,20 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
   ChevronRight, ChevronLeft, Check, Camera, X, Phone, 
   Download, Sun, Droplets, Sparkles, Heart, Dumbbell,
-  AlertCircle, Shield, Star, Clock
+  AlertCircle, Shield, Star, Clock, Home
 } from 'lucide-react';
 import { trackViewContent, trackCTAClick } from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Language options
+// Language options - Main Indian languages
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇬🇧' },
   { code: 'hi', label: 'हिंदी', flag: '🇮🇳' },
-  { code: 'ml', label: 'മലയാളം', flag: '🇮🇳' }
+  { code: 'ml', label: 'മലയാളം', flag: '🇮🇳' },
+  { code: 'ta', label: 'தமிழ்', flag: '🇮🇳' },
+  { code: 'te', label: 'తెలుగు', flag: '🇮🇳' },
+  { code: 'bn', label: 'বাংলা', flag: '🇮🇳' },
+  { code: 'kn', label: 'ಕನ್ನಡ', flag: '🇮🇳' },
 ];
 
 // UI Text translations
@@ -111,6 +115,134 @@ const UI_TEXT = {
     low: "കുറവ്",
     moderate: "മിതമായ",
     high: "ഉയർന്ന"
+  },
+  // Tamil - basic support (falls back to English for detailed text)
+  ta: {
+    title: "இலவச தோல் ஆலோசனை",
+    subtitle: "60 வினாடிகளில் தனிப்பயனாக்கப்பட்ட பரிந்துரைகள்",
+    start: "ஆலோசனையைத் தொடங்கு",
+    next: "அடுத்து",
+    back: "பின்",
+    skip: "தவிர்",
+    uploadTitle: "உங்கள் புகைப்படங்களை பதிவேற்றவும்",
+    uploadSubtitle: "விருப்பம்: உங்கள் தோலை நன்கு புரிந்துகொள்ள உதவுங்கள்",
+    uploadFront: "முன் முகம்",
+    uploadLeft: "இடது பக்கம்",
+    uploadRight: "வலது பக்கம்",
+    phoneTitle: "கிட்டத்தட்ட முடிந்தது!",
+    phoneSubtitle: "உங்கள் முடிவுகளைப் பார்க்க மொபைல் எண்ணை உள்ளிடவும்",
+    phonePlaceholder: "10 இலக்க எண்ணை உள்ளிடவும்",
+    viewResults: "எனது முடிவுகளைக் காண்க",
+    resultTitle: "உங்கள் தோல் பகுப்பாய்வு",
+    agingLevel: "வயதான நிலை",
+    causes: "காரணங்கள்",
+    morningRoutine: "காலை வழக்கம்",
+    nightRoutine: "இரவு வழக்கம்",
+    rules: "முக்கிய விதிகள்",
+    diet: "உணவு குறிப்புகள்",
+    exercise: "உடற்பயிற்சி குறிப்புகள்",
+    productRec: "பரிந்துரைக்கப்பட்ட தீர்வு",
+    downloadPdf: "அறிக்கையைப் பதிவிறக்கு",
+    buyNow: "இப்போது வாங்கு",
+    low: "குறைவு",
+    moderate: "மிதமான",
+    high: "உயர்ந்த"
+  },
+  // Telugu - basic support
+  te: {
+    title: "ఉచిత చర్మ సంప్రదింపు",
+    subtitle: "60 సెకన్లలో వ్యక్తిగత సిఫార్సులు",
+    start: "సంప్రదింపును ప్రారంభించండి",
+    next: "తదుపరి",
+    back: "వెనుకకు",
+    skip: "దాటవేయి",
+    uploadTitle: "మీ ఫోటోలను అప్‌లోడ్ చేయండి",
+    uploadSubtitle: "ఐచ్ఛికం: మీ చర్మాన్ని అర్థం చేసుకోవడానికి సహాయపడండి",
+    uploadFront: "ముందు ముఖం",
+    uploadLeft: "ఎడమ వైపు",
+    uploadRight: "కుడి వైపు",
+    phoneTitle: "దాదాపు పూర్తయింది!",
+    phoneSubtitle: "మీ ఫలితాలను చూడటానికి మొబైల్ నంబర్ నమోదు చేయండి",
+    phonePlaceholder: "10 అంకెల నంబర్ నమోదు చేయండి",
+    viewResults: "నా ఫలితాలను చూడండి",
+    resultTitle: "మీ చర్మ విశ్లేషణ",
+    agingLevel: "వృద్ధాప్య స్థాయి",
+    causes: "కారణాలు",
+    morningRoutine: "ఉదయం దినచర్య",
+    nightRoutine: "రాత్రి దినచర్య",
+    rules: "ముఖ్యమైన నియమాలు",
+    diet: "ఆహార చిట్కాలు",
+    exercise: "వ్యాయామ చిట్కాలు",
+    productRec: "సిఫార్సు చేసిన పరిష్కారం",
+    downloadPdf: "నివేదికను డౌన్‌లోడ్ చేయండి",
+    buyNow: "ఇప్పుడు కొనండి",
+    low: "తక్కువ",
+    moderate: "మధ్యస్థం",
+    high: "అధిక"
+  },
+  // Bengali - basic support
+  bn: {
+    title: "বিনামূল্যে ত্বক পরামর্শ",
+    subtitle: "60 সেকেন্ডে ব্যক্তিগত সুপারিশ",
+    start: "পরামর্শ শুরু করুন",
+    next: "পরবর্তী",
+    back: "পিছনে",
+    skip: "এড়িয়ে যান",
+    uploadTitle: "আপনার ছবি আপলোড করুন",
+    uploadSubtitle: "ঐচ্ছিক: আপনার ত্বক বুঝতে সাহায্য করুন",
+    uploadFront: "সামনের মুখ",
+    uploadLeft: "বাম দিক",
+    uploadRight: "ডান দিক",
+    phoneTitle: "প্রায় শেষ!",
+    phoneSubtitle: "আপনার ফলাফল দেখতে মোবাইল নম্বর লিখুন",
+    phonePlaceholder: "10 সংখ্যার নম্বর লিখুন",
+    viewResults: "আমার ফলাফল দেখুন",
+    resultTitle: "আপনার ত্বক বিশ্লেষণ",
+    agingLevel: "বার্ধক্যের স্তর",
+    causes: "কারণসমূহ",
+    morningRoutine: "সকালের রুটিন",
+    nightRoutine: "রাতের রুটিন",
+    rules: "গুরুত্বপূর্ণ নিয়ম",
+    diet: "খাদ্য টিপস",
+    exercise: "ব্যায়াম টিপস",
+    productRec: "প্রস্তাবিত সমাধান",
+    downloadPdf: "রিপোর্ট ডাউনলোড করুন",
+    buyNow: "এখনই কিনুন",
+    low: "কম",
+    moderate: "মাঝারি",
+    high: "উচ্চ"
+  },
+  // Kannada - basic support
+  kn: {
+    title: "ಉಚಿತ ಚರ್ಮ ಸಮಾಲೋಚನೆ",
+    subtitle: "60 ಸೆಕೆಂಡುಗಳಲ್ಲಿ ವೈಯಕ್ತಿಕ ಶಿಫಾರಸುಗಳು",
+    start: "ಸಮಾಲೋಚನೆ ಪ್ರಾರಂಭಿಸಿ",
+    next: "ಮುಂದೆ",
+    back: "ಹಿಂದೆ",
+    skip: "ಬಿಟ್ಟುಬಿಡಿ",
+    uploadTitle: "ನಿಮ್ಮ ಫೋಟೋಗಳನ್ನು ಅಪ್‌ಲೋಡ್ ಮಾಡಿ",
+    uploadSubtitle: "ಐಚ್ಛಿಕ: ನಿಮ್ಮ ಚರ್ಮವನ್ನು ಅರ್ಥಮಾಡಿಕೊಳ್ಳಲು ಸಹಾಯ ಮಾಡಿ",
+    uploadFront: "ಮುಂಭಾಗದ ಮುಖ",
+    uploadLeft: "ಎಡ ಬದಿ",
+    uploadRight: "ಬಲ ಬದಿ",
+    phoneTitle: "ಬಹುತೇಕ ಮುಗಿದಿದೆ!",
+    phoneSubtitle: "ನಿಮ್ಮ ಫಲಿತಾಂಶಗಳನ್ನು ನೋಡಲು ಮೊಬೈಲ್ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ",
+    phonePlaceholder: "10 ಅಂಕಿ ಸಂಖ್ಯೆ ನಮೂದಿಸಿ",
+    viewResults: "ನನ್ನ ಫಲಿತಾಂಶಗಳನ್ನು ನೋಡಿ",
+    resultTitle: "ನಿಮ್ಮ ಚರ್ಮ ವಿಶ್ಲೇಷಣೆ",
+    agingLevel: "ವಯಸ್ಸಾಗುವ ಮಟ್ಟ",
+    causes: "ಕಾರಣಗಳು",
+    morningRoutine: "ಬೆಳಗಿನ ದಿನಚರಿ",
+    nightRoutine: "ರಾತ್ರಿ ದಿನಚರಿ",
+    rules: "ಪ್ರಮುಖ ನಿಯಮಗಳು",
+    diet: "ಆಹಾರ ಸಲಹೆಗಳು",
+    exercise: "ವ್ಯಾಯಾಮ ಸಲಹೆಗಳು",
+    productRec: "ಶಿಫಾರಸು ಮಾಡಿದ ಪರಿಹಾರ",
+    downloadPdf: "ವರದಿ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ",
+    buyNow: "ಈಗ ಖರೀದಿಸಿ",
+    low: "ಕಡಿಮೆ",
+    moderate: "ಮಧ್ಯಮ",
+    high: "ಹೆಚ್ಚು"
   }
 };
 
@@ -502,8 +634,19 @@ function ConsultationPage() {
   if (step === 'landing') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 pb-24">
+        {/* Back to Home Button */}
+        <div className="px-4 pt-4">
+          <Link 
+            to="/" 
+            className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors bg-white/80 px-3 py-2 rounded-full shadow-sm"
+          >
+            <Home size={18} />
+            <span className="text-sm font-medium">Home</span>
+          </Link>
+        </div>
+
         {/* Language Selector */}
-        <div className="flex justify-center gap-2 pt-4 px-4">
+        <div className="flex flex-wrap justify-center gap-2 pt-2 px-4">
           {LANGUAGES.map(lang => (
             <button
               key={lang.code}

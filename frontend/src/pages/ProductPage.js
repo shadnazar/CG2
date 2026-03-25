@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift } from 'lucide-react';
+import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift } from 'lucide-react';
 import RecentPurchaseNotification from '../components/RecentPurchaseNotification';
 import {
   trackViewContent,
@@ -13,6 +13,7 @@ import {
   trackFAQInteraction,
   trackTimeOnPage
 } from '../utils/metaPixel';
+import { getSharedStats, updateSharedStats } from '../utils/sharedStats';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
@@ -38,7 +39,8 @@ function ProductPage() {
   const [orderConfirmed, setOrderConfirmed] = useState(null);
   const [loading, setLoading] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 47, seconds: 33 });
-  const [viewingNow, setViewingNow] = useState(18);
+  const [viewingNow, setViewingNow] = useState(() => getSharedStats().viewingNow);
+  const [soldToday, setSoldToday] = useState(() => getSharedStats().soldToday);
   const [stockLeft, setStockLeft] = useState(7);
   const [sessionId, setSessionId] = useState('');
   const pageStartTime = useRef(Date.now());
@@ -76,10 +78,12 @@ function ProductPage() {
       });
     }, 1000);
 
-    // Random viewers
+    // Sync viewers count with shared stats
     const viewerInterval = setInterval(() => {
-      setViewingNow(prev => Math.max(12, prev + Math.floor(Math.random() * 5) - 2));
-    }, 4000);
+      const stats = getSharedStats();
+      setViewingNow(stats.viewingNow);
+      setSoldToday(stats.soldToday);
+    }, 2000);
 
     // Track time on page when leaving
     return () => { 
@@ -252,6 +256,14 @@ function ProductPage() {
           </div>
         </div>
 
+        {/* Back Button */}
+        <div className="px-4 py-3 border-b border-gray-100">
+          <Link to="/" className="inline-flex items-center gap-2 text-gray-600 hover:text-green-600 transition-colors">
+            <ChevronLeft size={20} />
+            <span className="text-sm font-medium">Back to Home</span>
+          </Link>
+        </div>
+
         {/* Product Image - Bottle Image - Larger Size */}
         <div className="bg-gradient-to-b from-gray-50 to-white py-8 flex justify-center relative">
           <img
@@ -270,6 +282,10 @@ function ProductPage() {
           <div className="flex items-center gap-1 text-orange-600">
             <Users size={14} />
             <span><strong>{viewingNow}</strong> viewing</span>
+          </div>
+          <div className="flex items-center gap-1 text-green-600">
+            <Flame size={14} />
+            <span><strong>{soldToday}</strong> sold today</span>
           </div>
           <div className="flex items-center gap-1 text-red-600">
             <Clock size={14} />
@@ -487,10 +503,10 @@ function ProductPage() {
           </div>
 
           {/* Why Choose Us - ENHANCED */}
-          <div className="mt-6 p-5 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl text-white">
-            <h3 className="font-bold mb-4 text-center flex items-center justify-center gap-2">
+          <div className="mt-6 p-5 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl">
+            <h3 className="font-bold mb-4 text-center flex items-center justify-center gap-2 text-white">
               <Award className="text-green-400" size={20} />
-              Why 10,000+ Choose Celesta Glow
+              <span className="text-white">Why 10,000+ Choose Celesta Glow</span>
             </h3>
             <div className="space-y-3">
               {[
@@ -498,13 +514,13 @@ function ProductPage() {
                 { icon: Shield, title: 'Safe Formula', desc: 'Dermatologist tested, no harsh chemicals', stat: '100%' },
                 { icon: Award, title: 'Award Winning', desc: "India's #1 rated anti-aging serum", stat: '#1' },
               ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 bg-white/10 backdrop-blur p-3 rounded-xl">
+                <div key={i} className="flex items-center gap-3 bg-white/15 backdrop-blur p-3 rounded-xl">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-lg">
                     <item.icon size={20} className="text-white" />
                   </div>
                   <div className="flex-1">
                     <p className="font-semibold text-white text-sm">{item.title}</p>
-                    <p className="text-xs text-gray-300">{item.desc}</p>
+                    <p className="text-xs text-gray-200">{item.desc}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-xl font-bold text-green-400">{item.stat}</p>

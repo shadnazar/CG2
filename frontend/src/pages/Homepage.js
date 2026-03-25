@@ -12,6 +12,7 @@ import {
   trackTimeOnPage,
   trackPopupShown
 } from '../utils/metaPixel';
+import { getSharedStats, updateSharedStats, getCurrentLocation, rotateLocation } from '../utils/sharedStats';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -29,11 +30,11 @@ function Homepage() {
   const navigate = useNavigate();
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 47, seconds: 33 });
-  const [viewingNow, setViewingNow] = useState(23);
-  const [soldToday, setSoldToday] = useState(47);
+  const [viewingNow, setViewingNow] = useState(() => getSharedStats().viewingNow);
+  const [soldToday, setSoldToday] = useState(() => getSharedStats().soldToday);
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [showDiscountPopup, setShowDiscountPopup] = useState(false);
-  const [userLocation, setUserLocation] = useState({ state: 'India', customerCount: 10000 });
+  const [userLocation, setUserLocation] = useState(() => getCurrentLocation());
   const [sessionId, setSessionId] = useState('');
   const pageStartTime = useRef(Date.now());
   const testimonialsTracked = useRef(false);
@@ -73,10 +74,20 @@ function Homepage() {
       });
     }, 1000);
 
-    // Random viewers count
+    // Sync viewers count with shared stats
     const viewerInterval = setInterval(() => {
-      setViewingNow(prev => Math.max(15, prev + Math.floor(Math.random() * 5) - 2));
+      const delta = Math.floor(Math.random() * 5) - 2;
+      const stats = getSharedStats();
+      const newValue = Math.max(15, Math.min(50, stats.viewingNow + delta));
+      updateSharedStats({ viewingNow: newValue });
+      setViewingNow(newValue);
     }, 5000);
+
+    // Auto-rotate location every 8 seconds
+    const locationInterval = setInterval(() => {
+      const newLocation = rotateLocation();
+      setUserLocation(newLocation);
+    }, 8000);
 
     // Exit intent detection with pixel tracking
     const handleMouseLeave = (e) => {
@@ -101,9 +112,6 @@ function Homepage() {
     };
     window.addEventListener('scroll', handleScroll);
 
-    // Get user location for social proof
-    detectUserLocation();
-
     // Track time on page when leaving
     return () => {
       const timeOnPage = Math.round((Date.now() - pageStartTime.current) / 1000);
@@ -111,39 +119,11 @@ function Homepage() {
       clearTimeout(discountTimer);
       clearInterval(timer);
       clearInterval(viewerInterval);
+      clearInterval(locationInterval);
       document.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('scroll', handleScroll);
     };
   }, []);
-
-  // Detect user location for personalized social proof
-  const detectUserLocation = async () => {
-    const locationData = {
-      'Maharashtra': { state: 'Maharashtra', customerCount: 2500 },
-      'Karnataka': { state: 'Karnataka', customerCount: 1800 },
-      'Delhi': { state: 'Delhi', customerCount: 2200 },
-      'Tamil Nadu': { state: 'Tamil Nadu', customerCount: 1500 },
-      'Gujarat': { state: 'Gujarat', customerCount: 1200 },
-      'West Bengal': { state: 'West Bengal', customerCount: 900 },
-      'Rajasthan': { state: 'Rajasthan', customerCount: 800 },
-      'Uttar Pradesh': { state: 'Uttar Pradesh', customerCount: 1100 },
-      'Kerala': { state: 'Kerala', customerCount: 700 },
-      'Telangana': { state: 'Telangana', customerCount: 950 },
-    };
-
-    try {
-      // Try to get location from IP (basic approach using timezone)
-      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      if (timezone.includes('Kolkata') || timezone.includes('Asia/Calcutta')) {
-        // Default to a random major state for Indian users
-        const states = Object.keys(locationData);
-        const randomState = states[Math.floor(Math.random() * states.length)];
-        setUserLocation(locationData[randomState]);
-      }
-    } catch (error) {
-      // Keep default
-    }
-  };
 
   // All 10 real testimonials from celestaglow.com
   const testimonials = [
