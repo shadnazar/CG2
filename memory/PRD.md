@@ -1,95 +1,188 @@
-# Celesta Glow - Complete SEO & E-Commerce Platform
+# Celesta Glow E-Commerce Platform - PRD
 
-## Final Build Summary - March 25, 2026
+## Original Problem Statement
+Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
+- Full admin panel for content management
+- AI-powered blog generation (SEO-optimized, location-targeted)
+- Live visitor tracking & lead generation
+- Online consultation system
+- Meta Pixel deep integration
 
-### Core Features Implemented
+## User Personas
+1. **Customers**: Women 25-50 seeking anti-aging solutions
+2. **Admin**: Business owner managing content, orders, and analytics
 
-#### 1. E-Commerce
-- Mobile-first responsive design matching celestaglow.com
-- Product page with new bottle image (IMG_9115.png)
-- Pricing: Prepaid ₹599, COD ₹699, MRP ₹1499
-- ₹50 discount auto-applies at checkout
-- Clear savings display showing total savings
-- Razorpay integration with discounted amounts
-- COD with advance payment option
-- Order confirmation emails to customer and business
+## Core Requirements
 
-#### 2. AI Content Engine
-- Auto-generate 12 SEO blogs with one click
-- Location-targeted content (Mumbai, Delhi, Bangalore, etc.)
-- Human-friendly, conversational writing style
-- Categories: Celebrity, Tips, DIY, Science, Ingredients, Seasonal, Mistakes
-- Blog generation history tracking
-- Admin AI Studio at `/admin/ai-studio`
+### Implemented Features ✅
 
-#### 3. Conversion Optimization
-- ₹50 discount popup after 5 seconds (collects phone numbers)
-- Discount auto-applied at checkout
-- "Your Savings Today" summary box
-- Auto-scrolling testimonials carousel
-- "Someone just bought" notifications
-- Flash sale countdown timer
-- Stock scarcity ("Only 7 left!")
-- Social proof ("18 viewing")
-- Scroll-to-top on page navigation
+#### 1. E-Commerce Core
+- Product page with pricing (₹599 prepaid, ₹1499 MRP)
+- Razorpay payment integration
+- COD option with advance payment
+- Order confirmation emails
 
-#### 4. Blog/News Hub
-- Beauty & Skincare News page design
-- Category filters (Celebrity, DIY, Science, etc.)
-- Search functionality
-- Featured article section
-- Location-based blog suggestions
-- Conversion CTA at bottom
+#### 2. Admin Panel (`/admin`)
+- Secure login (password: celestaglow2024)
+- Analytics dashboard (live visitors, page stats, leads)
+- Blog CRUD management
+- Location management
+- Order viewer
+- AI Content Studio (manual blog generation)
+- **Consultations management (NEW)**
 
-#### 5. Admin Dashboard
-- Analytics overview (orders, revenue, visitors)
-- Live visitor tracking by page
-- Page-wise analytics
-- Visitor leads (phone numbers collected)
-- Blog management (CRUD)
-- Location page management
-- Orders management
-- AI Studio for content generation
+#### 3. AI Content Engine
+- GPT-4o powered blog generation
+- Auto-generates 12 SEO blogs every 12 hours
+- Location-targeted content
+- **Blog images from Unsplash/Pexels (NEW)**
 
-#### 6. SEO Platform
-- Location-targeted landing pages
-- Auto-generated SEO blogs
-- Meta descriptions and keywords
-- Multi-language support (EN/HI)
+#### 4. Lead Generation & CRO
+- Phone capture popup (₹50 discount)
+- Auto-applied discounts at checkout
+- Auto-scrolling testimonials
+- "Recently Purchased" social proof notifications
+- **Free Skin Analysis CTA on homepage (NEW)**
 
-### Pricing Structure
-| Type | Price | Discount |
-|------|-------|----------|
-| Prepaid | ₹599 | 60% OFF |
-| Prepaid + Welcome | ₹549 | 63% OFF |
-| COD | ₹699 | 53% OFF |
-| COD + Welcome | ₹649 | 57% OFF |
-| MRP | ₹1,499 | - |
+#### 5. Meta Pixel Integration (ID: 690863659974240)
+- PageView tracking
+- ViewContent on product/homepage
+- AddToCart tracking
+- InitiateCheckout tracking
+- AddPaymentInfo tracking
+- Purchase tracking
+- Lead tracking (discount claimed)
+- **Blog view tracking (NEW)**
+- **Search tracking (NEW)**
+- **CTA click tracking (NEW)**
+- **FAQ interaction tracking (NEW)**
+- **Custom events: TimeOnPage, ExitIntent, PopupShown, etc. (NEW)**
 
-### Admin Access
-- URL: `/admin`
-- Password: `celestaglow2024`
+#### 6. Online Consultation System (NEW) ✅
+- **Landing page** with language switcher (EN/HI/ML)
+- **6-question flow**:
+  - Q1: Age group
+  - Q2: Skin type
+  - Q3: Main concerns (max 2)
+  - Q4: Sun exposure + Sunscreen usage
+  - Q5: Lifestyle
+  - Q6: Skincare usage
+- **Face upload** (optional, 3 images: Front/Left/Right)
+- **Image compression** for faster loading
+- **Phone number input** (mandatory, no OTP)
+- **Animated analyzing screen** with progress (0-100%)
+- **Personalized result page**:
+  - Aging Level (Low/Moderate/High)
+  - Causes (based on answers)
+  - Morning Routine
+  - Night Routine (featuring Celesta Glow)
+  - Important Rules
+  - Diet Tips
+  - Exercise Tips
+  - Product Recommendation (highlighted)
+  - **Uploaded photos display (NEW)**
+- **PDF download** with full report
+- **Admin panel integration**:
+  - View all consultations
+  - Full answers, causes, recommendations
+  - Uploaded photos display
+  - Analytics: completion rate, drop-off, aging distribution
 
-### Key Files
-- `/app/frontend/src/pages/ProductPage.js` - Product with discount logic
-- `/app/frontend/src/pages/Homepage.js` - Auto-scroll testimonials
-- `/app/frontend/src/pages/BlogList.js` - Beauty news hub
-- `/app/frontend/src/pages/admin/AdminAIStudio.js` - AI content generator
-- `/app/backend/services/auto_blog_generator.py` - Blog generation service
-- `/app/backend/services/enhanced_analytics.py` - Visitor tracking
+## Tech Stack
+- **Frontend**: React, Tailwind CSS, Lucide Icons, Shadcn/UI
+- **Backend**: FastAPI, Motor (Async MongoDB)
+- **Database**: MongoDB
+- **Integrations**: 
+  - emergentintegrations (GPT-4o)
+  - Razorpay
+  - SMTP (Gmail)
+  - Meta Pixel
+  - jsPDF (PDF generation)
 
-### Generated Blogs (6 total)
-1. DIY Turmeric Masks for Radiant Indian Skin
-2. Green Tea: Mumbai's Beauty Secret
-3. Spring Skincare Tricks for Delhi Women
-4. Avoid Skincare Blunders in Bangalore's Climate
-5. Bollywood's Timeless Beauty Secrets
-6. Bollywood Stars' Secret to Glowing Skin
+## Code Architecture
+```
+/app
+├── backend/
+│   ├── models/
+│   │   ├── blog.py
+│   │   ├── location.py
+│   │   └── consultation.py (NEW)
+│   ├── routes/
+│   │   ├── admin.py
+│   │   ├── i18n.py
+│   │   └── consultation.py (NEW)
+│   ├── services/
+│   │   ├── ai_content_generator.py
+│   │   ├── auto_blog_generator.py
+│   │   ├── enhanced_analytics.py
+│   │   ├── image_service.py (NEW)
+│   │   └── consultation_service.py (NEW)
+│   └── server.py
+└── frontend/
+    └── src/
+        ├── components/
+        │   ├── DiscountPopup.js
+        │   ├── Navigation.js (updated with Skin Analysis link)
+        │   ├── RecentPurchaseNotification.js
+        │   └── ScrollToTop.js
+        ├── pages/
+        │   ├── ConsultationPage.js (NEW)
+        │   ├── BlogList.js (updated with images)
+        │   ├── BlogPost.js (updated with hero image)
+        │   ├── Homepage.js (updated with consultation CTA)
+        │   └── admin/
+        │       └── AdminConsultations.js (NEW)
+        └── utils/
+            └── metaPixel.js (NEW)
+```
 
-### Testing Status
-- All backend APIs: ✅ Working
-- All frontend features: ✅ Working
-- Scroll-to-top: ✅ Fixed
-- Discount auto-apply: ✅ Working
-- Blog generation: ✅ Working
-- Testimonials auto-scroll: ✅ Working
+## API Endpoints
+
+### Consultation APIs (NEW)
+- `GET /api/consultation/questions?lang=en` - Get questions
+- `GET /api/consultation/labels?lang=en` - Get labels
+- `POST /api/consultation/submit` - Submit consultation
+- `GET /api/consultation/{id}` - Get consultation by ID
+- `POST /api/consultation/{id}/pdf-downloaded` - Mark PDF downloaded
+- `POST /api/consultation/track-event` - Track funnel events
+- `GET /api/consultation/admin/all` - Get all consultations (admin)
+- `GET /api/consultation/admin/stats` - Get consultation stats (admin)
+
+### Blog APIs
+- `POST /api/admin/blogs/backfill-images` - Add images to existing blogs (NEW)
+
+## Completed Work (This Session)
+
+### December 25, 2025
+1. **Blog Images Feature** ✅
+   - Created image_service.py with category-based image mapping
+   - Updated auto_blog_generator.py to include images
+   - Added backfill endpoint for existing blogs
+   - Updated BlogList.js and BlogPost.js to display images
+   - All 7 blogs now have images
+
+2. **Meta Pixel Deep Integration** ✅
+   - Created metaPixel.js utility with 20+ tracking functions
+   - Integrated across Homepage, ProductPage, BlogList, BlogPost
+   - Added to DiscountPopup for Lead tracking
+   - Pixel ID: 690863659974240
+
+3. **Online Consultation System** ✅
+   - Complete 6-question flow
+   - Multi-language support (EN/HI/ML)
+   - Face upload with compression
+   - Animated analyzing screen (0-100%)
+   - Personalized results with all sections
+   - PDF download
+   - Admin panel with full data + analytics
+   - Uploaded images shown on result + admin
+
+## Backlog / Future Tasks (P1)
+1. A/B Testing Framework
+2. WhatsApp integration for order updates
+3. Referral program
+
+## Credentials
+- **Admin Password**: celestaglow2024
+- **Meta Pixel ID**: 690863659974240
+- **Razorpay/SMTP**: In /app/backend/.env

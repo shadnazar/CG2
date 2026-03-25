@@ -19,6 +19,7 @@ from pincode_data import get_state_from_pincode
 from analytics_tracker import AnalyticsTracker
 from routes import admin as admin_routes
 from routes import i18n as i18n_routes
+from routes import consultation as consultation_routes
 from services.enhanced_analytics import EnhancedAnalyticsTracker, VisitorLeadTracker
 from services.ai_content_generator import AIContentGenerator
 from services.auto_blog_generator import AutoBlogGenerator
@@ -41,6 +42,9 @@ auto_blog_generator = AutoBlogGenerator(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
+
+# Initialize consultation routes with database
+consultation_routes.set_db(db)
 
 razorpay_client = razorpay.Client(auth=(os.environ['RAZORPAY_KEY_ID'], os.environ['RAZORPAY_KEY_SECRET']))
 
@@ -808,6 +812,7 @@ async def get_recent_purchases():
 app.include_router(api_router)
 app.include_router(admin_routes.router, prefix="/api")
 app.include_router(i18n_routes.router, prefix="/api")
+app.include_router(consultation_routes.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,

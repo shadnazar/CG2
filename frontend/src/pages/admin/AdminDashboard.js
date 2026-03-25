@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
   LayoutDashboard, FileText, MapPin, BarChart3, Users, LogOut,
   TrendingUp, Package, Eye, IndianRupee, ChevronRight, Plus,
-  Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles
+  Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -101,6 +101,9 @@ function AdminDashboard() {
           </Link>
           <Link to="/admin/ai-studio" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-ai">
             <Sparkles size={20} /> AI Studio
+          </Link>
+          <Link to="/admin/consultations" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-consultations">
+            <Stethoscope size={20} /> Consultations
           </Link>
         </nav>
 

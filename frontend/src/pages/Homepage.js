@@ -258,6 +258,21 @@ function Homepage() {
             </p>
           </div>
         </div>
+
+        {/* Free Consultation CTA */}
+        <div className="mt-6 mx-auto max-w-sm">
+          <button
+            onClick={() => {
+              trackCTAClick('consultation_hero', 'homepage');
+              navigate('/consultation');
+            }}
+            className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
+            data-testid="consultation-cta"
+          >
+            🔬 Get Free Skin Analysis
+            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">60 sec</span>
+          </button>
+        </div>
       </section>
 
       {/* Product Image - Age Regression Score */}

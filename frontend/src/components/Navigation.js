@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Search, ShoppingBag } from 'lucide-react';
+import { Menu, X, Search, ShoppingBag, Stethoscope, Globe } from 'lucide-react';
 
 function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -21,6 +21,7 @@ function Navigation() {
   const navLinks = [
     { path: '/', label: 'Home' },
     { path: '/product/anti-aging-serum', label: 'Shop' },
+    { path: '/consultation', label: 'Skin Analysis', icon: Stethoscope, highlight: true },
     { path: '/blog', label: 'Beauty Tips' },
   ];
 
@@ -99,14 +100,20 @@ function Navigation() {
                     <Link
                       to={link.path}
                       onClick={() => setIsMenuOpen(false)}
-                      className={`block py-4 px-4 rounded-xl text-base font-medium transition-all ${
-                        location.pathname === link.path
+                      className={`block py-4 px-4 rounded-xl text-base font-medium transition-all flex items-center gap-2 ${
+                        link.highlight
+                          ? 'bg-purple-50 text-purple-600 border border-purple-200'
+                          : location.pathname === link.path
                           ? 'bg-green-50 text-green-600'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                       data-testid={`nav-link-${link.label.toLowerCase().replace(' ', '-')}`}
                     >
+                      {link.icon && <link.icon size={18} />}
                       {link.label}
+                      {link.highlight && (
+                        <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">FREE</span>
+                      )}
                     </Link>
                   </li>
                 ))}

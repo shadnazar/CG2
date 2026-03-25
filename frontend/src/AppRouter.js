@@ -8,6 +8,7 @@ import BlogList from './pages/BlogList';
 import BlogPost from './pages/BlogPost';
 import LocationPage from './pages/LocationPage';
 import SearchResults from './pages/SearchResults';
+import ConsultationPage from './pages/ConsultationPage';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
@@ -18,6 +19,7 @@ import AdminLocations from './pages/admin/AdminLocations';
 import AdminLocationEditor from './pages/admin/AdminLocationEditor';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminAIStudio from './pages/admin/AdminAIStudio';
+import AdminConsultations from './pages/admin/AdminConsultations';
 
 // Layout component for public pages with navigation
 function PublicLayout({ children }) {
@@ -45,6 +47,10 @@ function App() {
         <Route path="/admin/locations/edit/:id" element={<AdminLocationEditor />} />
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/ai-studio" element={<AdminAIStudio />} />
+        <Route path="/admin/consultations" element={<AdminConsultations />} />
+        
+        {/* Consultation Route (no navigation - full screen experience) */}
+        <Route path="/consultation" element={<ConsultationPage />} />
         
         {/* Public Routes (with navigation) */}
         <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />
