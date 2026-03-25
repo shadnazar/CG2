@@ -260,3 +260,241 @@ Remember: Write like a helpful friend sharing beauty secrets, not like a corpora
         """Get recent blog generation history"""
         logs = await self.db.blog_generation_logs.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
         return logs
+
+    async def generate_location_blogs(self, states: List[str]) -> dict:
+        """Generate SEO blogs targeting specific Indian states"""
+        results = {
+            "success": True,
+            "generated": 0,
+            "failed": 0,
+            "blogs": []
+        }
+        
+        used_images = []
+        
+        for state in states:
+            try:
+                topic = {
+                    "title": f"Anti-Aging Skincare Guide for {state}",
+                    "category": "regional",
+                    "target_location": state,
+                    "keywords": [f"skincare {state}", f"anti-aging {state}", f"beauty tips {state}", "face serum"],
+                    "hook": f"Discover the best skincare routine designed for {state}'s unique climate and lifestyle"
+                }
+                
+                prompt = f"""Write a complete, SEO-optimized blog article about anti-aging skincare specifically for people living in {state}, India.
+
+FOCUS ON:
+1. {state}'s unique climate and weather conditions
+2. Specific skin concerns people in {state} face
+3. Local beauty traditions and ingredients
+4. How the lifestyle in {state} affects skin health
+5. Tailored skincare routine for {state} residents
+
+IMPORTANT WRITING GUIDELINES:
+1. Write 800-1000 words in SIMPLE, conversational language
+2. Use short paragraphs (2-3 sentences max)
+3. Use bullet points and numbered lists
+4. Include subheadings every 150-200 words
+5. Use proper HTML formatting (h2, h3, p, ul, li, strong)
+6. Naturally mention how a good anti-aging serum can help
+7. Add a subtle CTA for Celesta Glow serum
+8. Make it locally relevant to {state}
+
+Return as JSON:
+{{
+    "title": "Best Anti-Aging Skincare Tips for {state} [SEO title under 60 chars]",
+    "meta_description": "150-160 character meta description targeting {state} audience",
+    "content": "Full HTML content with {state}-specific advice",
+    "keywords": ["skincare {state}", "anti-aging {state}", "plus 3 more relevant keywords"],
+    "category": "regional",
+    "read_time": "X min read"
+}}"""
+
+                chat = LlmChat(
+                    api_key=self.api_key,
+                    session_id=f"location-{uuid.uuid4().hex[:8]}",
+                    system_message="You are an expert beauty content writer specializing in regional skincare advice for Indian audiences."
+                ).with_model("openai", "gpt-4o")
+                
+                response = await chat.send_message(UserMessage(text=prompt))
+                
+                json_match = re.search(r'\{[\s\S]*\}', response)
+                if json_match:
+                    blog_data = json.loads(json_match.group())
+                    
+                    slug = self.generate_slug(blog_data.get('title', topic['title']))
+                    existing = await self.db.blogs.find_one({"slug": slug})
+                    if existing:
+                        slug = f"{slug}-{uuid.uuid4().hex[:6]}"
+                    
+                    # Get image
+                    image_url = get_image_for_category('regional', used_images)
+                    if not image_url:
+                        image_url = get_image_for_keywords(['skincare', state.lower()], blog_data.get('title', ''))
+                    used_images.append(image_url)
+                    
+                    now = datetime.now(timezone.utc).isoformat()
+                    blog_doc = {
+                        "id": str(uuid.uuid4()),
+                        "title": blog_data.get('title', topic['title']),
+                        "slug": slug,
+                        "meta_description": blog_data.get('meta_description', ''),
+                        "content": blog_data.get('content', ''),
+                        "keywords": blog_data.get('keywords', topic['keywords']),
+                        "category": "regional",
+                        "read_time": blog_data.get('read_time', '5 min read'),
+                        "status": "published",
+                        "language": "en",
+                        "view_count": 0,
+                        "generated_by": "AI-Location",
+                        "location_target": state,
+                        "image_url": image_url,
+                        "created_at": now,
+                        "updated_at": now,
+                        "published_at": now
+                    }
+                    
+                    await self.db.blogs.insert_one(blog_doc)
+                    results["generated"] += 1
+                    results["blogs"].append({
+                        "title": blog_doc["title"],
+                        "slug": blog_doc["slug"],
+                        "location_target": state,
+                        "image_url": image_url
+                    })
+                else:
+                    results["failed"] += 1
+                    
+                await asyncio.sleep(1)
+                
+            except Exception as e:
+                print(f"Error generating location blog for {state}: {e}")
+                results["failed"] += 1
+        
+        # Log generation
+        await self.db.blog_generation_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "generated": results["generated"],
+            "failed": results["failed"],
+            "trigger": "location-batch",
+            "states": states
+        })
+        
+        return results
+
+    async def generate_topic_blogs(self, topics: List[str]) -> dict:
+        """Generate SEO blogs for specific user-defined topics"""
+        results = {
+            "success": True,
+            "generated": 0,
+            "failed": 0,
+            "blogs": []
+        }
+        
+        used_images = []
+        
+        for topic_text in topics:
+            topic_text = topic_text.strip()
+            if not topic_text:
+                continue
+                
+            try:
+                prompt = f"""Write a complete, SEO-optimized blog article about: {topic_text}
+
+Target audience: Indian women aged 28-50 interested in anti-aging skincare
+
+IMPORTANT WRITING GUIDELINES:
+1. Write 800-1000 words in SIMPLE, conversational language
+2. Use short paragraphs (2-3 sentences max)
+3. Use bullet points and numbered lists
+4. Include subheadings every 150-200 words
+5. Use proper HTML formatting (h2, h3, p, ul, li, strong)
+6. Naturally mention how a good anti-aging serum can help
+7. Add a subtle CTA for Celesta Glow serum
+8. Make it practical and actionable
+
+Return as JSON:
+{{
+    "title": "SEO-optimized title under 60 characters",
+    "meta_description": "150-160 character meta description",
+    "content": "Full HTML content",
+    "keywords": ["5 relevant SEO keywords"],
+    "category": "tips|ingredients|diy|science|trends",
+    "read_time": "X min read"
+}}"""
+
+                chat = LlmChat(
+                    api_key=self.api_key,
+                    session_id=f"topic-{uuid.uuid4().hex[:8]}",
+                    system_message="You are an expert beauty content writer for Indian audience. Write engaging, helpful skincare content."
+                ).with_model("openai", "gpt-4o")
+                
+                response = await chat.send_message(UserMessage(text=prompt))
+                
+                json_match = re.search(r'\{[\s\S]*\}', response)
+                if json_match:
+                    blog_data = json.loads(json_match.group())
+                    
+                    slug = self.generate_slug(blog_data.get('title', topic_text))
+                    existing = await self.db.blogs.find_one({"slug": slug})
+                    if existing:
+                        slug = f"{slug}-{uuid.uuid4().hex[:6]}"
+                    
+                    # Get image
+                    category = blog_data.get('category', 'tips')
+                    image_url = get_image_for_category(category, used_images)
+                    if not image_url:
+                        image_url = get_image_for_keywords(blog_data.get('keywords', []), blog_data.get('title', ''))
+                    used_images.append(image_url)
+                    
+                    now = datetime.now(timezone.utc).isoformat()
+                    blog_doc = {
+                        "id": str(uuid.uuid4()),
+                        "title": blog_data.get('title', topic_text[:60]),
+                        "slug": slug,
+                        "meta_description": blog_data.get('meta_description', ''),
+                        "content": blog_data.get('content', ''),
+                        "keywords": blog_data.get('keywords', []),
+                        "category": category,
+                        "read_time": blog_data.get('read_time', '5 min read'),
+                        "status": "published",
+                        "language": "en",
+                        "view_count": 0,
+                        "generated_by": "AI-Topic",
+                        "original_topic": topic_text,
+                        "image_url": image_url,
+                        "created_at": now,
+                        "updated_at": now,
+                        "published_at": now
+                    }
+                    
+                    await self.db.blogs.insert_one(blog_doc)
+                    results["generated"] += 1
+                    results["blogs"].append({
+                        "title": blog_doc["title"],
+                        "slug": blog_doc["slug"],
+                        "original_topic": topic_text,
+                        "image_url": image_url
+                    })
+                else:
+                    results["failed"] += 1
+                    
+                await asyncio.sleep(1)
+                
+            except Exception as e:
+                print(f"Error generating topic blog for '{topic_text}': {e}")
+                results["failed"] += 1
+        
+        # Log generation
+        await self.db.blog_generation_logs.insert_one({
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "generated": results["generated"],
+            "failed": results["failed"],
+            "trigger": "topic-batch",
+            "topics_count": len(topics)
+        })
+        
+        return results

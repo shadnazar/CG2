@@ -287,7 +287,7 @@ async def verify_payment(payment_data: RazorpayPaymentVerify):
             'razorpay_signature': payment_data.razorpay_signature
         })
         return {"verified": True}
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Payment verification failed")
 
 
@@ -513,14 +513,15 @@ class VisitorLeadCreate(BaseModel):
 
 
 @api_router.post("/track-visit")
-async def track_page_visit(
+async def track_enhanced_page_visit(
     page: str = Query(...),
     session_id: str = Query(...),
     user_agent: Optional[str] = Query(None),
-    referrer: Optional[str] = Query(None)
+    referrer: Optional[str] = Query(None),
+    ip_address: Optional[str] = Query(None)
 ):
-    """Track a page visit with enhanced analytics"""
-    return await enhanced_analytics.track_page_visit(page, session_id, user_agent, referrer)
+    """Track a page visit with enhanced analytics including IP"""
+    return await enhanced_analytics.track_page_visit(page, session_id, user_agent, referrer, ip_address)
 
 
 @api_router.get("/live-visitors")
@@ -573,6 +574,8 @@ async def get_live_analytics(x_admin_token: str = Header(None)):
     live_by_page = enhanced_analytics.get_live_visitors_by_page()
     total_live = enhanced_analytics.get_live_visitors_count()
     total_stats = await enhanced_analytics.get_total_stats()
+    page_totals = await enhanced_analytics.get_page_visit_totals()
+    top_locations = await enhanced_analytics.get_top_locations()
     
     return {
         "live_visitors": {
@@ -580,6 +583,8 @@ async def get_live_analytics(x_admin_token: str = Header(None)):
             "by_page": live_by_page
         },
         "total_visits": total_stats.get("total_visits", 0),
+        "page_totals": page_totals,
+        "top_locations": top_locations,
         "last_updated": datetime.now(timezone.utc).isoformat()
     }
 
@@ -680,12 +685,38 @@ class AutoGenerateBlogsRequest(BaseModel):
     count: int = 12
 
 
+class BatchLocationBlogsRequest(BaseModel):
+    states: List[str]
+
+
+class BatchTopicBlogsRequest(BaseModel):
+    topics: List[str]
+
+
 @api_router.post("/admin/ai/auto-generate-blogs")
 async def auto_generate_blogs(request: AutoGenerateBlogsRequest, x_admin_token: str = Header(None)):
     """Auto-generate multiple SEO blogs (12 by default)"""
     verify_admin_token(x_admin_token)
     
     result = await auto_blog_generator.generate_and_save_blogs(count=request.count)
+    return result
+
+
+@api_router.post("/admin/ai/batch-location-blogs")
+async def batch_location_blogs(request: BatchLocationBlogsRequest, x_admin_token: str = Header(None)):
+    """Generate blogs targeting specific Indian states"""
+    verify_admin_token(x_admin_token)
+    
+    result = await auto_blog_generator.generate_location_blogs(states=request.states)
+    return result
+
+
+@api_router.post("/admin/ai/batch-topic-blogs")
+async def batch_topic_blogs(request: BatchTopicBlogsRequest, x_admin_token: str = Header(None)):
+    """Generate blogs for specific user-defined topics"""
+    verify_admin_token(x_admin_token)
+    
+    result = await auto_blog_generator.generate_topic_blogs(topics=request.topics)
     return result
 
 

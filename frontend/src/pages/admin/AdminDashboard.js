@@ -4,7 +4,8 @@ import axios from 'axios';
 import { 
   LayoutDashboard, FileText, MapPin, BarChart3, Users, LogOut,
   TrendingUp, Package, Eye, IndianRupee, ChevronRight, Plus,
-  Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope
+  Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope,
+  Home, ShoppingCart, Lock, Settings
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -16,6 +17,10 @@ function AdminDashboard() {
   const [leadsData, setLeadsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
+  const [passwordError, setPasswordError] = useState('');
+  const [passwordSuccess, setPasswordSuccess] = useState('');
   const navigate = useNavigate();
   const adminToken = localStorage.getItem('adminToken');
 
@@ -69,6 +74,38 @@ function AdminDashboard() {
     navigate('/admin');
   };
 
+  const handlePasswordChange = async () => {
+    setPasswordError('');
+    setPasswordSuccess('');
+    
+    if (passwordData.new !== passwordData.confirm) {
+      setPasswordError('New passwords do not match');
+      return;
+    }
+    
+    if (passwordData.new.length < 8) {
+      setPasswordError('Password must be at least 8 characters');
+      return;
+    }
+    
+    try {
+      await axios.post(`${API}/admin/change-password`, {
+        current_password: passwordData.current,
+        new_password: passwordData.new
+      }, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      
+      setPasswordSuccess('Password changed successfully! Please login again.');
+      setTimeout(() => {
+        localStorage.removeItem('adminToken');
+        navigate('/admin');
+      }, 2000);
+    } catch (err) {
+      setPasswordError(err.response?.data?.detail || 'Failed to change password');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -108,6 +145,13 @@ function AdminDashboard() {
         </nav>
 
         <div className="absolute bottom-0 left-0 w-full p-4 border-t border-gray-200">
+          <button 
+            onClick={() => setShowPasswordModal(true)} 
+            className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl w-full mb-2"
+            data-testid="settings-btn"
+          >
+            <Settings size={20} /> Settings
+          </button>
           <button onClick={handleLogout} className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl w-full" data-testid="logout-btn">
             <LogOut size={20} /> Sign Out
           </button>
@@ -164,67 +208,121 @@ function AdminDashboard() {
             <>
               {/* Live Visitors Banner */}
               <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-5 mb-6 text-white">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Activity className="w-6 h-6" />
                     </div>
                     <div>
                       <p className="text-green-100 text-sm">Live Visitors Now</p>
-                      <p className="text-3xl font-bold">{liveAnalytics?.live_visitors?.total || 0}</p>
+                      <p className="text-2xl sm:text-3xl font-bold truncate">{liveAnalytics?.live_visitors?.total || 0}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-green-100 text-sm">Total Visits</p>
-                    <p className="text-2xl font-bold">{liveAnalytics?.total_visits?.toLocaleString() || 0}</p>
+                    <p className="text-xl sm:text-2xl font-bold truncate">{liveAnalytics?.total_visits?.toLocaleString() || 0}</p>
                   </div>
+                </div>
+              </div>
+
+              {/* Page Visit Totals */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                <div className="bg-white rounded-xl p-4 border border-gray-100" data-testid="stat-homepage">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Home className="w-4 h-4 text-blue-500" />
+                    <span className="text-xs text-gray-500 truncate">Homepage</span>
+                  </div>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+                    {(liveAnalytics?.page_totals?.Homepage || 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl p-4 border border-gray-100" data-testid="stat-product">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Package className="w-4 h-4 text-purple-500" />
+                    <span className="text-xs text-gray-500 truncate">Product</span>
+                  </div>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+                    {(liveAnalytics?.page_totals?.['Product Page'] || 0).toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-white rounded-xl p-4 border border-gray-100" data-testid="stat-checkout">
+                  <div className="flex items-center gap-2 mb-2">
+                    <ShoppingCart className="w-4 h-4 text-green-500" />
+                    <span className="text-xs text-gray-500 truncate">Checkout</span>
+                  </div>
+                  <p className="text-lg sm:text-xl font-bold text-gray-900 truncate">
+                    {(liveAnalytics?.page_totals?.Checkout || 0).toLocaleString()}
+                  </p>
                 </div>
               </div>
 
               {/* Stats Grid */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <div className="bg-white rounded-2xl p-5 border border-gray-100" data-testid="stat-orders">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 overflow-hidden" data-testid="stat-orders">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Package className="w-5 h-5 text-blue-600" />
                     </div>
                     <TrendingUp className="w-4 h-4 text-green-500" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{analytics?.total_orders || 0}</p>
-                  <p className="text-sm text-gray-500">Total Orders</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{analytics?.total_orders || 0}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Total Orders</p>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-gray-100" data-testid="stat-revenue">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 overflow-hidden" data-testid="stat-revenue">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
                       <IndianRupee className="w-5 h-5 text-green-600" />
                     </div>
                     <TrendingUp className="w-4 h-4 text-green-500" />
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">₹{analytics?.total_revenue?.toLocaleString() || 0}</p>
-                  <p className="text-sm text-gray-500">Revenue</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">₹{analytics?.total_revenue?.toLocaleString() || 0}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Revenue</p>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-gray-100" data-testid="stat-leads">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 overflow-hidden" data-testid="stat-leads">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
                       <Phone className="w-5 h-5 text-purple-600" />
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{leadsData?.stats?.total_leads || 0}</p>
-                  <p className="text-sm text-gray-500">Phone Leads</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{leadsData?.stats?.total_leads || 0}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Phone Leads</p>
                 </div>
 
-                <div className="bg-white rounded-2xl p-5 border border-gray-100" data-testid="stat-blogs">
+                <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 overflow-hidden" data-testid="stat-blogs">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center">
+                    <div className="w-10 h-10 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
                       <FileText className="w-5 h-5 text-orange-600" />
                     </div>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{analytics?.total_blogs || 0}</p>
-                  <p className="text-sm text-gray-500">Blog Posts</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{analytics?.total_blogs || 0}</p>
+                  <p className="text-xs sm:text-sm text-gray-500">Blog Posts</p>
                 </div>
               </div>
+
+              {/* Top Locations */}
+              {liveAnalytics?.top_locations?.top_states?.length > 0 && (
+                <div className="bg-white rounded-2xl p-6 border border-gray-100 mb-6">
+                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-green-500" />
+                    Top Visitor Locations
+                  </h3>
+                  <div className="space-y-3">
+                    {liveAnalytics.top_locations.top_states.slice(0, 5).map((loc, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                        <div className="flex items-center gap-3">
+                          <span className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-bold">
+                            {i + 1}
+                          </span>
+                          <span className="font-medium text-gray-900">{loc.location}</span>
+                        </div>
+                        <span className="text-green-600 font-semibold">{loc.visits} orders</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Quick Actions */}
               <div className="grid lg:grid-cols-2 gap-6">
@@ -468,6 +566,89 @@ function AdminDashboard() {
           </Link>
         </div>
       </nav>
+
+      {/* Password Change Modal */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md" data-testid="password-modal">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                <Lock className="w-5 h-5 text-purple-600" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900">Change Password</h3>
+            </div>
+
+            {passwordError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm">
+                {passwordError}
+              </div>
+            )}
+
+            {passwordSuccess && (
+              <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-600 rounded-xl text-sm">
+                {passwordSuccess}
+              </div>
+            )}
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                <input
+                  type="password"
+                  value={passwordData.current}
+                  onChange={(e) => setPasswordData({...passwordData, current: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                  placeholder="Enter current password"
+                  data-testid="current-password-input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                <input
+                  type="password"
+                  value={passwordData.new}
+                  onChange={(e) => setPasswordData({...passwordData, new: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                  placeholder="Min 8 characters"
+                  data-testid="new-password-input"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={passwordData.confirm}
+                  onChange={(e) => setPasswordData({...passwordData, confirm: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                  placeholder="Confirm new password"
+                  data-testid="confirm-password-input"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowPasswordModal(false);
+                  setPasswordData({ current: '', new: '', confirm: '' });
+                  setPasswordError('');
+                  setPasswordSuccess('');
+                }}
+                className="flex-1 py-3 border border-gray-200 text-gray-600 rounded-xl font-medium hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePasswordChange}
+                className="flex-1 py-3 bg-purple-500 text-white rounded-xl font-medium hover:bg-purple-600"
+                data-testid="change-password-btn"
+              >
+                Change Password
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -19,24 +19,27 @@ function RecentPurchaseNotification() {
   useEffect(() => {
     if (purchases.length === 0 || dismissed) return;
 
-    // Show notification every 30 seconds
+    // Show notification every 20 seconds (faster)
     const showInterval = setInterval(() => {
-      setCurrentIndex(prev => (prev + 1) % purchases.length);
-      setNotification(purchases[currentIndex]);
+      // Random index for variety
+      const randomIndex = Math.floor(Math.random() * purchases.length);
+      setCurrentIndex(randomIndex);
+      setNotification(purchases[randomIndex]);
       setVisible(true);
 
       // Hide after 5 seconds
       setTimeout(() => {
         setVisible(false);
       }, 5000);
-    }, 30000);
+    }, 20000);
 
-    // Show first notification after 10 seconds
+    // Show first notification after 8 seconds
     const initialTimer = setTimeout(() => {
-      setNotification(purchases[0]);
+      const randomIndex = Math.floor(Math.random() * purchases.length);
+      setNotification(purchases[randomIndex]);
       setVisible(true);
       setTimeout(() => setVisible(false), 5000);
-    }, 10000);
+    }, 8000);
 
     return () => {
       clearInterval(showInterval);
@@ -49,11 +52,28 @@ function RecentPurchaseNotification() {
       const res = await axios.get(`${API}/recent-purchases`);
       setPurchases(res.data.purchases || []);
     } catch (err) {
-      // Use fallback data
+      // Use diverse Indian names fallback
       setPurchases([
-        { name: "Priya S.", location: "Mumbai" },
-        { name: "Anita R.", location: "Delhi" },
-        { name: "Kavya P.", location: "Bangalore" }
+        { name: "Priya Sharma", location: "Mumbai" },
+        { name: "Anita Reddy", location: "Hyderabad" },
+        { name: "Kavya Nair", location: "Kochi" },
+        { name: "Sneha Patel", location: "Ahmedabad" },
+        { name: "Meera Iyer", location: "Chennai" },
+        { name: "Deepika Singh", location: "Delhi" },
+        { name: "Aishwarya Rao", location: "Bangalore" },
+        { name: "Pooja Gupta", location: "Lucknow" },
+        { name: "Ritu Verma", location: "Jaipur" },
+        { name: "Lakshmi Menon", location: "Trivandrum" },
+        { name: "Anjali Desai", location: "Pune" },
+        { name: "Divya Kapoor", location: "Chandigarh" },
+        { name: "Swati Joshi", location: "Indore" },
+        { name: "Nandini Pillai", location: "Coimbatore" },
+        { name: "Shruti Agarwal", location: "Kolkata" },
+        { name: "Rashmi Hegde", location: "Mangalore" },
+        { name: "Pallavi Kulkarni", location: "Nashik" },
+        { name: "Aditi Saxena", location: "Bhopal" },
+        { name: "Tanvi Choudhary", location: "Surat" },
+        { name: "Kriti Malhotra", location: "Gurgaon" }
       ]);
     }
   };

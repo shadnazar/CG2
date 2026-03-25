@@ -12,15 +12,19 @@ class EnhancedAnalyticsTracker:
         # In-memory cache for live visitors (cleared after 5 minutes of inactivity)
         self.live_visitors = {}
     
-    async def track_page_visit(self, page: str, session_id: str, user_agent: str = None, referrer: str = None):
-        """Track a page visit with detailed information"""
+    async def track_page_visit(self, page: str, session_id: str, user_agent: str = None, referrer: str = None, ip_address: str = None):
+        """Track a page visit with detailed information including IP"""
         now = datetime.now(timezone.utc)
+        
+        # Normalize page name for tracking
+        normalized_page = self._normalize_page(page)
         
         # Update live visitors cache
         self.live_visitors[session_id] = {
-            "page": page,
+            "page": normalized_page,
             "last_seen": now,
-            "user_agent": user_agent
+            "user_agent": user_agent,
+            "ip_address": ip_address
         }
         
         # Clean up stale sessions (older than 5 minutes)
@@ -34,9 +38,11 @@ class EnhancedAnalyticsTracker:
         visit_doc = {
             "id": str(uuid.uuid4()),
             "session_id": session_id,
-            "page": page,
+            "page": normalized_page,
+            "raw_page": page,
             "user_agent": user_agent,
             "referrer": referrer,
+            "ip_address": ip_address,
             "timestamp": now.isoformat(),
             "date": now.strftime("%Y-%m-%d"),
             "hour": now.hour
@@ -44,12 +50,12 @@ class EnhancedAnalyticsTracker:
         
         await self.db.page_visits.insert_one(visit_doc)
         
-        # Update page stats
+        # Update page stats for normalized page
         await self.db.page_stats.update_one(
-            {"page": page, "date": now.strftime("%Y-%m-%d")},
+            {"page": normalized_page, "date": now.strftime("%Y-%m-%d")},
             {
                 "$inc": {"visits": 1},
-                "$setOnInsert": {"page": page, "date": now.strftime("%Y-%m-%d")}
+                "$setOnInsert": {"page": normalized_page, "date": now.strftime("%Y-%m-%d")}
             },
             upsert=True
         )
@@ -64,7 +70,49 @@ class EnhancedAnalyticsTracker:
             upsert=True
         )
         
+        # Track IP location if provided
+        if ip_address:
+            await self._track_ip_location(ip_address, now)
+        
         return {"tracked": True, "session_id": session_id}
+    
+    def _normalize_page(self, page: str) -> str:
+        """Normalize page URLs to standard categories for tracking"""
+        page_lower = page.lower().strip('/')
+        
+        if page_lower == '' or page_lower == 'home' or page_lower == '/':
+            return 'Homepage'
+        elif page_lower.startswith('product') or page_lower.startswith('serum'):
+            return 'Product Page'
+        elif page_lower.startswith('checkout'):
+            return 'Checkout'
+        elif page_lower.startswith('blog'):
+            return 'Blog'
+        elif page_lower.startswith('consultation'):
+            return 'Consultation'
+        elif page_lower.startswith('location'):
+            return 'Location'
+        elif page_lower.startswith('order-confirmed'):
+            return 'Order Confirmed'
+        else:
+            # Capitalize first letter for display
+            return page.strip('/').title() if page.strip('/') else 'Other'
+    
+    async def _track_ip_location(self, ip_address: str, timestamp: datetime):
+        """Track IP address for location analytics"""
+        if not ip_address or ip_address in ['127.0.0.1', 'localhost', '::1']:
+            return
+        
+        # Update IP location tracking
+        await self.db.ip_locations.update_one(
+            {"ip": ip_address},
+            {
+                "$inc": {"visit_count": 1},
+                "$set": {"last_visit": timestamp.isoformat()},
+                "$setOnInsert": {"ip": ip_address, "first_visit": timestamp.isoformat()}
+            },
+            upsert=True
+        )
     
     def get_live_visitors_count(self, page: str = None):
         """Get count of live visitors (active in last 5 minutes)"""
@@ -78,7 +126,8 @@ class EnhancedAnalyticsTracker:
         }
         
         if page:
-            return len([v for v in self.live_visitors.values() if v["page"] == page])
+            normalized = self._normalize_page(page)
+            return len([v for v in self.live_visitors.values() if v["page"] == normalized])
         return len(self.live_visitors)
     
     def get_live_visitors_by_page(self):
@@ -98,6 +147,57 @@ class EnhancedAnalyticsTracker:
             page_counts[page] = page_counts.get(page, 0) + 1
         
         return page_counts
+    
+    async def get_page_visit_totals(self):
+        """Get total visit counts for key pages (Homepage, Product, Checkout)"""
+        key_pages = ['Homepage', 'Product Page', 'Checkout']
+        totals = {}
+        
+        for page in key_pages:
+            stats = await self.db.page_stats.find({"page": page}, {"_id": 0, "visits": 1}).to_list(1000)
+            totals[page] = sum(s.get("visits", 0) for s in stats)
+        
+        return totals
+    
+    async def get_top_locations(self, limit: int = 10):
+        """Get top visitor locations based on IP tracking"""
+        # Try to get state-level data from orders (most reliable)
+        pipeline = [
+            {"$group": {"_id": "$state", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": limit}
+        ]
+        
+        state_counts = await self.db.orders.aggregate(pipeline).to_list(limit)
+        
+        # Also get from page visits if we have IP data
+        ip_pipeline = [
+            {"$match": {"ip_address": {"$exists": True, "$ne": None}}},
+            {"$group": {"_id": "$ip_address", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}},
+            {"$limit": 100}
+        ]
+        
+        ip_counts = await self.db.page_visits.aggregate(ip_pipeline).to_list(100)
+        
+        # Combine results
+        locations = []
+        for state in state_counts:
+            if state["_id"]:
+                locations.append({
+                    "location": state["_id"],
+                    "visits": state["count"],
+                    "source": "orders"
+                })
+        
+        # Add unique IPs count
+        unique_ips = len(ip_counts)
+        
+        return {
+            "top_states": locations,
+            "unique_visitors": unique_ips,
+            "total_ips_tracked": sum(ip.get("count", 0) for ip in ip_counts)
+        }
     
     async def get_page_analytics(self, page: str = None, days: int = 7):
         """Get detailed page analytics"""

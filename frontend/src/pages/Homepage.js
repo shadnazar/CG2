@@ -83,11 +83,11 @@ function Homepage() {
       setViewingNow(newValue);
     }, 5000);
 
-    // Auto-rotate location every 8 seconds
+    // Auto-rotate location every 4 seconds (faster)
     const locationInterval = setInterval(() => {
       const newLocation = rotateLocation();
       setUserLocation(newLocation);
-    }, 8000);
+    }, 4000);
 
     // Exit intent detection with pixel tracking
     const handleMouseLeave = (e) => {

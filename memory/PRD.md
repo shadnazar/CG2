@@ -151,7 +151,11 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 ### Blog APIs
 - `POST /api/admin/blogs/backfill-images` - Add images to existing blogs (NEW)
 
-## Completed Work (This Session)
+## Admin Panel Access
+- **URL**: `https://antiaging.celestaglow.com/admin` (production) or `/admin` on preview
+- **Password**: `celestaglow2024`
+
+## Completed Work (This Session - December 25, 2025)
 
 ### December 25, 2025
 1. **Blog Images Feature** ✅

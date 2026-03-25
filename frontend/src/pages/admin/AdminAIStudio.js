@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   ChevronLeft, Sparkles, FileText, MapPin, Lightbulb, 
-  Loader2, Check, AlertCircle, Copy, Save, Zap, Clock, History
+  Loader2, Check, AlertCircle, Copy, Save, Zap, Clock, History, Globe, Tag
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -34,6 +34,16 @@ function AdminAIStudio() {
   const [autoGenerating, setAutoGenerating] = useState(false);
   const [autoResult, setAutoResult] = useState(null);
   const [blogCount, setBlogCount] = useState(12);
+  
+  // Batch location generation
+  const [locationGenerating, setLocationGenerating] = useState(false);
+  const [locationResult, setLocationResult] = useState(null);
+  const [selectedStates, setSelectedStates] = useState([]);
+  
+  // Batch topic generation
+  const [topicGenerating, setTopicGenerating] = useState(false);
+  const [topicResult, setTopicResult] = useState(null);
+  const [customTopics, setCustomTopics] = useState('');
 
   useEffect(() => {
     if (!adminToken) {
@@ -71,6 +81,57 @@ function AdminAIStudio() {
       setError(err.response?.data?.detail || 'Failed to generate blogs');
     } finally {
       setAutoGenerating(false);
+    }
+  };
+
+  const handleBatchLocationBlogs = async () => {
+    if (selectedStates.length === 0) {
+      setError('Please select at least one state');
+      return;
+    }
+    
+    setLocationGenerating(true);
+    setError('');
+    setLocationResult(null);
+    
+    try {
+      const res = await axios.post(`${API}/admin/ai/batch-location-blogs`, 
+        { states: selectedStates },
+        { headers: { 'X-Admin-Token': adminToken } }
+      );
+      
+      setLocationResult(res.data);
+      fetchGenerationHistory();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate location blogs');
+    } finally {
+      setLocationGenerating(false);
+    }
+  };
+
+  const handleBatchTopicBlogs = async () => {
+    const topics = customTopics.split('\n').filter(t => t.trim());
+    if (topics.length === 0) {
+      setError('Please enter at least one topic');
+      return;
+    }
+    
+    setTopicGenerating(true);
+    setError('');
+    setTopicResult(null);
+    
+    try {
+      const res = await axios.post(`${API}/admin/ai/batch-topic-blogs`, 
+        { topics },
+        { headers: { 'X-Admin-Token': adminToken } }
+      );
+      
+      setTopicResult(res.data);
+      fetchGenerationHistory();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate topic blogs');
+    } finally {
+      setTopicGenerating(false);
     }
   };
 
@@ -240,8 +301,31 @@ function AdminAIStudio() {
                 ? 'bg-green-500 text-white' 
                 : 'bg-white text-gray-600 border border-gray-200'
             }`}
+            data-testid="tab-auto"
           >
-            <Zap size={18} /> Auto Generate (12 Blogs)
+            <Zap size={18} /> Auto (12 Blogs)
+          </button>
+          <button
+            onClick={() => { setActiveMode('location-batch'); setResult(null); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
+              activeMode === 'location-batch' 
+                ? 'bg-blue-500 text-white' 
+                : 'bg-white text-gray-600 border border-gray-200'
+            }`}
+            data-testid="tab-location-batch"
+          >
+            <Globe size={18} /> Location Blogs
+          </button>
+          <button
+            onClick={() => { setActiveMode('topic-batch'); setResult(null); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
+              activeMode === 'topic-batch' 
+                ? 'bg-orange-500 text-white' 
+                : 'bg-white text-gray-600 border border-gray-200'
+            }`}
+            data-testid="tab-topic-batch"
+          >
+            <Tag size={18} /> Topic Blogs
           </button>
           <button
             onClick={() => { setActiveMode('blog'); setResult(null); }}
@@ -250,6 +334,7 @@ function AdminAIStudio() {
                 ? 'bg-purple-500 text-white' 
                 : 'bg-white text-gray-600 border border-gray-200'
             }`}
+            data-testid="tab-single"
           >
             <FileText size={18} /> Single Blog
           </button>
@@ -260,6 +345,7 @@ function AdminAIStudio() {
                 ? 'bg-purple-500 text-white' 
                 : 'bg-white text-gray-600 border border-gray-200'
             }`}
+            data-testid="tab-location"
           >
             <MapPin size={18} /> Location Page
           </button>
@@ -270,8 +356,9 @@ function AdminAIStudio() {
                 ? 'bg-purple-500 text-white' 
                 : 'bg-white text-gray-600 border border-gray-200'
             }`}
+            data-testid="tab-ideas"
           >
-            <Lightbulb size={18} /> Topic Ideas
+            <Lightbulb size={18} /> Ideas
           </button>
         </div>
 
@@ -419,6 +506,229 @@ function AdminAIStudio() {
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Location Batch Generation */}
+        {activeMode === 'location-batch' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-blue-500 to-cyan-600 rounded-2xl p-6 text-white">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Globe className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Location-Based Blogs</h2>
+                  <p className="text-blue-100 text-sm">Generate blogs targeting specific Indian states</p>
+                </div>
+              </div>
+              
+              <div className="bg-white/10 rounded-xl p-4 mb-4">
+                <p className="text-sm text-blue-100 mb-3">Select states to generate blogs for:</p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {INDIAN_STATES.map(state => (
+                    <label key={state} className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedStates.includes(state)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedStates([...selectedStates, state]);
+                          } else {
+                            setSelectedStates(selectedStates.filter(s => s !== state));
+                          }
+                        }}
+                        className="w-4 h-4 rounded"
+                      />
+                      <span className="text-sm">{state}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mb-4">
+                <button
+                  onClick={() => setSelectedStates(INDIAN_STATES)}
+                  className="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30"
+                >
+                  Select All
+                </button>
+                <button
+                  onClick={() => setSelectedStates([])}
+                  className="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30"
+                >
+                  Clear All
+                </button>
+              </div>
+              
+              <button
+                onClick={handleBatchLocationBlogs}
+                disabled={locationGenerating || selectedStates.length === 0}
+                className="w-full py-4 bg-white text-blue-600 font-bold rounded-xl hover:bg-blue-50 disabled:opacity-50 flex items-center justify-center gap-2"
+                data-testid="location-batch-btn"
+              >
+                {locationGenerating ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Generating {selectedStates.length} location blogs...
+                  </>
+                ) : (
+                  <>
+                    <Globe size={20} />
+                    Generate {selectedStates.length} Location Blogs
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Location Generation Result */}
+            {locationResult && (
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
+                <div className="flex items-center gap-2 mb-4">
+                  <Check className="text-green-500" size={24} />
+                  <h3 className="font-semibold text-gray-900">
+                    Generated {locationResult.generated} location blogs!
+                  </h3>
+                </div>
+                
+                {locationResult.failed > 0 && (
+                  <p className="text-amber-600 text-sm mb-4">{locationResult.failed} blogs failed</p>
+                )}
+                
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {locationResult.blogs?.map((blog, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{blog.title}</p>
+                        <span className="text-xs text-blue-500">{blog.location_target}</span>
+                      </div>
+                      <Link 
+                        to={`/blog/${blog.slug}`}
+                        target="_blank"
+                        className="text-blue-500 text-sm hover:underline"
+                      >
+                        View →
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+                
+                <Link
+                  to="/admin/blogs"
+                  className="block w-full mt-4 py-3 bg-gray-900 text-white text-center rounded-xl font-medium hover:bg-gray-800"
+                >
+                  View All Blogs
+                </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Topic Batch Generation */}
+        {activeMode === 'topic-batch' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-orange-500 to-amber-600 rounded-2xl p-6 text-white">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Tag className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Topic-Based Blogs</h2>
+                  <p className="text-orange-100 text-sm">Generate blogs for specific topics you define</p>
+                </div>
+              </div>
+              
+              <div className="bg-white/10 rounded-xl p-4 mb-4">
+                <p className="text-sm text-orange-100 mb-3">Enter topics (one per line):</p>
+                <textarea
+                  value={customTopics}
+                  onChange={(e) => setCustomTopics(e.target.value)}
+                  className="w-full h-40 px-4 py-3 bg-white/20 border-0 rounded-xl text-white placeholder-white/60 focus:ring-2 focus:ring-white/50 outline-none resize-none"
+                  placeholder="Best anti-aging ingredients for Indian skin&#10;How to reduce wrinkles naturally&#10;Night skincare routine for 30+&#10;Benefits of retinol serum"
+                  data-testid="custom-topics-input"
+                />
+              </div>
+              
+              <div className="flex gap-3 mb-4">
+                <button
+                  onClick={() => setCustomTopics(`Best anti-aging ingredients for Indian skin
+How to reduce wrinkles naturally at home
+Night skincare routine for women over 30
+Benefits of retinol and vitamin C serum
+How to prevent premature aging
+Anti-aging diet tips for glowing skin`)}
+                  className="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30"
+                >
+                  Load Sample Topics
+                </button>
+                <button
+                  onClick={() => setCustomTopics('')}
+                  className="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30"
+                >
+                  Clear
+                </button>
+              </div>
+              
+              <button
+                onClick={handleBatchTopicBlogs}
+                disabled={topicGenerating || !customTopics.trim()}
+                className="w-full py-4 bg-white text-orange-600 font-bold rounded-xl hover:bg-orange-50 disabled:opacity-50 flex items-center justify-center gap-2"
+                data-testid="topic-batch-btn"
+              >
+                {topicGenerating ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Generating {customTopics.split('\n').filter(t => t.trim()).length} topic blogs...
+                  </>
+                ) : (
+                  <>
+                    <Tag size={20} />
+                    Generate {customTopics.split('\n').filter(t => t.trim()).length || 0} Topic Blogs
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Topic Generation Result */}
+            {topicResult && (
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
+                <div className="flex items-center gap-2 mb-4">
+                  <Check className="text-green-500" size={24} />
+                  <h3 className="font-semibold text-gray-900">
+                    Generated {topicResult.generated} topic blogs!
+                  </h3>
+                </div>
+                
+                {topicResult.failed > 0 && (
+                  <p className="text-amber-600 text-sm mb-4">{topicResult.failed} blogs failed</p>
+                )}
+                
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {topicResult.blogs?.map((blog, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{blog.title}</p>
+                        <span className="text-xs text-orange-500">{blog.original_topic}</span>
+                      </div>
+                      <Link 
+                        to={`/blog/${blog.slug}`}
+                        target="_blank"
+                        className="text-orange-500 text-sm hover:underline"
+                      >
+                        View →
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+                
+                <Link
+                  to="/admin/blogs"
+                  className="block w-full mt-4 py-3 bg-gray-900 text-white text-center rounded-xl font-medium hover:bg-gray-800"
+                >
+                  View All Blogs
+                </Link>
               </div>
             )}
           </div>
