@@ -70,15 +70,20 @@ function BlogPost() {
 
       {/* Content */}
       <div className="px-5 py-8">
-        <div data-testid="blog-content">
-          {blog.content.split('\n').map((paragraph, i) => (
-            paragraph.trim() && (
-              <p key={i} className="text-gray-600 text-base mb-5 leading-relaxed">
-                {paragraph}
-              </p>
-            )
-          ))}
-        </div>
+        <div 
+          data-testid="blog-content"
+          className="prose prose-gray max-w-none
+            prose-headings:text-gray-900 prose-headings:font-bold
+            prose-h2:text-xl prose-h2:mt-8 prose-h2:mb-4
+            prose-h3:text-lg prose-h3:mt-6 prose-h3:mb-3
+            prose-p:text-gray-600 prose-p:leading-relaxed prose-p:mb-5
+            prose-ul:list-disc prose-ul:pl-5 prose-ul:my-4
+            prose-ol:list-decimal prose-ol:pl-5 prose-ol:my-4
+            prose-li:text-gray-600 prose-li:mb-2
+            prose-strong:text-gray-800 prose-strong:font-semibold
+            prose-a:text-green-600 prose-a:no-underline hover:prose-a:underline"
+          dangerouslySetInnerHTML={{ __html: blog.content }}
+        />
       </div>
 
       {/* Bottom CTA */}
