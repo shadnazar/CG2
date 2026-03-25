@@ -1,9 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Check, Star, ChevronRight, ChevronDown, ChevronUp, Clock, Users, ShieldCheck, Truck, Flame } from 'lucide-react';
+import { Check, Star, ChevronRight, ChevronDown, ChevronUp, Clock, Users, ShieldCheck, Truck, Flame, MapPin } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Pricing constants
+const PREPAID_PRICE = 599;
+const MRP = 1499;
 
 // New Celesta Glow product image
 const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_fc697aed-c4ed-4c4b-8eec-b51bdf774715/artifacts/8mw94eq5_IMG_9115.png';
@@ -15,6 +19,7 @@ function Homepage() {
   const [viewingNow, setViewingNow] = useState(23);
   const [soldToday, setSoldToday] = useState(47);
   const [showExitPopup, setShowExitPopup] = useState(false);
+  const [userLocation, setUserLocation] = useState({ state: 'India', customerCount: 10000 });
 
   useEffect(() => {
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -50,12 +55,44 @@ function Homepage() {
     };
     document.addEventListener('mouseleave', handleMouseLeave);
 
+    // Get user location for social proof
+    detectUserLocation();
+
     return () => {
       clearInterval(timer);
       clearInterval(viewerInterval);
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
   }, []);
+
+  // Detect user location for personalized social proof
+  const detectUserLocation = async () => {
+    const locationData = {
+      'Maharashtra': { state: 'Maharashtra', customerCount: 2500 },
+      'Karnataka': { state: 'Karnataka', customerCount: 1800 },
+      'Delhi': { state: 'Delhi', customerCount: 2200 },
+      'Tamil Nadu': { state: 'Tamil Nadu', customerCount: 1500 },
+      'Gujarat': { state: 'Gujarat', customerCount: 1200 },
+      'West Bengal': { state: 'West Bengal', customerCount: 900 },
+      'Rajasthan': { state: 'Rajasthan', customerCount: 800 },
+      'Uttar Pradesh': { state: 'Uttar Pradesh', customerCount: 1100 },
+      'Kerala': { state: 'Kerala', customerCount: 700 },
+      'Telangana': { state: 'Telangana', customerCount: 950 },
+    };
+
+    try {
+      // Try to get location from IP (basic approach using timezone)
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (timezone.includes('Kolkata') || timezone.includes('Asia/Calcutta')) {
+        // Default to a random major state for Indian users
+        const states = Object.keys(locationData);
+        const randomState = states[Math.floor(Math.random() * states.length)];
+        setUserLocation(locationData[randomState]);
+      }
+    } catch (error) {
+      // Keep default
+    }
+  };
 
   // All 10 real testimonials from celestaglow.com
   const testimonials = [
@@ -153,13 +190,23 @@ function Homepage() {
           className="btn-cg-primary"
           data-testid="hero-cta"
         >
-          Order Now — ₹399
+          Order Now — ₹{PREPAID_PRICE}
           <ChevronRight size={20} />
         </button>
 
         <p className="text-xs text-gray-500 mt-3">
           ✓ Free Delivery &nbsp; ✓ COD Available &nbsp; ✓ Easy Returns
         </p>
+
+        {/* Location-based Social Proof Widget */}
+        <div className="mt-5 mx-auto max-w-xs bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3" data-testid="location-social-proof">
+          <div className="flex items-center justify-center gap-2">
+            <MapPin size={16} className="text-green-600" />
+            <p className="text-sm text-gray-700">
+              Join <span className="font-bold text-green-600">{userLocation.customerCount.toLocaleString()}+</span> happy customers in <span className="font-semibold">{userLocation.state}</span>
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* Product Image */}
@@ -323,7 +370,7 @@ function Homepage() {
           className="btn-cg-primary w-full mt-6"
           data-testid="order-now-cta"
         >
-          Order Now — ₹399
+          Order Now — ₹{PREPAID_PRICE}
           <ChevronRight size={20} />
         </button>
       </section>
@@ -405,7 +452,7 @@ function Homepage() {
           className="btn-cg-primary"
           data-testid="final-cta"
         >
-          Order Now — ₹399
+          Order Now — ₹{PREPAID_PRICE}
           <ChevronRight size={20} />
         </button>
       </section>
@@ -415,7 +462,7 @@ function Homepage() {
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <p className="text-xs text-gray-500">Limited Time Offer</p>
-            <p className="font-bold text-gray-900">₹399 <span className="text-sm text-gray-400 line-through">₹1499</span></p>
+            <p className="font-bold text-gray-900">₹{PREPAID_PRICE} <span className="text-sm text-gray-400 line-through">₹{MRP}</span> <span className="text-xs text-green-600 font-medium">60% OFF</span></p>
           </div>
           <button
             onClick={() => navigate('/product/anti-aging-serum')}

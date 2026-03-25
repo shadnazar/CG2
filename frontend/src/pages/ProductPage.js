@@ -6,9 +6,9 @@ import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, Clock
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 
-const PREPAID_PRICE = 399;
-const COD_PRICE = 450;
-const COD_ADVANCE = 49;
+const PREPAID_PRICE = 599;
+const COD_PRICE = 699;
+const COD_ADVANCE = 99;
 const MRP = 1499;
 
 // New product image provided by user
@@ -175,7 +175,7 @@ function ProductPage() {
             data-testid="product-image"
           />
           <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-            73% OFF
+            60% OFF
           </div>
         </div>
 
@@ -588,6 +588,7 @@ function ProductPage() {
                   <p className="font-semibold text-gray-900 text-sm">Cash on Delivery — ₹{COD_PRICE}</p>
                   <p className="text-gray-500 text-xs">Pay ₹{COD_ADVANCE} now + ₹{COD_PRICE - COD_ADVANCE} on delivery</p>
                 </div>
+                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">53% OFF</span>
               </label>
             </div>
           </div>

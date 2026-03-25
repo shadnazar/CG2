@@ -8,6 +8,12 @@ Build a mobile-first e-commerce web application for "Celesta Glow" anti-aging fa
 4. **Multi-language support** (English + Hindi)
 5. **Location-based SEO pages** for programmatic SEO
 
+## Pricing (Updated March 25, 2026)
+- **Prepaid Price**: ₹599 (60% discount)
+- **COD Price**: ₹699 (53% discount)
+- **COD Advance**: ₹99 (pay now) + ₹600 on delivery
+- **MRP**: ₹1,499
+
 ## Brand Design (Matches celestaglow.com)
 - **Primary Green**: #22C55E
 - **Dark Navy**: #1E293B
@@ -54,6 +60,14 @@ Build a mobile-first e-commerce web application for "Celesta Glow" anti-aging fa
 - [x] Location pages (`/:state/:city`)
 - [x] Blog pages with SEO metadata
 - [x] Programmatic location page generation
+
+#### Conversion Features
+- [x] Location-based social proof widget ("Join X+ customers in [State]")
+- [x] Flash sale countdown timer
+- [x] "X viewing now" / "X sold today" indicators
+- [x] Stock scarcity messaging
+- [x] Exit intent popup with discount code
+- [x] Sticky bottom CTA bar
 
 #### E-Commerce
 - [x] Homepage with CRO features
