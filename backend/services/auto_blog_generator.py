@@ -7,7 +7,7 @@ import json
 import uuid
 import re
 import asyncio
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import List
 from emergentintegrations.llm.chat import LlmChat, UserMessage
 from services.image_service import get_image_for_category, get_image_for_keywords
@@ -261,18 +261,112 @@ Remember: Write like a helpful friend sharing beauty secrets, not like a corpora
         logs = await self.db.blog_generation_logs.find({}, {"_id": 0}).sort("timestamp", -1).limit(limit).to_list(limit)
         return logs
 
-    async def generate_location_blogs(self, states: List[str]) -> dict:
-        """Generate SEO blogs targeting specific Indian states"""
+    async def get_used_states(self, days: int = 30) -> List[str]:
+        """Get states that have been used for location blogs recently"""
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        blogs = await self.db.blogs.find(
+            {
+                "generated_by": {"$in": ["AI-Location", "AI-Auto"]},
+                "location_target": {"$exists": True, "$ne": None},
+                "created_at": {"$gte": cutoff.isoformat()}
+            },
+            {"_id": 0, "location_target": 1}
+        ).to_list(500)
+        return list(set(b.get("location_target") for b in blogs if b.get("location_target")))
+
+    async def get_used_topics(self, days: int = 30) -> List[str]:
+        """Get topics that have been used recently to avoid duplicates"""
+        cutoff = datetime.now(timezone.utc) - timedelta(days=days)
+        blogs = await self.db.blogs.find(
+            {
+                "generated_by": {"$in": ["AI-Topic", "AI-Auto"]},
+                "created_at": {"$gte": cutoff.isoformat()}
+            },
+            {"_id": 0, "title": 1, "original_topic": 1}
+        ).to_list(500)
+        topics = []
+        for b in blogs:
+            if b.get("original_topic"):
+                topics.append(b["original_topic"].lower())
+            if b.get("title"):
+                topics.append(b["title"].lower())
+        return list(set(topics))
+
+    async def get_next_states_for_cycling(self, count: int = 12) -> List[str]:
+        """Get next states for auto-generation using cycling logic
+        
+        Cycles through all Indian states, avoiding recently used ones.
+        When all states are used, starts fresh from the beginning.
+        """
+        all_states = [
+            'Maharashtra', 'Karnataka', 'Tamil Nadu', 'Delhi', 'Gujarat', 
+            'West Bengal', 'Rajasthan', 'Uttar Pradesh', 'Kerala', 'Telangana',
+            'Andhra Pradesh', 'Punjab', 'Haryana', 'Bihar', 'Madhya Pradesh',
+            'Odisha', 'Jharkhand', 'Chhattisgarh', 'Assam', 'Uttarakhand',
+            'Himachal Pradesh', 'Goa', 'Tripura', 'Manipur', 'Meghalaya'
+        ]
+        
+        # Get recently used states (last 60 days to ensure full cycle)
+        used_states = await self.get_used_states(days=60)
+        
+        # Find unused states
+        unused_states = [s for s in all_states if s not in used_states]
+        
+        # If all states used, reset and start fresh
+        if len(unused_states) < count:
+            # Clear the cycle - use states not used in last 7 days only
+            recent_used = await self.get_used_states(days=7)
+            unused_states = [s for s in all_states if s not in recent_used]
+            
+            if len(unused_states) < count:
+                # If still not enough, just use all states
+                unused_states = all_states.copy()
+        
+        return unused_states[:count]
+
+    async def generate_location_blogs(self, states: List[str] = None, count: int = 12) -> dict:
+        """Generate SEO blogs targeting specific Indian states
+        
+        Args:
+            states: List of states to generate blogs for. If None, uses cycling logic.
+            count: Maximum number of blogs to generate (default 12)
+        """
         results = {
             "success": True,
             "generated": 0,
             "failed": 0,
-            "blogs": []
+            "blogs": [],
+            "skipped_states": []
         }
+        
+        # If no states provided, get next states using cycling logic
+        if not states:
+            states = await self.get_next_states_for_cycling(count)
+        
+        # Filter out already used states (avoid duplicates)
+        used_states = await self.get_used_states(days=30)
+        states_to_generate = []
+        for state in states:
+            if state not in used_states:
+                states_to_generate.append(state)
+            else:
+                results["skipped_states"].append(state)
+        
+        # Limit to count
+        states_to_generate = states_to_generate[:count]
+        
+        if not states_to_generate:
+            return {
+                "success": True,
+                "generated": 0,
+                "failed": 0,
+                "blogs": [],
+                "message": "All selected states have blogs generated in the last 30 days. Try different states or wait for the cycle to reset."
+            }
         
         used_images = []
         
-        for state in states:
+        for state in states_to_generate:
             try:
                 topic = {
                     "title": f"Anti-Aging Skincare Guide for {state}",
@@ -379,26 +473,68 @@ Return as JSON:
             "generated": results["generated"],
             "failed": results["failed"],
             "trigger": "location-batch",
-            "states": states
+            "states": states_to_generate,
+            "skipped_states": results.get("skipped_states", [])
         })
         
         return results
 
-    async def generate_topic_blogs(self, topics: List[str]) -> dict:
-        """Generate SEO blogs for specific user-defined topics"""
+    async def generate_topic_blogs(self, topics: List[str], count: int = 12) -> dict:
+        """Generate SEO blogs for specific user-defined topics
+        
+        Args:
+            topics: List of topics to generate blogs for
+            count: Maximum number of blogs to generate (default 12)
+        """
         results = {
             "success": True,
             "generated": 0,
             "failed": 0,
-            "blogs": []
+            "blogs": [],
+            "skipped_topics": []
         }
         
-        used_images = []
+        # Get recently used topics to avoid duplicates
+        used_topics = await self.get_used_topics(days=30)
         
+        # Filter and prepare topics
+        topics_to_generate = []
         for topic_text in topics:
             topic_text = topic_text.strip()
             if not topic_text:
                 continue
+            
+            # Check if similar topic was already generated
+            topic_lower = topic_text.lower()
+            is_duplicate = False
+            for used in used_topics:
+                # Check for significant overlap (more than 60% word match)
+                topic_words = set(topic_lower.split())
+                used_words = set(used.split())
+                if len(topic_words & used_words) / max(len(topic_words), 1) > 0.6:
+                    is_duplicate = True
+                    break
+            
+            if is_duplicate:
+                results["skipped_topics"].append(topic_text)
+            else:
+                topics_to_generate.append(topic_text)
+        
+        # Limit to count
+        topics_to_generate = topics_to_generate[:count]
+        
+        if not topics_to_generate:
+            return {
+                "success": True,
+                "generated": 0,
+                "failed": 0,
+                "blogs": [],
+                "message": "All topics have similar blogs generated in the last 30 days. Try different topics."
+            }
+        
+        used_images = []
+        
+        for topic_text in topics_to_generate:
                 
             try:
                 prompt = f"""Write a complete, SEO-optimized blog article about: {topic_text}

@@ -412,25 +412,33 @@ function AdminDashboard() {
                   <div className="space-y-3">
                     {Object.entries(pageAnalytics.page_analytics.page_totals)
                       .sort(([,a], [,b]) => b - a)
-                      .map(([page, visits]) => (
-                        <div key={page} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                          <div className="flex items-center gap-3">
-                            <Globe className="w-5 h-5 text-gray-400" />
-                            <span className="font-medium text-gray-900">{page}</span>
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
-                              <div 
-                                className="h-full bg-green-500 rounded-full"
-                                style={{ 
-                                  width: `${Math.min(100, (visits / Math.max(...Object.values(pageAnalytics.page_analytics.page_totals))) * 100)}%` 
-                                }}
-                              />
+                      .map(([page, visits]) => {
+                        const maxVisits = Math.max(...Object.values(pageAnalytics.page_analytics.page_totals));
+                        const percentage = Math.min(100, (visits / maxVisits) * 100);
+                        return (
+                          <div key={page} className="p-4 bg-gray-50 rounded-xl">
+                            <div className="flex items-center gap-3 mb-2">
+                              <Globe className="w-5 h-5 text-gray-400" />
+                              <span className="font-medium text-gray-900">{page}</span>
                             </div>
-                            <span className="font-bold text-gray-900 w-16 text-right">{visits.toLocaleString()}</span>
+                            <div className="relative h-8 bg-gray-200 rounded-lg overflow-hidden">
+                              <div 
+                                className="h-full bg-green-500 rounded-lg flex items-center justify-end pr-3 transition-all"
+                                style={{ width: `${Math.max(percentage, 15)}%` }}
+                              >
+                                {percentage >= 15 && (
+                                  <span className="font-bold text-white text-sm">{visits.toLocaleString()}</span>
+                                )}
+                              </div>
+                              {percentage < 15 && (
+                                <span className="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-gray-700 text-sm">
+                                  {visits.toLocaleString()}
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">

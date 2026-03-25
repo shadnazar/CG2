@@ -9,17 +9,25 @@ import uuid
 class EnhancedAnalyticsTracker:
     def __init__(self, db):
         self.db = db
-        # In-memory cache for live visitors (cleared after 5 minutes of inactivity)
+        # In-memory cache for live visitors - keyed by session_id
+        # When user navigates pages, their entry is updated (not duplicated)
         self.live_visitors = {}
+        # Track unique IPs per page to prevent same IP counting multiple times
+        self.ip_page_tracker = {}  # {ip: {page: last_seen}}
     
     async def track_page_visit(self, page: str, session_id: str, user_agent: str = None, referrer: str = None, ip_address: str = None):
-        """Track a page visit with detailed information including IP"""
+        """Track a page visit with detailed information including IP
+        
+        Key behaviors:
+        1. Session-based: When user moves from homepage to product, homepage count decreases, product increases
+        2. IP deduplication: Same IP on same page within 5 min window counts as 1 visitor only
+        """
         now = datetime.now(timezone.utc)
         
         # Normalize page name for tracking
         normalized_page = self._normalize_page(page)
         
-        # Update live visitors cache
+        # Update live visitors cache - session_id is key, so moving pages updates the entry
         self.live_visitors[session_id] = {
             "page": normalized_page,
             "last_seen": now,
@@ -34,7 +42,25 @@ class EnhancedAnalyticsTracker:
             if v["last_seen"] > cutoff
         }
         
-        # Store in database for historical tracking
+        # Clean up stale IP tracking
+        self._cleanup_ip_tracker(cutoff)
+        
+        # Check if this IP already visited this page recently (for historical stats)
+        should_count_visit = True
+        if ip_address:
+            if ip_address in self.ip_page_tracker:
+                if normalized_page in self.ip_page_tracker[ip_address]:
+                    last_visit = self.ip_page_tracker[ip_address][normalized_page]
+                    # If same IP visited same page within last 30 minutes, don't count again
+                    if last_visit > (now - timedelta(minutes=30)):
+                        should_count_visit = False
+            
+            # Update IP tracker
+            if ip_address not in self.ip_page_tracker:
+                self.ip_page_tracker[ip_address] = {}
+            self.ip_page_tracker[ip_address][normalized_page] = now
+        
+        # Store in database for historical tracking (always store for audit)
         visit_doc = {
             "id": str(uuid.uuid4()),
             "session_id": session_id,
@@ -45,36 +71,51 @@ class EnhancedAnalyticsTracker:
             "ip_address": ip_address,
             "timestamp": now.isoformat(),
             "date": now.strftime("%Y-%m-%d"),
-            "hour": now.hour
+            "hour": now.hour,
+            "counted": should_count_visit  # Flag to know if this was counted in stats
         }
         
         await self.db.page_visits.insert_one(visit_doc)
         
-        # Update page stats for normalized page
-        await self.db.page_stats.update_one(
-            {"page": normalized_page, "date": now.strftime("%Y-%m-%d")},
-            {
-                "$inc": {"visits": 1},
-                "$setOnInsert": {"page": normalized_page, "date": now.strftime("%Y-%m-%d")}
-            },
-            upsert=True
-        )
-        
-        # Update total stats
-        await self.db.total_stats.update_one(
-            {"type": "global"},
-            {
-                "$inc": {"total_visits": 1},
-                "$set": {"last_updated": now.isoformat()}
-            },
-            upsert=True
-        )
+        # Only increment stats if this is a unique visit (not same IP refreshing)
+        if should_count_visit:
+            # Update page stats for normalized page
+            await self.db.page_stats.update_one(
+                {"page": normalized_page, "date": now.strftime("%Y-%m-%d")},
+                {
+                    "$inc": {"visits": 1},
+                    "$setOnInsert": {"page": normalized_page, "date": now.strftime("%Y-%m-%d")}
+                },
+                upsert=True
+            )
+            
+            # Update total stats
+            await self.db.total_stats.update_one(
+                {"type": "global"},
+                {
+                    "$inc": {"total_visits": 1},
+                    "$set": {"last_updated": now.isoformat()}
+                },
+                upsert=True
+            )
         
         # Track IP location if provided
         if ip_address:
             await self._track_ip_location(ip_address, now)
         
-        return {"tracked": True, "session_id": session_id}
+        return {"tracked": True, "session_id": session_id, "counted": should_count_visit}
+    
+    def _cleanup_ip_tracker(self, cutoff: datetime):
+        """Clean up old IP tracking entries"""
+        ips_to_remove = []
+        for ip, pages in self.ip_page_tracker.items():
+            pages_to_remove = [p for p, t in pages.items() if t < cutoff]
+            for p in pages_to_remove:
+                del pages[p]
+            if not pages:
+                ips_to_remove.append(ip)
+        for ip in ips_to_remove:
+            del self.ip_page_tracker[ip]
     
     def _normalize_page(self, page: str) -> str:
         """Normalize page URLs to standard categories for tracking"""

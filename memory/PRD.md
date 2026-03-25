@@ -25,17 +25,28 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 #### 2. Admin Panel (`/admin`)
 - Secure login (password: celestaglow2024)
 - Analytics dashboard (live visitors, page stats, leads)
+- **Page visit totals for Homepage, Product, Checkout (NEW)**
+- **Top Visitor Locations by state (NEW)**
+- **Password change functionality (NEW)**
 - Blog CRUD management
 - Location management
 - Order viewer
 - AI Content Studio (manual blog generation)
-- **Consultations management (NEW)**
+- **Consultations management**
 
 #### 3. AI Content Engine
 - GPT-4o powered blog generation
 - Auto-generates 12 SEO blogs every 12 hours
+- **1-Click Location Blogs generation (up to 12 states) (NEW)**
+- **1-Click Topic Blogs generation (up to 12 topics) (NEW)**
+- **Duplicate avoidance - cycles through states without repeating (NEW)**
 - Location-targeted content
-- **Blog images from Unsplash/Pexels (NEW)**
+- **Blog images from Unsplash/Pexels**
+
+#### 4. Enhanced Analytics (NEW - Dec 2025)
+- **Session-based live tracking**: When user moves from homepage to product, counts update correctly
+- **IP deduplication**: Same IP visiting same page within 30 min counts as 1 visitor
+- **Page Analytics UI**: Numbers displayed inside progress bars (matching reference design)
 
 #### 4. Lead Generation & CRO
 - Phone capture popup (₹50 discount)
