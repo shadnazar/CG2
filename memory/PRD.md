@@ -25,9 +25,13 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 #### 2. Admin Panel (`/admin`)
 - Secure login (password: celestaglow2024)
 - Analytics dashboard (live visitors, page stats, leads)
-- **Page visit totals for Homepage, Product, Checkout (NEW)**
-- **Top Visitor Locations by state (NEW)**
-- **Password change functionality (NEW)**
+- **Day-wise Visitor Analytics with date filters (NEW - Mar 2026)**
+  - Preset filters: Last 7/14/30 days, 3/6 months, 1 year
+  - Custom date picker
+  - Shows Homepage, Product, Checkout visits per day
+- **Page visit totals for Homepage, Product, Checkout**
+- **Top Visitor Locations by state**
+- **Password change functionality**
 - Blog CRUD management
 - Location management
 - Order viewer
@@ -37,25 +41,28 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 #### 3. AI Content Engine
 - GPT-4o powered blog generation
 - Auto-generates 12 SEO blogs every 12 hours
-- **1-Click Location Blogs generation (up to 12 states) (NEW)**
-- **1-Click Topic Blogs generation (up to 12 topics) (NEW)**
-- **Duplicate avoidance - cycles through states without repeating (NEW)**
+- **1-Click Location Blogs generation (up to 12 states)**
+- **1-Click Topic Blogs generation (up to 12 topics)**
+- **Duplicate avoidance - cycles through states without repeating**
 - Location-targeted content
 - **Blog images from Unsplash/Pexels**
 
-#### 4. Enhanced Analytics (NEW - Dec 2025)
+#### 4. Enhanced Analytics
 - **Session-based live tracking**: When user moves from homepage to product, counts update correctly
 - **IP deduplication**: Same IP visiting same page within 30 min counts as 1 visitor
 - **Page Analytics UI**: Numbers displayed inside progress bars (matching reference design)
 
-#### 4. Lead Generation & CRO
+#### 5. CRO Features (NEW - Mar 2026)
+- **Exit-Intent Popup**: Shows ₹100 extra discount when user tries to leave
+- **Enhanced Sticky Add-to-Cart**: With FLASH SALE badge, countdown timer
+- **Trust Badges Section**: 100% Genuine, Dermatologist Tested, Secure Payment, Free Delivery + Payment logos
 - Phone capture popup (₹50 discount)
 - Auto-applied discounts at checkout
 - Auto-scrolling testimonials
 - "Recently Purchased" social proof notifications
-- **Free Skin Analysis CTA on homepage (NEW)**
+- **Free Skin Analysis CTA on homepage**
 
-#### 5. Meta Pixel Integration (ID: 690863659974240)
+#### 6. Meta Pixel Integration (ID: 690863659974240)
 - PageView tracking
 - ViewContent on product/homepage
 - AddToCart tracking

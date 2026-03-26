@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift } from 'lucide-react';
+import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift, X, CreditCard, BadgeCheck, Verified, Phone } from 'lucide-react';
 import RecentPurchaseNotification from '../components/RecentPurchaseNotification';
 import {
   trackViewContent,
@@ -48,6 +48,10 @@ function ProductPage() {
   // Discount state
   const [hasDiscount, setHasDiscount] = useState(false);
   const [discountApplied, setDiscountApplied] = useState(false);
+  
+  // Exit-Intent Popup state
+  const [showExitPopup, setShowExitPopup] = useState(false);
+  const [exitPopupShown, setExitPopupShown] = useState(false);
 
   useEffect(() => {
     // Generate unique session ID
@@ -85,14 +89,28 @@ function ProductPage() {
       setSoldToday(stats.soldToday);
     }, 2000);
 
+    // Exit-Intent Detection (Desktop)
+    const handleMouseLeave = (e) => {
+      // Detect if mouse is leaving through the top of the page
+      if (e.clientY <= 0 && !exitPopupShown && !localStorage.getItem('exitPopupShown')) {
+        setShowExitPopup(true);
+        setExitPopupShown(true);
+        localStorage.setItem('exitPopupShown', 'true');
+      }
+    };
+
+    // Add exit-intent listener
+    document.addEventListener('mouseleave', handleMouseLeave);
+
     // Track time on page when leaving
     return () => { 
       const timeOnPage = Math.round((Date.now() - pageStartTime.current) / 1000);
       trackTimeOnPage('product', timeOnPage);
       clearInterval(timer); 
-      clearInterval(viewerInterval); 
+      clearInterval(viewerInterval);
+      document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, []);
+  }, [exitPopupShown]);
 
   // Check if user has a discount - Auto apply if claimed
   const checkDiscountStatus = async () => {
@@ -600,14 +618,53 @@ function ProductPage() {
               <span>✓ Made in India</span>
             </div>
           </div>
+
+          {/* Trust Badges Section - NEW */}
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 rounded-2xl p-4 mb-20">
+            <p className="text-center text-xs font-semibold text-green-700 mb-3">TRUSTED BY 10,000+ CUSTOMERS</p>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="flex flex-col items-center text-center">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-1">
+                  <BadgeCheck className="w-5 h-5 text-green-600" />
+                </div>
+                <span className="text-[10px] text-gray-600">100% Genuine</span>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-1">
+                  <Verified className="w-5 h-5 text-blue-600" />
+                </div>
+                <span className="text-[10px] text-gray-600">Dermatologist Tested</span>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-1">
+                  <CreditCard className="w-5 h-5 text-purple-600" />
+                </div>
+                <span className="text-[10px] text-gray-600">Secure Payment</span>
+              </div>
+              <div className="flex flex-col items-center text-center">
+                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-1">
+                  <Truck className="w-5 h-5 text-orange-600" />
+                </div>
+                <span className="text-[10px] text-gray-600">Free Delivery</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-center gap-3 mt-3 pt-3 border-t border-green-100">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e1/UPI-Logo-vector.svg/200px-UPI-Logo-vector.svg.png" alt="UPI" className="h-5 opacity-70" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/200px-Mastercard-logo.svg.png" alt="Mastercard" className="h-5 opacity-70" />
+              <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/200px-Visa_Inc._logo.svg.png" alt="Visa" className="h-4 opacity-70" />
+            </div>
+          </div>
         </div>
 
-        {/* Sticky Bottom CTA */}
-        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t border-gray-100 p-3 z-50 shadow-lg">
+        {/* Enhanced Sticky Bottom CTA */}
+        <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white border-t-2 border-green-500 p-3 z-50 shadow-2xl" data-testid="sticky-bottom-cta">
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <p className="text-xs text-red-500 font-medium">Only {stockLeft} left at this price!</p>
-              <p className="font-bold text-gray-900">₹{PREPAID_PRICE} <span className="text-sm text-gray-400 line-through">₹{MRP}</span></p>
+              <div className="flex items-center gap-2 mb-0.5">
+                <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded font-bold animate-pulse">FLASH SALE</span>
+                <span className="text-[10px] text-red-600 font-medium">Ends in {String(timeLeft.hours).padStart(2,'0')}:{String(timeLeft.minutes).padStart(2,'0')}:{String(timeLeft.seconds).padStart(2,'0')}</span>
+              </div>
+              <p className="font-bold text-gray-900 text-lg">₹{PREPAID_PRICE} <span className="text-sm text-gray-400 line-through">₹{MRP}</span></p>
             </div>
             <button
               onClick={() => {
@@ -615,13 +672,73 @@ function ProductPage() {
                 trackCTAClick('buy_now_sticky', 'product_page_sticky');
                 setStep('checkout');
               }}
-              className="btn-cg-primary py-3 px-5"
+              className="bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
               data-testid="sticky-buy-button"
             >
               Buy Now <ChevronRight size={18} />
             </button>
           </div>
         </div>
+
+        {/* Exit-Intent Popup */}
+        {showExitPopup && (
+          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4" data-testid="exit-popup">
+            <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl animate-bounce-in">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-red-500 to-orange-500 p-5 text-white text-center relative">
+                <button 
+                  onClick={() => setShowExitPopup(false)}
+                  className="absolute top-3 right-3 w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30"
+                >
+                  <X size={18} />
+                </button>
+                <p className="text-sm font-medium opacity-90 mb-1">WAIT! Don't Leave Yet!</p>
+                <p className="text-2xl font-bold">Extra ₹100 OFF</p>
+                <p className="text-sm opacity-90">Just for you!</p>
+              </div>
+              
+              {/* Content */}
+              <div className="p-5">
+                <div className="flex items-center gap-3 mb-4">
+                  <img src={PRODUCT_IMAGE} alt="Product" className="w-16 h-16 object-contain" />
+                  <div>
+                    <p className="font-semibold text-gray-900">Super Anti-Aging Serum</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl font-bold text-green-600">₹{PREPAID_PRICE - 100}</span>
+                      <span className="text-sm text-gray-400 line-through">₹{MRP}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4">
+                  <div className="flex items-center gap-2 text-yellow-700">
+                    <Clock size={16} />
+                    <span className="text-sm font-medium">Offer expires in 10 minutes!</span>
+                  </div>
+                </div>
+                
+                <button
+                  onClick={() => {
+                    setShowExitPopup(false);
+                    trackCTAClick('exit_popup_buy', 'exit_popup');
+                    setStep('checkout');
+                  }}
+                  className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all"
+                  data-testid="exit-popup-buy-btn"
+                >
+                  Claim ₹100 OFF & Buy Now
+                </button>
+                
+                <button
+                  onClick={() => setShowExitPopup(false)}
+                  className="w-full text-gray-500 text-sm mt-3 hover:text-gray-700"
+                >
+                  No thanks, I'll pay full price
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Recent Purchase Notification */}
         <RecentPurchaseNotification />
