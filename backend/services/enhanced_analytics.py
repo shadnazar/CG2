@@ -297,6 +297,124 @@ class EnhancedAnalyticsTracker:
         
         return hourly
 
+    async def get_daywise_analytics(self, days: int = 7, start_date: str = None, end_date: str = None):
+        """Get day-wise visitor analytics for Homepage, Product Page, and Checkout
+        
+        Args:
+            days: Number of days to look back (used if start_date/end_date not provided)
+            start_date: Custom start date in YYYY-MM-DD format
+            end_date: Custom end date in YYYY-MM-DD format
+        
+        Returns:
+            Dictionary with daily_stats (list of day data) and totals
+        """
+        now = datetime.now(timezone.utc)
+        
+        # Determine date range
+        if start_date and end_date:
+            date_start = start_date
+            date_end = end_date
+        else:
+            date_end = now.strftime("%Y-%m-%d")
+            date_start = (now - timedelta(days=days)).strftime("%Y-%m-%d")
+        
+        # Query page_stats for the date range
+        query = {
+            "date": {"$gte": date_start, "$lte": date_end},
+            "page": {"$in": ["Homepage", "Product Page", "Checkout", "homepage", "product", "checkout"]}
+        }
+        
+        stats = await self.db.page_stats.find(query, {"_id": 0}).to_list(10000)
+        
+        # Also get from page_visits for more accurate data
+        visits_query = {
+            "date": {"$gte": date_start, "$lte": date_end}
+        }
+        visits = await self.db.page_visits.find(
+            visits_query, 
+            {"_id": 0, "date": 1, "page": 1}
+        ).to_list(100000)
+        
+        # Aggregate by date and page type
+        daily_data = {}
+        
+        # Process page_stats
+        for stat in stats:
+            date = stat["date"]
+            page = stat["page"].lower()
+            visits_count = stat.get("visits", 0)
+            
+            if date not in daily_data:
+                daily_data[date] = {"homepage": 0, "product": 0, "checkout": 0, "total": 0}
+            
+            # Normalize page names
+            if page in ["homepage", "home"]:
+                daily_data[date]["homepage"] += visits_count
+            elif page in ["product page", "product", "serum"]:
+                daily_data[date]["product"] += visits_count
+            elif page in ["checkout"]:
+                daily_data[date]["checkout"] += visits_count
+            
+            daily_data[date]["total"] += visits_count
+        
+        # If we have raw visits data, use that for more accurate counts
+        if visits:
+            # Reset and recalculate from raw visits
+            daily_data_v2 = {}
+            for visit in visits:
+                date = visit.get("date", "")
+                page = (visit.get("page", "") or "").lower()
+                
+                if not date:
+                    continue
+                    
+                if date not in daily_data_v2:
+                    daily_data_v2[date] = {"homepage": 0, "product": 0, "checkout": 0, "total": 0}
+                
+                # Normalize page names
+                if page in ["homepage", "home", ""]:
+                    daily_data_v2[date]["homepage"] += 1
+                elif page in ["product page", "product", "serum"]:
+                    daily_data_v2[date]["product"] += 1
+                elif page in ["checkout"]:
+                    daily_data_v2[date]["checkout"] += 1
+                else:
+                    daily_data_v2[date]["total"] += 1
+                
+                daily_data_v2[date]["total"] += 1
+            
+            # Use v2 data if it has more entries
+            if len(daily_data_v2) >= len(daily_data):
+                daily_data = daily_data_v2
+        
+        # Convert to sorted list
+        daily_stats = []
+        totals = {"homepage": 0, "product": 0, "checkout": 0, "total": 0}
+        
+        for date in sorted(daily_data.keys(), reverse=True):
+            data = daily_data[date]
+            daily_stats.append({
+                "date": date,
+                "homepage": data["homepage"],
+                "product": data["product"],
+                "checkout": data["checkout"],
+                "total": data["homepage"] + data["product"] + data["checkout"]
+            })
+            totals["homepage"] += data["homepage"]
+            totals["product"] += data["product"]
+            totals["checkout"] += data["checkout"]
+        
+        totals["total"] = totals["homepage"] + totals["product"] + totals["checkout"]
+        
+        return {
+            "daily_stats": daily_stats,
+            "totals": totals,
+            "date_range": {
+                "start": date_start,
+                "end": date_end
+            }
+        }
+
 
 class VisitorLeadTracker:
     """Track visitor phone numbers for discount offers"""

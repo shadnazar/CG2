@@ -606,6 +606,29 @@ async def get_page_analytics(
     }
 
 
+@api_router.get("/admin/analytics/daywise")
+async def get_daywise_analytics(
+    x_admin_token: str = Header(None),
+    days: int = Query(7, ge=1, le=365),
+    start_date: Optional[str] = Query(None),
+    end_date: Optional[str] = Query(None)
+):
+    """Get day-wise visitor analytics with date filtering
+    
+    Returns visitors for Homepage, Product Page, and Checkout for each day.
+    Supports preset days filter or custom date range.
+    """
+    verify_admin_token(x_admin_token)
+    
+    daywise_data = await enhanced_analytics.get_daywise_analytics(
+        days=days, 
+        start_date=start_date, 
+        end_date=end_date
+    )
+    
+    return daywise_data
+
+
 @api_router.get("/admin/analytics/leads")
 async def get_visitor_leads(x_admin_token: str = Header(None)):
     """Get all visitor leads (phone numbers)"""

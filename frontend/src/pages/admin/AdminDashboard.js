@@ -5,10 +5,20 @@ import {
   LayoutDashboard, FileText, MapPin, BarChart3, Users, LogOut,
   TrendingUp, Package, Eye, IndianRupee, ChevronRight, Plus,
   Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope,
-  Home, ShoppingCart, Lock, Settings
+  Home, ShoppingCart, Lock, Settings, Calendar, Filter, ChevronDown
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Date range presets
+const DATE_PRESETS = [
+  { label: 'Last 7 Days', value: 7 },
+  { label: 'Last 14 Days', value: 14 },
+  { label: 'Last 30 Days', value: 30 },
+  { label: 'Last 3 Months', value: 90 },
+  { label: 'Last 6 Months', value: 180 },
+  { label: 'Last 1 Year', value: 365 }
+];
 
 function AdminDashboard() {
   const [analytics, setAnalytics] = useState(null);
@@ -21,6 +31,15 @@ function AdminDashboard() {
   const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
+  
+  // Date filter state
+  const [selectedDays, setSelectedDays] = useState(7);
+  const [customStartDate, setCustomStartDate] = useState('');
+  const [customEndDate, setCustomEndDate] = useState('');
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [dayWiseData, setDayWiseData] = useState(null);
+  const [loadingDayWise, setLoadingDayWise] = useState(false);
+  
   const navigate = useNavigate();
   const adminToken = localStorage.getItem('adminToken');
 
@@ -54,8 +73,31 @@ function AdminDashboard() {
     }
   }, [adminToken, navigate]);
 
+  // Fetch day-wise analytics data with date filter
+  const fetchDayWiseData = useCallback(async (days, startDate = null, endDate = null) => {
+    if (!adminToken) return;
+    
+    setLoadingDayWise(true);
+    try {
+      const headers = { 'X-Admin-Token': adminToken };
+      let url = `${API}/admin/analytics/daywise?days=${days}`;
+      
+      if (startDate && endDate) {
+        url = `${API}/admin/analytics/daywise?start_date=${startDate}&end_date=${endDate}`;
+      }
+      
+      const res = await axios.get(url, { headers });
+      setDayWiseData(res.data);
+    } catch (err) {
+      console.error('Error fetching day-wise data:', err);
+    } finally {
+      setLoadingDayWise(false);
+    }
+  }, [adminToken]);
+
   useEffect(() => {
     fetchAllData();
+    fetchDayWiseData(selectedDays);
     
     // Refresh live data every 30 seconds
     const interval = setInterval(() => {
@@ -67,7 +109,24 @@ function AdminDashboard() {
     }, 30000);
     
     return () => clearInterval(interval);
-  }, [fetchAllData, adminToken]);
+  }, [fetchAllData, fetchDayWiseData, adminToken, selectedDays]);
+
+  // Handle date preset change
+  const handlePresetChange = (days) => {
+    setSelectedDays(days);
+    setCustomStartDate('');
+    setCustomEndDate('');
+    setShowDatePicker(false);
+    fetchDayWiseData(days);
+  };
+
+  // Handle custom date range
+  const handleCustomDateApply = () => {
+    if (customStartDate && customEndDate) {
+      fetchDayWiseData(0, customStartDate, customEndDate);
+      setShowDatePicker(false);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
@@ -405,8 +464,169 @@ function AdminDashboard() {
           {/* Pages Tab */}
           {activeTab === 'pages' && (
             <div className="space-y-6">
+              {/* Date Filter Section */}
               <div className="bg-white rounded-2xl p-6 border border-gray-100">
-                <h3 className="font-semibold text-gray-900 mb-6">Page Performance (Last 7 Days)</h3>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <Filter className="w-5 h-5 text-green-500" />
+                    Date Range Filter
+                  </h3>
+                  <button
+                    onClick={() => setShowDatePicker(!showDatePicker)}
+                    className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg text-sm text-gray-600 hover:bg-gray-200"
+                  >
+                    <Calendar className="w-4 h-4" />
+                    Custom Date
+                    <ChevronDown className={`w-4 h-4 transition-transform ${showDatePicker ? 'rotate-180' : ''}`} />
+                  </button>
+                </div>
+                
+                {/* Preset Buttons */}
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {DATE_PRESETS.map(preset => (
+                    <button
+                      key={preset.value}
+                      onClick={() => handlePresetChange(preset.value)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        selectedDays === preset.value && !customStartDate
+                          ? 'bg-green-500 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                      data-testid={`filter-${preset.value}d`}
+                    >
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Custom Date Picker */}
+                {showDatePicker && (
+                  <div className="flex flex-wrap items-end gap-4 p-4 bg-gray-50 rounded-xl">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                      <input
+                        type="date"
+                        value={customStartDate}
+                        onChange={(e) => setCustomStartDate(e.target.value)}
+                        className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                        data-testid="start-date-input"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                      <input
+                        type="date"
+                        value={customEndDate}
+                        onChange={(e) => setCustomEndDate(e.target.value)}
+                        className="px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
+                        data-testid="end-date-input"
+                      />
+                    </div>
+                    <button
+                      onClick={handleCustomDateApply}
+                      disabled={!customStartDate || !customEndDate}
+                      className="px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                      data-testid="apply-date-btn"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Day-wise Analytics Table */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
+                <h3 className="font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-green-500" />
+                  Day-wise Visitor Analytics
+                  {loadingDayWise && <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />}
+                </h3>
+                
+                {dayWiseData?.daily_stats?.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="text-left text-sm text-gray-500 border-b border-gray-200">
+                          <th className="pb-3 font-medium">Date</th>
+                          <th className="pb-3 font-medium text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Home className="w-4 h-4" /> Homepage
+                            </div>
+                          </th>
+                          <th className="pb-3 font-medium text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <Package className="w-4 h-4" /> Product
+                            </div>
+                          </th>
+                          <th className="pb-3 font-medium text-center">
+                            <div className="flex items-center justify-center gap-1">
+                              <ShoppingCart className="w-4 h-4" /> Checkout
+                            </div>
+                          </th>
+                          <th className="pb-3 font-medium text-center">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {dayWiseData.daily_stats.map((day, i) => (
+                          <tr key={day.date} className={`border-b border-gray-100 ${i % 2 === 0 ? 'bg-gray-50' : ''}`}>
+                            <td className="py-3 font-medium text-gray-900">
+                              {new Date(day.date).toLocaleDateString('en-IN', { 
+                                weekday: 'short', 
+                                day: 'numeric', 
+                                month: 'short' 
+                              })}
+                            </td>
+                            <td className="py-3 text-center">
+                              <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                                {day.homepage || 0}
+                              </span>
+                            </td>
+                            <td className="py-3 text-center">
+                              <span className="px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                                {day.product || 0}
+                              </span>
+                            </td>
+                            <td className="py-3 text-center">
+                              <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+                                {day.checkout || 0}
+                              </span>
+                            </td>
+                            <td className="py-3 text-center font-bold text-gray-900">
+                              {day.total || 0}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                      <tfoot>
+                        <tr className="bg-green-50 font-bold">
+                          <td className="py-3 text-gray-900">Total</td>
+                          <td className="py-3 text-center text-blue-700">
+                            {dayWiseData.totals?.homepage || 0}
+                          </td>
+                          <td className="py-3 text-center text-purple-700">
+                            {dayWiseData.totals?.product || 0}
+                          </td>
+                          <td className="py-3 text-center text-green-700">
+                            {dayWiseData.totals?.checkout || 0}
+                          </td>
+                          <td className="py-3 text-center text-gray-900">
+                            {dayWiseData.totals?.total || 0}
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Calendar className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                    <p>No visitor data for selected date range</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Page Performance Summary */}
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
+                <h3 className="font-semibold text-gray-900 mb-6">Page Performance Summary</h3>
                 
                 {Object.keys(pageAnalytics?.page_analytics?.page_totals || {}).length > 0 ? (
                   <div className="space-y-3">
