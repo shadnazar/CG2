@@ -237,6 +237,34 @@ export const trackExitIntent = (pageName) => {
   });
 };
 
+// Track address entry
+export const trackAddressEntry = (stage) => {
+  if (!window.fbq) return;
+  
+  window.fbq('trackCustom', 'AddressEntry', {
+    stage: stage // 'started', 'partial', 'complete'
+  });
+};
+
+// Track checkout step
+export const trackCheckoutStepMeta = (stepNumber, stepName) => {
+  if (!window.fbq) return;
+  
+  window.fbq('trackCustom', 'CheckoutStep', {
+    step_number: stepNumber,
+    step_name: stepName
+  });
+};
+
+// Track payment method selection
+export const trackPaymentMethodSelected = (method) => {
+  if (!window.fbq) return;
+  
+  window.fbq('trackCustom', 'PaymentMethodSelected', {
+    payment_method: method
+  });
+};
+
 export default {
   initMetaPixel,
   trackPageView,
@@ -256,5 +284,8 @@ export default {
   trackPopupShown,
   trackPopupDismissed,
   trackTimeOnPage,
-  trackExitIntent
+  trackExitIntent,
+  trackAddressEntry,
+  trackCheckoutStepMeta,
+  trackPaymentMethodSelected
 };

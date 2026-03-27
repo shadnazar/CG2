@@ -83,15 +83,33 @@ class UserBehaviorTracker:
         await self.db.user_actions.insert_one(action_doc)
         
         # Update visitor profile based on action
-        update_data = {"last_action": data.get("action")}
+        update_data = {"last_action": data.get("action"), "last_action_time": now.isoformat()}
         
+        action = data.get("action", "")
         details = data.get("details", {})
-        if details.get("has_address"):
+        
+        # Track address entry
+        if details.get("has_address") or details.get("address_entered") or action == "address_complete":
             update_data["address_entered"] = True
+        
+        # Track phone entry
         if details.get("has_phone"):
             update_data["phone_entered"] = True
+        
+        # Track checkout visit
+        if action == "view_checkout" or details.get("step") == "checkout_started":
+            update_data["reached_checkout"] = True
+        
         if details.get("form_name") == "checkout":
             update_data["reached_checkout"] = True
+        
+        # Track payment method selection
+        if action == "payment_method_selected":
+            update_data["payment_method_selected"] = details.get("method")
+        
+        # Track order completion
+        if action == "order_complete":
+            update_data["order_completed"] = True
         
         if update_data:
             await self.db.visitor_profiles.update_one(

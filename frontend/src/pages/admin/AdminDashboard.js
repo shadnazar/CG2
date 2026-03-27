@@ -6,7 +6,7 @@ import {
   TrendingUp, Package, Eye, IndianRupee, ChevronRight, Plus,
   Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope,
   Home, ShoppingCart, Lock, Settings, Calendar, Filter, ChevronDown,
-  MousePointer, Route
+  MousePointer, Route, MessageSquare
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -206,7 +206,7 @@ function AdminDashboard() {
             <Route size={20} /> User Journey
           </Link>
           <Link to="/admin/whatsapp" className="flex items-center gap-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-xl" data-testid="nav-whatsapp">
-            <Phone size={20} /> WhatsApp
+            <MessageSquare size={20} /> WhatsApp
           </Link>
         </nav>
 

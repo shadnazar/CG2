@@ -59,9 +59,39 @@ function ProductPage() {
     if (step === 'checkout' && sessionId) {
       // Track checkout page visit
       axios.post(`${API}/track-visit?page=checkout&session_id=${sessionId}`).catch(() => {});
+      trackPageVisit('checkout');
       trackInitiateCheckout(PREPAID_PRICE);
+      
+      // Track action for user journey
+      trackAction('view_checkout', { step: 'checkout_started' });
     }
   }, [step, sessionId]);
+
+  // Track address entry when user starts filling address fields
+  const handleAddressFieldChange = (field, value, setter) => {
+    setter(value);
+    
+    // Track when user starts entering address (first time)
+    if (value.length === 1 && ['house_number', 'area', 'pincode'].includes(field)) {
+      trackAction('address_entry_started', { field, has_address: true });
+      
+      // Also track to Meta Pixel
+      if (window.fbq) {
+        window.fbq('trackCustom', 'AddressEntryStarted', { field });
+      }
+    }
+    
+    // Track when address is substantially filled
+    if (field === 'pincode' && value.length === 6) {
+      trackAction('address_complete', { has_address: true, address_entered: true });
+      trackFormComplete('address_form');
+      
+      // Meta Pixel custom event
+      if (window.fbq) {
+        window.fbq('trackCustom', 'AddressComplete', { pincode: value });
+      }
+    }
+  };
 
   useEffect(() => {
     // Use consistent session ID from sessionStorage
@@ -896,7 +926,10 @@ function ProductPage() {
               <input
                 type="text"
                 value={formData.house_number}
-                onChange={(e) => { setFormData(prev => ({ ...prev, house_number: e.target.value })); setErrors(prev => ({ ...prev, house_number: '' })); }}
+                onChange={(e) => { 
+                  handleAddressFieldChange('house_number', e.target.value, (v) => setFormData(prev => ({ ...prev, house_number: v }))); 
+                  setErrors(prev => ({ ...prev, house_number: '' })); 
+                }}
                 placeholder="House no., Building"
                 className={`input-cg ${errors.house_number ? 'border-red-300 bg-red-50' : ''}`}
                 data-testid="house-input"
@@ -909,7 +942,10 @@ function ProductPage() {
               <input
                 type="text"
                 value={formData.area}
-                onChange={(e) => { setFormData(prev => ({ ...prev, area: e.target.value })); setErrors(prev => ({ ...prev, area: '' })); }}
+                onChange={(e) => { 
+                  handleAddressFieldChange('area', e.target.value, (v) => setFormData(prev => ({ ...prev, area: v }))); 
+                  setErrors(prev => ({ ...prev, area: '' })); 
+                }}
                 placeholder="Street, Colony, Area"
                 className={`input-cg ${errors.area ? 'border-red-300 bg-red-50' : ''}`}
                 data-testid="area-input"
@@ -923,7 +959,11 @@ function ProductPage() {
                 <input
                   type="text"
                   value={formData.pincode}
-                  onChange={(e) => handlePincodeChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={(e) => {
+                    const pincode = e.target.value.replace(/\D/g, '').slice(0, 6);
+                    handleAddressFieldChange('pincode', pincode, () => {});
+                    handlePincodeChange(pincode);
+                  }}
                   placeholder="6-digit"
                   className={`input-cg ${errors.pincode ? 'border-red-300 bg-red-50' : ''}`}
                   data-testid="pincode-input"
