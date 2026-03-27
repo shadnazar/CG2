@@ -58,6 +58,30 @@ function AdminWhatsApp() {
     setLoading(false);
   };
 
+  const getWhatsAppErrorMessage = (error) => {
+    // Map WhatsApp error codes to user-friendly messages
+    const errorCode = error?.error_code;
+    const errorMsg = error?.error || error?.message || '';
+    
+    if (errorCode === 133010 || errorMsg.includes('not registered')) {
+      return 'This phone number is not registered on WhatsApp. Please verify the number has WhatsApp installed.';
+    }
+    if (errorCode === 131047 || errorMsg.includes('invalid')) {
+      return 'Invalid phone number format. Please enter a valid 10-digit Indian mobile number.';
+    }
+    if (errorCode === 131026) {
+      return 'Message failed to send. The recipient may have blocked business messages.';
+    }
+    if (errorCode === 131021) {
+      return 'Rate limit exceeded. Please wait a few minutes before sending more messages.';
+    }
+    if (errorMsg.includes('authorization') || errorMsg.includes('token')) {
+      return 'WhatsApp API authorization failed. Please check your API credentials.';
+    }
+    
+    return errorMsg || 'Failed to send message. Please try again.';
+  };
+
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!sendForm.phone || !sendForm.message) return;
@@ -72,13 +96,18 @@ function AdminWhatsApp() {
         { headers: { 'x-admin-token': token } }
       );
       
-      setSendStatus({ type: 'success', message: 'Message sent successfully!' });
-      setSendForm({ phone: '', message: '' });
+      if (response.data.success) {
+        setSendStatus({ type: 'success', message: 'Message sent successfully!' });
+        setSendForm({ phone: '', message: '' });
+      } else {
+        setSendStatus({ type: 'error', message: getWhatsAppErrorMessage(response.data) });
+      }
       fetchData();
     } catch (error) {
+      const errorData = error.response?.data;
       setSendStatus({ 
         type: 'error', 
-        message: error.response?.data?.detail || 'Failed to send message' 
+        message: getWhatsAppErrorMessage(errorData) || error.response?.data?.detail || 'Failed to send message' 
       });
     }
     setLoading(false);
@@ -100,13 +129,14 @@ function AdminWhatsApp() {
       if (response.data.success) {
         setSendStatus({ type: 'success', message: 'Test message sent! Check your WhatsApp.' });
       } else {
-        setSendStatus({ type: 'error', message: response.data.error || 'Test failed' });
+        setSendStatus({ type: 'error', message: getWhatsAppErrorMessage(response.data) });
       }
       fetchData();
     } catch (error) {
+      const errorData = error.response?.data;
       setSendStatus({ 
         type: 'error', 
-        message: error.response?.data?.detail || 'Test failed' 
+        message: getWhatsAppErrorMessage(errorData) || 'Test failed' 
       });
     }
     setLoading(false);

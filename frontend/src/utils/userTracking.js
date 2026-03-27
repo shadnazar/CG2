@@ -29,9 +29,7 @@ export const getSessionId = () => {
 
 // Track page visit with detailed info
 export const trackPageVisit = async (page, additionalData = {}) => {
-  const consent = localStorage.getItem('cookieConsent');
-  if (consent !== 'accepted') return;
-
+  // Always track page visits for analytics - consent only affects detailed tracking
   const visitorId = getVisitorId();
   const sessionId = getSessionId();
   
@@ -60,9 +58,7 @@ export const trackPageVisit = async (page, additionalData = {}) => {
 
 // Track time spent on page
 export const trackTimeSpent = async (page, timeSpentSeconds) => {
-  const consent = localStorage.getItem('cookieConsent');
-  if (consent !== 'accepted') return;
-
+  // Track time spent for all visitors
   const visitorId = getVisitorId();
   const sessionId = getSessionId();
 
@@ -85,9 +81,7 @@ export const trackTimeSpent = async (page, timeSpentSeconds) => {
 
 // Track user action (click, scroll, form fill, etc.)
 export const trackAction = async (action, details = {}) => {
-  const consent = localStorage.getItem('cookieConsent');
-  if (consent !== 'accepted') return;
-
+  // Track all user actions for analytics
   const visitorId = getVisitorId();
   const sessionId = getSessionId();
 
