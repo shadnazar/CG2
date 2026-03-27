@@ -5,7 +5,8 @@ import {
   LayoutDashboard, FileText, MapPin, BarChart3, Users, LogOut,
   TrendingUp, Package, Eye, IndianRupee, ChevronRight, Plus,
   Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope,
-  Home, ShoppingCart, Lock, Settings, Calendar, Filter, ChevronDown
+  Home, ShoppingCart, Lock, Settings, Calendar, Filter, ChevronDown,
+  MousePointer, Route
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -200,6 +201,9 @@ function AdminDashboard() {
           </Link>
           <Link to="/admin/consultations" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-consultations">
             <Stethoscope size={20} /> Consultations
+          </Link>
+          <Link to="/admin/user-journey" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-user-journey">
+            <Route size={20} /> User Journey
           </Link>
         </nav>
 
@@ -401,6 +405,20 @@ function AdminDashboard() {
                         <span className="font-medium text-purple-700">AI Content Studio</span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-purple-600" />
+                    </Link>
+                    <Link to="/admin/consultations" className="flex items-center justify-between p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors" data-testid="quick-consultations">
+                      <div className="flex items-center gap-3">
+                        <Stethoscope className="w-5 h-5 text-blue-600" />
+                        <span className="font-medium text-blue-700">Skin Analysis Reports</span>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-blue-600" />
+                    </Link>
+                    <Link to="/admin/user-journey" className="flex items-center justify-between p-4 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors" data-testid="quick-user-journey">
+                      <div className="flex items-center gap-3">
+                        <MousePointer className="w-5 h-5 text-orange-600" />
+                        <span className="font-medium text-orange-700">User Journey Tracking</span>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-orange-600" />
                     </Link>
                   </div>
                 </div>

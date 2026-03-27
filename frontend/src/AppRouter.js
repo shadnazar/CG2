@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import ScrollToTop from './components/ScrollToTop';
+import CookieConsent from './components/CookieConsent';
 import Homepage from './pages/Homepage';
 import ProductPage from './pages/ProductPage';
 import BlogList from './pages/BlogList';
@@ -20,6 +21,7 @@ import AdminLocationEditor from './pages/admin/AdminLocationEditor';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminAIStudio from './pages/admin/AdminAIStudio';
 import AdminConsultations from './pages/admin/AdminConsultations';
+import AdminUserJourney from './pages/admin/AdminUserJourney';
 
 // Layout component for public pages with navigation
 function PublicLayout({ children }) {
@@ -27,6 +29,7 @@ function PublicLayout({ children }) {
     <div className="app-container">
       <Navigation />
       {children}
+      <CookieConsent />
     </div>
   );
 }
@@ -48,6 +51,7 @@ function App() {
         <Route path="/admin/orders" element={<AdminOrders />} />
         <Route path="/admin/ai-studio" element={<AdminAIStudio />} />
         <Route path="/admin/consultations" element={<AdminConsultations />} />
+        <Route path="/admin/user-journey" element={<AdminUserJourney />} />
         
         {/* Consultation Route (no navigation - full screen experience) */}
         <Route path="/consultation" element={<ConsultationPage />} />

@@ -7,6 +7,7 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - Live visitor tracking & lead generation
 - Online consultation system
 - Meta Pixel deep integration
+- Complete user behavior tracking
 
 ## User Personas
 1. **Customers**: Women 25-50 seeking anti-aging solutions
@@ -25,7 +26,7 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 #### 2. Admin Panel (`/admin`)
 - Secure login (password: celestaglow2024)
 - Analytics dashboard (live visitors, page stats, leads)
-- **Day-wise Visitor Analytics with date filters (NEW - Mar 2026)**
+- **Day-wise Visitor Analytics with date filters**
   - Preset filters: Last 7/14/30 days, 3/6 months, 1 year
   - Custom date picker
   - Shows Homepage, Product, Checkout visits per day
@@ -36,9 +37,23 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - Location management
 - Order viewer
 - AI Content Studio (manual blog generation)
-- **Consultations management**
+- **Consultations management with phone numbers and face photos**
+- **Quick Actions**: Direct links to Consultations and User Journey
 
-#### 3. AI Content Engine
+#### 3. User Journey Tracking Dashboard (NEW - Mar 2026)
+- **Cookie Consent Banner**: GDPR-compliant cookie acceptance
+- **Unique Visitor ID**: Each user gets a unique tracking ID
+- **Complete Behavior Tracking**:
+  - Pages visited with timestamps
+  - Time spent on each page
+  - Actions taken (clicks, form fills, scroll)
+  - Whether address was entered
+  - Checkout funnel progression
+- **Date Picker**: Filter visitors by specific date
+- **Stats Dashboard**: Total visitors, new vs returning, checkout rate, avg time
+- **Individual Journey View**: Expand any visitor to see their complete journey
+
+#### 4. AI Content Engine
 - GPT-4o powered blog generation
 - Auto-generates 12 SEO blogs every 12 hours
 - **1-Click Location Blogs generation (up to 12 states)**
@@ -47,12 +62,7 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - Location-targeted content
 - **Blog images from Unsplash/Pexels**
 
-#### 4. Enhanced Analytics
-- **Session-based live tracking**: When user moves from homepage to product, counts update correctly
-- **IP deduplication**: Same IP visiting same page within 30 min counts as 1 visitor
-- **Page Analytics UI**: Numbers displayed inside progress bars (matching reference design)
-
-#### 5. CRO Features (NEW - Mar 2026)
+#### 5. CRO Features
 - **Exit-Intent Popup**: Shows ₹100 extra discount when user tries to leave
 - **Enhanced Sticky Add-to-Cart**: With FLASH SALE badge, countdown timer
 - **Trust Badges Section**: 100% Genuine, Dermatologist Tested, Secure Payment, Free Delivery + Payment logos
@@ -62,9 +72,19 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - "Recently Purchased" social proof notifications
 - **Free Skin Analysis CTA on homepage**
 
-#### 6. Meta Pixel Integration (ID: 690863659974240)
+#### 6. Consultations (Skin Analysis)
+- 6-question skin analysis funnel
+- Optional 3-face photo upload
+- Phone number capture (no OTP)
+- Personalized recommendations based on answers
+- PDF report generation
+- Admin panel shows all consultations with photos and phone numbers
+
+#### 7. Meta Pixel Integration (ID: 690863659974240)
 - PageView tracking
 - ViewContent on product/homepage
+- AddToCart, InitiateCheckout, Purchase events
+- Lead capture tracking
 - AddToCart tracking
 - InitiateCheckout tracking
 - AddPaymentInfo tracking

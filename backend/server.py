@@ -7,7 +7,7 @@ import logging
 import re
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone
 import random
@@ -24,6 +24,7 @@ from services.enhanced_analytics import EnhancedAnalyticsTracker, VisitorLeadTra
 from services.ai_content_generator import AIContentGenerator
 from services.auto_blog_generator import AutoBlogGenerator
 from services.image_service import get_image_for_category, get_image_for_keywords
+from services.user_behavior_tracker import UserBehaviorTracker
 
 
 ROOT_DIR = Path(__file__).parent
@@ -39,6 +40,7 @@ enhanced_analytics = EnhancedAnalyticsTracker(db)
 visitor_lead_tracker = VisitorLeadTracker(db)
 ai_content_generator = AIContentGenerator(db)
 auto_blog_generator = AutoBlogGenerator(db)
+user_behavior_tracker = UserBehaviorTracker(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
@@ -861,6 +863,81 @@ async def get_recent_purchases():
         purchases = sample_names[:3]
     
     return {"purchases": purchases}
+
+
+# ==================== USER BEHAVIOR TRACKING ====================
+
+class TrackingData(BaseModel):
+    visitor_id: str
+    session_id: str
+    page: Optional[str] = None
+    action: Optional[str] = None
+    details: Optional[Dict[str, Any]] = None
+    timestamp: Optional[str] = None
+    referrer: Optional[str] = None
+    user_agent: Optional[str] = None
+    screen_width: Optional[int] = None
+    screen_height: Optional[int] = None
+    time_spent: Optional[int] = None
+
+
+@api_router.post("/tracking/page-visit")
+async def track_user_page_visit(data: TrackingData):
+    """Track user page visit with behavior data"""
+    return await user_behavior_tracker.track_page_visit(data.model_dump())
+
+
+@api_router.post("/tracking/time-spent")
+async def track_user_time_spent(data: TrackingData):
+    """Track time spent on page"""
+    return await user_behavior_tracker.track_time_spent(data.model_dump())
+
+
+@api_router.post("/tracking/action")
+async def track_user_action(data: TrackingData):
+    """Track user action (click, scroll, form fill)"""
+    return await user_behavior_tracker.track_action(data.model_dump())
+
+
+@api_router.get("/admin/user-tracking/visitors")
+async def get_tracked_visitors(
+    x_admin_token: str = Header(None),
+    date: Optional[str] = Query(None),
+    days: int = Query(7, ge=1, le=365)
+):
+    """Get all tracked visitors"""
+    verify_admin_token(x_admin_token)
+    
+    if date:
+        visitors = await user_behavior_tracker.get_visitors_by_date(date)
+    else:
+        visitors = await user_behavior_tracker.get_all_visitors(days=days)
+    
+    return {"visitors": visitors}
+
+
+@api_router.get("/admin/user-tracking/visitor/{visitor_id}")
+async def get_visitor_journey(
+    visitor_id: str,
+    x_admin_token: str = Header(None)
+):
+    """Get complete journey of a specific visitor"""
+    verify_admin_token(x_admin_token)
+    
+    journey = await user_behavior_tracker.get_visitor_journey(visitor_id)
+    return journey
+
+
+@api_router.get("/admin/user-tracking/stats")
+async def get_user_tracking_stats(
+    x_admin_token: str = Header(None),
+    days: int = Query(7, ge=1, le=365)
+):
+    """Get user tracking statistics"""
+    verify_admin_token(x_admin_token)
+    
+    stats = await user_behavior_tracker.get_visitor_stats(days=days)
+    return stats
 
 
 app.include_router(api_router)
