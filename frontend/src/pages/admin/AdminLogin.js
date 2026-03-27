@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
@@ -11,6 +11,17 @@ function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  // Check if already logged in
+  useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (token) {
+      // Verify token is still valid
+      axios.get(`${API}/admin/analytics/live`, { headers: { 'X-Admin-Token': token } })
+        .then(() => navigate('/admin/dashboard'))
+        .catch(() => localStorage.removeItem('adminToken'));
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

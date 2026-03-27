@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { X, Gift, Phone, Check, Loader2 } from 'lucide-react';
 import { trackLead, trackPopupDismissed } from '../utils/metaPixel';
+import { trackAction, getVisitorId } from '../utils/userTracking';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -26,12 +27,11 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
     localStorage.setItem('cookieConsent', 'accepted');
     localStorage.setItem('cookieConsentDate', new Date().toISOString());
     
-    // Generate unique visitor ID if not exists
-    if (!localStorage.getItem('visitorId')) {
-      const visitorId = `v_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('visitorId', visitorId);
-      localStorage.setItem('visitorFirstSeen', new Date().toISOString());
-    }
+    // Generate unique visitor ID (this also ensures tracking starts)
+    const visitorId = getVisitorId();
+    
+    // Track the discount claim action
+    trackAction('discount_claimed', { phone_entered: true });
   };
 
   const handleSubmit = async (e) => {

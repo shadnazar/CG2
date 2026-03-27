@@ -284,6 +284,16 @@ function AdminWhatsApp() {
         {/* Tab Content */}
         {activeTab === 'send' && (
           <div className="grid md:grid-cols-2 gap-6">
+            {/* WhatsApp Setup Note */}
+            <div className="md:col-span-2 bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <h4 className="font-medium text-amber-800 mb-2">Important: WhatsApp Business API Requirements</h4>
+              <ul className="text-sm text-amber-700 space-y-1">
+                <li>• Recipients must have WhatsApp installed on their phone</li>
+                <li>• For business-initiated messages, recipients must first message your business number OR be added as test numbers in Meta Business Manager</li>
+                <li>• Go to Meta Business Suite → WhatsApp Manager → Phone Numbers → Add test numbers</li>
+              </ul>
+            </div>
+
             {/* Send Custom Message */}
             <div className="bg-white p-6 rounded-xl shadow-sm border">
               <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
