@@ -371,17 +371,16 @@ class EnhancedAnalyticsTracker:
                 if date not in daily_data_v2:
                     daily_data_v2[date] = {"homepage": 0, "product": 0, "checkout": 0, "total": 0}
                 
-                # Normalize page names
+                # Normalize page names and count
                 if page in ["homepage", "home", ""]:
                     daily_data_v2[date]["homepage"] += 1
                 elif page in ["product page", "product", "serum"]:
                     daily_data_v2[date]["product"] += 1
                 elif page in ["checkout"]:
                     daily_data_v2[date]["checkout"] += 1
-                else:
+                # Always increment total for key pages
+                if page in ["homepage", "home", "", "product page", "product", "serum", "checkout"]:
                     daily_data_v2[date]["total"] += 1
-                
-                daily_data_v2[date]["total"] += 1
             
             # Use v2 data if it has more entries
             if len(daily_data_v2) >= len(daily_data):

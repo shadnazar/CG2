@@ -53,6 +53,15 @@ function ProductPage() {
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [exitPopupShown, setExitPopupShown] = useState(false);
 
+  // Track checkout visits when step changes
+  useEffect(() => {
+    if (step === 'checkout' && sessionId) {
+      // Track checkout page visit
+      axios.post(`${API}/track-visit?page=checkout&session_id=${sessionId}`).catch(() => {});
+      trackInitiateCheckout(PREPAID_PRICE);
+    }
+  }, [step, sessionId]);
+
   useEffect(() => {
     // Generate unique session ID
     const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
