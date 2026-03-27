@@ -12,7 +12,7 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [discountCode, setDiscountCode] = useState('');
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(true); // Auto-ticked by default
 
   const handleClose = () => {
     if (!success) {
