@@ -148,6 +148,7 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
   - SMTP (Gmail)
   - Meta Pixel
   - jsPDF (PDF generation)
+  - **WhatsApp Cloud API (Meta Graph API v18.0)** - NEW
 
 ## Code Architecture
 ```
@@ -166,7 +167,8 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 │   │   ├── auto_blog_generator.py
 │   │   ├── enhanced_analytics.py
 │   │   ├── image_service.py (NEW)
-│   │   └── consultation_service.py (NEW)
+│   │   ├── consultation_service.py (NEW)
+│   │   └── whatsapp_service.py (NEW - Mar 2026)
 │   └── server.py
 └── frontend/
     └── src/
@@ -181,7 +183,8 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
         │   ├── BlogPost.js (updated with hero image)
         │   ├── Homepage.js (updated with consultation CTA)
         │   └── admin/
-        │       └── AdminConsultations.js (NEW)
+        │       ├── AdminConsultations.js (NEW)
+        │       └── AdminWhatsApp.js (NEW - Mar 2026)
         └── utils/
             └── metaPixel.js (NEW)
 ```
@@ -254,10 +257,48 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 
 ## Backlog / Future Tasks (P1)
 1. A/B Testing Framework
-2. WhatsApp integration for order updates
+2. ~~WhatsApp integration for order updates~~ ✅ COMPLETED (Mar 2026)
 3. Referral program
+4. Customer video testimonials collection system
+
+## Completed Work - March 2026
+
+### March 27, 2026
+1. **Homepage Image Fix** ✅
+   - Replaced broken celestaglow.com CDN image with uploaded customer-assets image
+   - New hero image showing Before/While Using/After transformation
+
+2. **WhatsApp Cloud API Integration** ✅
+   - **Backend Service** (`/app/backend/services/whatsapp_service.py`):
+     - Meta Graph API v18.0 integration
+     - Phone number formatting for India (+91)
+     - Order confirmation messages
+     - Consultation result messages
+     - Custom message sending
+     - Bulk messaging support
+     - Message logging to MongoDB
+   - **API Endpoints**:
+     - `POST /api/admin/whatsapp/send` - Send custom message
+     - `POST /api/admin/whatsapp/send-bulk` - Bulk messaging
+     - `POST /api/admin/whatsapp/notify-order` - Order confirmation
+     - `POST /api/admin/whatsapp/notify-consultation` - Consultation results
+     - `GET /api/admin/whatsapp/logs` - Message logs
+     - `GET /api/admin/whatsapp/stats` - Statistics
+     - `POST /api/admin/whatsapp/test` - Test connection
+   - **Admin Panel** (`/admin/whatsapp`):
+     - Stats dashboard (total, sent, failed, success rate, today)
+     - Send custom message form with templates
+     - Test connection feature
+     - Order notifications tab
+     - Consultation notifications tab
+     - Message logs tab
+   - **WhatsApp Credentials** (in `/app/backend/.env`):
+     - Phone Number ID: 782109748323556
+     - Business Account ID: 1109104574684503
+     - API Token: Configured
 
 ## Credentials
 - **Admin Password**: celestaglow2024
 - **Meta Pixel ID**: 690863659974240
 - **Razorpay/SMTP**: In /app/backend/.env
+- **WhatsApp API**: In /app/backend/.env (Phone Number ID: 782109748323556)

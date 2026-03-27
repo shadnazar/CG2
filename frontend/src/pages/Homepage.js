@@ -21,11 +21,11 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const PREPAID_PRICE = 599;
 const MRP = 1499;
 
-// Age Regression Score Image for Homepage - Using the product showcase image
-const HERO_IMAGE = 'https://celestaglow.com/cdn/shop/files/IMG_0538.png?v=1771463966&width=1000';
+// Age Regression Score Image for Homepage - Using the uploaded product image
+const HERO_IMAGE = 'https://customer-assets.emergentagent.com/job_ae0c9586-b94c-4054-b869-8b9baeb452c6/artifacts/gwxje1nv_1F955957-C2EB-4ED0-A713-0B302C9B4892.jpeg';
 
 // Bottle Product Image
-const PRODUCT_IMAGE = 'https://celestaglow.com/cdn/shop/files/IMG_0538.png?v=1771463966&width=1000';
+const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_ae0c9586-b94c-4054-b869-8b9baeb452c6/artifacts/gwxje1nv_1F955957-C2EB-4ED0-A713-0B302C9B4892.jpeg';
 
 function Homepage() {
   const navigate = useNavigate();

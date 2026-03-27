@@ -25,6 +25,7 @@ from services.ai_content_generator import AIContentGenerator
 from services.auto_blog_generator import AutoBlogGenerator
 from services.image_service import get_image_for_category, get_image_for_keywords
 from services.user_behavior_tracker import UserBehaviorTracker
+from services.whatsapp_service import WhatsAppService
 
 
 ROOT_DIR = Path(__file__).parent
@@ -41,6 +42,7 @@ visitor_lead_tracker = VisitorLeadTracker(db)
 ai_content_generator = AIContentGenerator(db)
 auto_blog_generator = AutoBlogGenerator(db)
 user_behavior_tracker = UserBehaviorTracker(db)
+whatsapp_service = WhatsAppService(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
@@ -989,6 +991,148 @@ async def get_cron_logs(
     ).sort("timestamp", -1).limit(limit).to_list(limit)
     
     return {"logs": logs}
+
+
+# ==================== WHATSAPP API ENDPOINTS ====================
+
+class WhatsAppSendRequest(BaseModel):
+    phone: str
+    message: str
+    category: Optional[str] = "promotional"
+
+
+class WhatsAppBulkRequest(BaseModel):
+    phones: List[str]
+    message: str
+    category: Optional[str] = "promotional"
+
+
+class WhatsAppOrderNotifyRequest(BaseModel):
+    order_id: str
+
+
+class WhatsAppConsultationNotifyRequest(BaseModel):
+    consultation_id: str
+    recommendations: Optional[str] = None
+
+
+@api_router.post("/admin/whatsapp/send")
+async def send_whatsapp_message(request: WhatsAppSendRequest, x_admin_token: str = Header(None)):
+    """Send a custom WhatsApp message to a customer"""
+    verify_admin_token(x_admin_token)
+    
+    result = await whatsapp_service.send_custom_message(
+        phone_number=request.phone,
+        message=request.message,
+        message_category=request.category
+    )
+    
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "Failed to send message"))
+    
+    return result
+
+
+@api_router.post("/admin/whatsapp/send-bulk")
+async def send_bulk_whatsapp(request: WhatsAppBulkRequest, x_admin_token: str = Header(None)):
+    """Send WhatsApp message to multiple recipients"""
+    verify_admin_token(x_admin_token)
+    
+    result = await whatsapp_service.send_bulk_messages(
+        phone_numbers=request.phones,
+        message=request.message,
+        message_category=request.category
+    )
+    
+    return result
+
+
+@api_router.post("/admin/whatsapp/notify-order")
+async def send_order_whatsapp_notification(request: WhatsAppOrderNotifyRequest, x_admin_token: str = Header(None)):
+    """Send order confirmation via WhatsApp"""
+    verify_admin_token(x_admin_token)
+    
+    # Get order details
+    order = await db.orders.find_one({"order_id": request.order_id}, {"_id": 0})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    result = await whatsapp_service.send_order_confirmation(
+        phone_number=order.get("phone"),
+        order_id=order.get("order_id"),
+        customer_name=order.get("name"),
+        amount=order.get("amount"),
+        payment_method=order.get("payment_method"),
+        delivery_timeline=order.get("delivery_timeline", "3-5 Business Days")
+    )
+    
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "Failed to send WhatsApp notification"))
+    
+    return result
+
+
+@api_router.post("/admin/whatsapp/notify-consultation")
+async def send_consultation_whatsapp_notification(request: WhatsAppConsultationNotifyRequest, x_admin_token: str = Header(None)):
+    """Send consultation results via WhatsApp"""
+    verify_admin_token(x_admin_token)
+    
+    # Get consultation details
+    consultation = await db.consultations.find_one({"consultation_id": request.consultation_id}, {"_id": 0})
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+    
+    # Build recommendations text
+    recommendations = request.recommendations or "Based on your skin analysis, we recommend using Celesta Glow Anti-Aging Serum twice daily - morning and night after cleansing. For best results, follow with a moisturizer and SPF during the day."
+    
+    result = await whatsapp_service.send_consultation_result(
+        phone_number=consultation.get("phone"),
+        customer_name=consultation.get("name"),
+        consultation_id=consultation.get("consultation_id"),
+        skin_type=consultation.get("skin_type", "Normal"),
+        concerns=consultation.get("concerns", []),
+        recommendations=recommendations
+    )
+    
+    if not result.get("success"):
+        raise HTTPException(status_code=400, detail=result.get("error", "Failed to send WhatsApp notification"))
+    
+    return result
+
+
+@api_router.get("/admin/whatsapp/logs")
+async def get_whatsapp_logs(
+    x_admin_token: str = Header(None),
+    limit: int = Query(50, ge=1, le=200),
+    status: Optional[str] = Query(None)
+):
+    """Get WhatsApp message logs"""
+    verify_admin_token(x_admin_token)
+    
+    logs = await whatsapp_service.get_message_logs(limit=limit, status=status)
+    return {"logs": logs}
+
+
+@api_router.get("/admin/whatsapp/stats")
+async def get_whatsapp_stats(x_admin_token: str = Header(None)):
+    """Get WhatsApp messaging statistics"""
+    verify_admin_token(x_admin_token)
+    
+    stats = await whatsapp_service.get_stats()
+    return stats
+
+
+@api_router.post("/admin/whatsapp/test")
+async def test_whatsapp_connection(x_admin_token: str = Header(None), phone: str = Query(...)):
+    """Test WhatsApp API connection by sending a test message"""
+    verify_admin_token(x_admin_token)
+    
+    result = await whatsapp_service.send_text_message(
+        phone_number=phone,
+        message="This is a test message from Celesta Glow Admin Panel. WhatsApp integration is working! ✅"
+    )
+    
+    return result
 
 
 app.include_router(api_router)

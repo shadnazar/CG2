@@ -205,6 +205,9 @@ function AdminDashboard() {
           <Link to="/admin/user-journey" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-user-journey">
             <Route size={20} /> User Journey
           </Link>
+          <Link to="/admin/whatsapp" className="flex items-center gap-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-xl" data-testid="nav-whatsapp">
+            <Phone size={20} /> WhatsApp
+          </Link>
         </nav>
 
         <div className="absolute bottom-0 left-0 w-full p-4 border-t border-gray-200">
