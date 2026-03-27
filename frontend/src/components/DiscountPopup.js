@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { X, Gift, Phone, Check, Loader2 } from 'lucide-react';
 import { trackLead, trackPopupDismissed } from '../utils/metaPixel';
 
@@ -11,12 +12,26 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [discountCode, setDiscountCode] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const handleClose = () => {
     if (!success) {
       trackPopupDismissed('discount_popup');
     }
     onClose();
+  };
+
+  const initializeTracking = () => {
+    // Set cookie consent as accepted
+    localStorage.setItem('cookieConsent', 'accepted');
+    localStorage.setItem('cookieConsentDate', new Date().toISOString());
+    
+    // Generate unique visitor ID if not exists
+    if (!localStorage.getItem('visitorId')) {
+      const visitorId = `v_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('visitorId', visitorId);
+      localStorage.setItem('visitorFirstSeen', new Date().toISOString());
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -29,10 +44,18 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
       return;
     }
     
+    if (!acceptedTerms) {
+      setError('Please accept the terms and conditions');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     
     try {
+      // Initialize tracking when user accepts terms
+      initializeTracking();
+      
       const res = await axios.post(`${API}/claim-discount`, {
         phone: cleanPhone,
         session_id: sessionId,
@@ -113,9 +136,33 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
                 </div>
               </div>
               
+              {/* Terms & Conditions Checkbox */}
+              <div className="mb-4">
+                <label className="flex items-start gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-1 w-4 h-4 text-green-500 rounded border-gray-300 focus:ring-green-500"
+                    data-testid="terms-checkbox"
+                  />
+                  <span className="text-xs text-gray-500">
+                    By claiming this discount, I agree to the{' '}
+                    <Link to="/terms" className="text-green-600 underline" target="_blank">
+                      Terms & Conditions
+                    </Link>
+                    {' '}and{' '}
+                    <Link to="/privacy" className="text-green-600 underline" target="_blank">
+                      Privacy Policy
+                    </Link>
+                    , including the use of cookies for personalized experience.
+                  </span>
+                </label>
+              </div>
+              
               <button
                 type="submit"
-                disabled={loading || phone.length !== 10}
+                disabled={loading || phone.length !== 10 || !acceptedTerms}
                 className="w-full py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 data-testid="claim-discount-btn"
               >

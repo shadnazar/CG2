@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import ScrollToTop from './components/ScrollToTop';
-import CookieConsent from './components/CookieConsent';
 import Homepage from './pages/Homepage';
 import ProductPage from './pages/ProductPage';
 import BlogList from './pages/BlogList';
@@ -10,6 +9,8 @@ import BlogPost from './pages/BlogPost';
 import LocationPage from './pages/LocationPage';
 import SearchResults from './pages/SearchResults';
 import ConsultationPage from './pages/ConsultationPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
@@ -29,7 +30,6 @@ function PublicLayout({ children }) {
     <div className="app-container">
       <Navigation />
       {children}
-      <CookieConsent />
     </div>
   );
 }
@@ -55,6 +55,10 @@ function App() {
         
         {/* Consultation Route (no navigation - full screen experience) */}
         <Route path="/consultation" element={<ConsultationPage />} />
+        
+        {/* Legal Pages */}
+        <Route path="/terms" element={<PublicLayout><TermsPage /></PublicLayout>} />
+        <Route path="/privacy" element={<PublicLayout><PrivacyPage /></PublicLayout>} />
         
         {/* Public Routes (with navigation) */}
         <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />

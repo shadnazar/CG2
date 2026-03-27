@@ -40,9 +40,9 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - **Consultations management with phone numbers and face photos**
 - **Quick Actions**: Direct links to Consultations and User Journey
 
-#### 3. User Journey Tracking Dashboard (NEW - Mar 2026)
-- **Cookie Consent Banner**: GDPR-compliant cookie acceptance
-- **Unique Visitor ID**: Each user gets a unique tracking ID
+#### 3. User Journey Tracking Dashboard (Mar 2026)
+- **Cookie consent integrated into Discount Popup** - No separate banner
+- **Unique Visitor ID**: Each user gets a unique tracking ID after accepting terms
 - **Complete Behavior Tracking**:
   - Pages visited with timestamps
   - Time spent on each page
@@ -52,6 +52,18 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - **Date Picker**: Filter visitors by specific date
 - **Stats Dashboard**: Total visitors, new vs returning, checkout rate, avg time
 - **Individual Journey View**: Expand any visitor to see their complete journey
+
+#### 4. Legal Pages (Mar 2026)
+- **Terms & Conditions** (`/terms`): Covers cookies, tracking, data usage, returns policy
+- **Privacy Policy** (`/privacy`): Detailed cookie types, data collection, third-party services
+
+#### 5. Auto Blog Cron Job (12-hour cycle)
+- **Schedule**: Runs at 6 AM and 6 PM automatically
+- **Morning run**: Generates 12 location-based blogs with state cycling
+- **Evening run**: Generates 12 auto SEO blogs
+- **Duplicate avoidance**: Skips states/topics used in last 30 days
+- **Manual trigger**: Available via `/api/admin/cron/trigger-blog-generation`
+- **Cron logs**: View history at `/api/admin/cron/logs`
 
 #### 4. AI Content Engine
 - GPT-4o powered blog generation

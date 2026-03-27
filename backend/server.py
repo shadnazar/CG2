@@ -940,6 +940,57 @@ async def get_user_tracking_stats(
     return stats
 
 
+@api_router.post("/admin/cron/trigger-blog-generation")
+async def trigger_blog_generation(
+    x_admin_token: str = Header(None),
+    blog_type: str = Query("auto", description="Type: auto, location, or topic")
+):
+    """Manually trigger blog generation (for testing cron)"""
+    verify_admin_token(x_admin_token)
+    
+    if blog_type == "location":
+        result = await auto_blog_generator.generate_location_blogs(states=None, count=12)
+    elif blog_type == "topic":
+        # Generate with sample topics
+        topics = [
+            "Best anti-aging ingredients for Indian skin",
+            "How to reduce wrinkles naturally",
+            "Night skincare routine for 30+",
+            "Benefits of retinol serum"
+        ]
+        result = await auto_blog_generator.generate_topic_blogs(topics=topics, count=12)
+    else:
+        result = await auto_blog_generator.generate_and_save_blogs(count=12)
+    
+    # Log the manual trigger
+    await db.cron_logs.insert_one({
+        "job": "manual_blog_generation",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "blog_type": blog_type,
+        "generated": result.get("generated", 0),
+        "failed": result.get("failed", 0),
+        "triggered_by": "admin"
+    })
+    
+    return result
+
+
+@api_router.get("/admin/cron/logs")
+async def get_cron_logs(
+    x_admin_token: str = Header(None),
+    limit: int = Query(20, ge=1, le=100)
+):
+    """Get recent cron job logs"""
+    verify_admin_token(x_admin_token)
+    
+    logs = await db.cron_logs.find(
+        {}, 
+        {"_id": 0}
+    ).sort("timestamp", -1).limit(limit).to_list(limit)
+    
+    return {"logs": logs}
+
+
 app.include_router(api_router)
 app.include_router(admin_routes.router, prefix="/api")
 app.include_router(i18n_routes.router, prefix="/api")
