@@ -22,7 +22,7 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
     onClose();
   };
 
-  const initializeTracking = () => {
+  const initializeTracking = async () => {
     // Set cookie consent as accepted
     localStorage.setItem('cookieConsent', 'accepted');
     localStorage.setItem('cookieConsentDate', new Date().toISOString());
@@ -30,8 +30,8 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
     // Generate unique visitor ID (this also ensures tracking starts)
     const visitorId = getVisitorId();
     
-    // Track the discount claim action
-    trackAction('discount_claimed', { phone_entered: true });
+    // Track the discount claim action with phone info
+    await trackAction('discount_claimed', { phone_entered: true, has_phone: true });
   };
 
   const handleSubmit = async (e) => {

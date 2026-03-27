@@ -290,10 +290,15 @@ function AdminUserJourney() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        {visitor.profile?.reached_checkout && (
+                        {(visitor.phone || visitor.profile?.phone) && (
+                          <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs rounded-full font-medium">
+                            {visitor.phone || visitor.profile?.phone}
+                          </span>
+                        )}
+                        {(visitor.reached_checkout || visitor.profile?.reached_checkout) && (
                           <span className="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">Checkout</span>
                         )}
-                        {visitor.profile?.address_entered && (
+                        {(visitor.address_entered || visitor.profile?.address_entered) && (
                           <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">Address</span>
                         )}
                         <ChevronDown 

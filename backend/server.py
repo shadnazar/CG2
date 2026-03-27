@@ -554,6 +554,28 @@ async def claim_visitor_discount(lead: VisitorLeadCreate):
         page=lead.page,
         discount_code="WELCOME50"
     )
+    
+    # Also update visitor profile with phone number for tracking
+    if lead.session_id:
+        # Get visitor_id from session
+        visitor_profile = await db.visitor_profiles.find_one({"last_session": lead.session_id})
+        if visitor_profile:
+            await db.visitor_profiles.update_one(
+                {"visitor_id": visitor_profile.get("visitor_id")},
+                {"$set": {"phone": phone, "discount_claimed": True}}
+            )
+        else:
+            # Try to find by recent activity
+            recent_visit = await db.user_page_visits.find_one(
+                {"session_id": lead.session_id},
+                sort=[("timestamp", -1)]
+            )
+            if recent_visit and recent_visit.get("visitor_id"):
+                await db.visitor_profiles.update_one(
+                    {"visitor_id": recent_visit.get("visitor_id")},
+                    {"$set": {"phone": phone, "discount_claimed": True}}
+                )
+    
     return result
 
 
