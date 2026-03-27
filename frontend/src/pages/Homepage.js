@@ -12,6 +12,7 @@ import {
   trackTimeOnPage,
   trackPopupShown
 } from '../utils/metaPixel';
+import { trackPageVisit, trackTimeSpent, getSessionId, getVisitorId } from '../utils/userTracking';
 import { getSharedStats, updateSharedStats, getCurrentLocation, rotateLocation } from '../utils/sharedStats';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -40,15 +41,15 @@ function Homepage() {
   const testimonialsTracked = useRef(false);
 
   useEffect(() => {
-    // Generate unique session ID
-    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setSessionId(newSessionId);
+    // Use consistent session ID from sessionStorage
+    const currentSessionId = getSessionId();
+    setSessionId(currentSessionId);
     
-    // Track page visit with enhanced analytics
-    axios.post(`${API}/track-visit?page=homepage&session_id=${newSessionId}`).catch(() => {});
+    // Track page visit with enhanced analytics (uses visitor ID for proper deduplication)
+    trackPageVisit('homepage');
     
-    // Also track with old endpoint for backward compatibility
-    axios.post(`${API}/track?page=homepage&session_id=${newSessionId}`).catch(() => {});
+    // Also track with old endpoint for backward compatibility (live visitors)
+    axios.post(`${API}/track-visit?page=homepage&session_id=${currentSessionId}`).catch(() => {});
     
     // Meta Pixel tracking - ViewContent for homepage
     trackViewContent('Celesta Glow Homepage', PREPAID_PRICE);

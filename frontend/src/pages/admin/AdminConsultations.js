@@ -342,6 +342,10 @@ function AdminConsultations() {
                                   alt={`Face ${i + 1}`}
                                   className="w-24 h-24 object-cover rounded-xl border-2 border-purple-200 shadow-sm"
                                   data-testid={`admin-photo-${consultation.id}-${i}`}
+                                  onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 24 24" fill="none" stroke="%239ca3af" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>';
+                                  }}
                                 />
                                 <p className="text-xs text-purple-600 mt-1 font-medium">
                                   {i === 0 ? 'Front' : i === 1 ? 'Left' : 'Right'}

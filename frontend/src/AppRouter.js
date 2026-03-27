@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import ScrollToTop from './components/ScrollToTop';
+import WhatsAppButton from './components/WhatsAppButton';
 import Homepage from './pages/Homepage';
 import ProductPage from './pages/ProductPage';
 import BlogList from './pages/BlogList';
@@ -30,6 +31,7 @@ function PublicLayout({ children }) {
     <div className="app-container">
       <Navigation />
       {children}
+      <WhatsAppButton phoneNumber="919446125745" />
     </div>
   );
 }

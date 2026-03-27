@@ -13,6 +13,7 @@ import {
   trackFAQInteraction,
   trackTimeOnPage
 } from '../utils/metaPixel';
+import { trackPageVisit, trackTimeSpent, trackFormComplete, trackAction, getSessionId } from '../utils/userTracking';
 import { getSharedStats, updateSharedStats } from '../utils/sharedStats';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -63,15 +64,15 @@ function ProductPage() {
   }, [step, sessionId]);
 
   useEffect(() => {
-    // Generate unique session ID
-    const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setSessionId(newSessionId);
+    // Use consistent session ID from sessionStorage
+    const currentSessionId = getSessionId();
+    setSessionId(currentSessionId);
     
-    // Track page visit with enhanced analytics
-    axios.post(`${API}/track-visit?page=product&session_id=${newSessionId}`).catch(() => {});
+    // Track page visit with user behavior tracking
+    trackPageVisit('product');
     
-    // Also track with old endpoint
-    axios.post(`${API}/track?page=product&session_id=${newSessionId}`).catch(() => {});
+    // Track with live visitors endpoint
+    axios.post(`${API}/track-visit?page=product&session_id=${currentSessionId}`).catch(() => {});
     
     // Meta Pixel - ViewContent (product page)
     trackViewContent('Celesta Glow Advanced Face Serum', PREPAID_PRICE);
