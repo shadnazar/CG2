@@ -34,13 +34,16 @@ function AdminUserJourney() {
       const headers = { 'X-Admin-Token': adminToken };
       
       let visitorsUrl = `${API}/admin/user-tracking/visitors?days=${selectedDays}`;
+      let statsUrl = `${API}/admin/user-tracking/stats?days=${selectedDays}`;
+      
       if (selectedDate) {
         visitorsUrl = `${API}/admin/user-tracking/visitors?date=${selectedDate}`;
+        statsUrl = `${API}/admin/user-tracking/stats?date=${selectedDate}`;
       }
       
       const [visitorsRes, statsRes] = await Promise.all([
         axios.get(visitorsUrl, { headers }),
-        axios.get(`${API}/admin/user-tracking/stats?days=${selectedDays}`, { headers })
+        axios.get(statsUrl, { headers })
       ]);
       
       setVisitors(visitorsRes.data.visitors || []);
@@ -143,6 +146,21 @@ function AdminUserJourney() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Date indicator when specific date selected */}
+        {selectedDate && (
+          <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+            <span className="text-blue-800 font-medium">
+              Showing data for: {new Date(selectedDate).toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </span>
+            <button
+              onClick={() => setSelectedDate('')}
+              className="text-blue-600 hover:text-blue-800 text-sm underline"
+            >
+              Show all dates
+            </button>
+          </div>
+        )}
+
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">

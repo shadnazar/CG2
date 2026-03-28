@@ -955,12 +955,13 @@ async def get_visitor_journey(
 @api_router.get("/admin/user-tracking/stats")
 async def get_user_tracking_stats(
     x_admin_token: str = Header(None),
-    days: int = Query(7, ge=1, le=365)
+    days: int = Query(7, ge=1, le=365),
+    date: Optional[str] = Query(None, description="Single date in YYYY-MM-DD format")
 ):
-    """Get user tracking statistics"""
+    """Get user tracking statistics - supports both days range and single date"""
     verify_admin_token(x_admin_token)
     
-    stats = await user_behavior_tracker.get_visitor_stats(days=days)
+    stats = await user_behavior_tracker.get_visitor_stats(days=days, date=date)
     return stats
 
 

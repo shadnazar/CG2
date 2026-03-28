@@ -210,29 +210,32 @@ class UserBehaviorTracker:
         
         return visitors
     
-    async def get_visitor_stats(self, days: int = 7) -> dict:
-        """Get visitor statistics"""
-        cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+    async def get_visitor_stats(self, days: int = 7, date: str = None) -> dict:
+        """Get visitor statistics - supports both days range and single date"""
+        if date:
+            # Filter for a specific date
+            date_start = f"{date}T00:00:00"
+            date_end = f"{date}T23:59:59"
+            query = {"first_seen": {"$gte": date_start, "$lte": date_end}}
+        else:
+            # Filter for last N days
+            cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
+            query = {"first_seen": {"$gte": cutoff}}
         
-        total_visitors = await self.db.visitor_profiles.count_documents(
-            {"first_seen": {"$gte": cutoff}}
-        )
+        total_visitors = await self.db.visitor_profiles.count_documents(query)
         
-        returning_visitors = await self.db.visitor_profiles.count_documents(
-            {"total_visits": {"$gt": 1}, "first_seen": {"$gte": cutoff}}
-        )
+        returning_query = {**query, "total_visits": {"$gt": 1}}
+        returning_visitors = await self.db.visitor_profiles.count_documents(returning_query)
         
-        reached_checkout = await self.db.visitor_profiles.count_documents(
-            {"reached_checkout": True, "first_seen": {"$gte": cutoff}}
-        )
+        checkout_query = {**query, "reached_checkout": True}
+        reached_checkout = await self.db.visitor_profiles.count_documents(checkout_query)
         
-        address_entered = await self.db.visitor_profiles.count_documents(
-            {"address_entered": True, "first_seen": {"$gte": cutoff}}
-        )
+        address_query = {**query, "address_entered": True}
+        address_entered = await self.db.visitor_profiles.count_documents(address_query)
         
         # Average time spent
         pipeline = [
-            {"$match": {"first_seen": {"$gte": cutoff}}},
+            {"$match": query},
             {"$group": {"_id": None, "avg_time": {"$avg": "$total_time_spent"}}}
         ]
         avg_result = await self.db.visitor_profiles.aggregate(pipeline).to_list(1)
@@ -246,7 +249,8 @@ class UserBehaviorTracker:
             "address_entered": address_entered,
             "avg_time_spent": round(avg_time or 0, 1),
             "checkout_rate": round((reached_checkout / max(total_visitors, 1)) * 100, 1),
-            "period_days": days
+            "period_days": days,
+            "selected_date": date
         }
     
     async def get_visitors_by_date(self, date: str) -> List[dict]:
