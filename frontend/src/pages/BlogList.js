@@ -95,20 +95,43 @@ function BlogList() {
   }, [userLocation, blogs]);
 
   const filteredBlogs = blogs.filter(blog => {
-    // Search in title, meta_description, content, keywords, category, and tags
-    const searchLower = searchQuery.toLowerCase().trim();
-    const matchesSearch = !searchLower || 
-      (blog.title || '').toLowerCase().includes(searchLower) ||
-      (blog.meta_description || '').toLowerCase().includes(searchLower) ||
-      (blog.content || '').toLowerCase().includes(searchLower) ||
-      (blog.keywords || '').toLowerCase().includes(searchLower) ||
-      (blog.category || '').toLowerCase().includes(searchLower) ||
-      (blog.location_target || '').toLowerCase().includes(searchLower) ||
-      (blog.tags || []).some(tag => tag.toLowerCase().includes(searchLower));
-    
-    const matchesCategory = selectedCategory === 'all' || 
-      (blog.category || '').toLowerCase() === selectedCategory.toLowerCase();
-    return matchesSearch && matchesCategory;
+    try {
+      // Safe search with null checks
+      const searchLower = (searchQuery || '').toLowerCase().trim();
+      
+      if (!searchLower) {
+        // No search query - just filter by category
+        const matchesCategory = selectedCategory === 'all' || 
+          (blog.category || '').toLowerCase() === selectedCategory.toLowerCase();
+        return matchesCategory && blog.status === 'published';
+      }
+      
+      // Search in all fields with null safety
+      const title = (blog.title || '').toLowerCase();
+      const meta = (blog.meta_description || '').toLowerCase();
+      const content = (blog.content || '').toLowerCase();
+      const keywords = (blog.keywords || '').toLowerCase();
+      const category = (blog.category || '').toLowerCase();
+      const location = (blog.location_target || '').toLowerCase();
+      const tags = (blog.tags || []);
+      
+      const matchesSearch = 
+        title.includes(searchLower) ||
+        meta.includes(searchLower) ||
+        content.includes(searchLower) ||
+        keywords.includes(searchLower) ||
+        category.includes(searchLower) ||
+        location.includes(searchLower) ||
+        tags.some(tag => (tag || '').toLowerCase().includes(searchLower));
+      
+      const matchesCategory = selectedCategory === 'all' || 
+        category === selectedCategory.toLowerCase();
+      
+      return matchesSearch && matchesCategory && blog.status === 'published';
+    } catch (e) {
+      console.error('Filter error:', e);
+      return false;
+    }
   });
 
   const categories = ['all', ...new Set(blogs.map(b => b.category).filter(Boolean))];
