@@ -272,6 +272,90 @@ function AdminDashboard() {
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <>
+              {/* Date Filter with Calendar */}
+              <div className="bg-white rounded-2xl p-4 mb-6 border border-gray-100">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-5 h-5 text-green-600" />
+                    <span className="font-medium text-gray-700">Filter by Date:</span>
+                  </div>
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <input
+                      type="date"
+                      value={customStartDate}
+                      onChange={(e) => {
+                        setCustomStartDate(e.target.value);
+                        if (e.target.value) {
+                          // When a date is selected, fetch data for that specific date
+                          fetchDayWiseData(1, e.target.value, e.target.value);
+                        }
+                      }}
+                      className="px-3 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      data-testid="date-picker"
+                    />
+                    {customStartDate && (
+                      <button
+                        onClick={() => {
+                          setCustomStartDate('');
+                          setDayWiseData(null);
+                        }}
+                        className="px-3 py-2 text-sm text-gray-500 hover:text-gray-700"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Show selected date data */}
+                {customStartDate && dayWiseData && dayWiseData.daily_stats && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                    <h4 className="font-semibold text-blue-800 mb-3">
+                      Visitors on {new Date(customStartDate).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    </h4>
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      <div className="bg-white p-3 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-blue-600">
+                          {dayWiseData.daily_stats.find(d => d.date === customStartDate)?.total || dayWiseData.totals?.total || 0}
+                        </p>
+                        <p className="text-xs text-gray-500">Total Visitors</p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-green-600">
+                          {dayWiseData.daily_stats.find(d => d.date === customStartDate)?.homepage || dayWiseData.totals?.homepage || 0}
+                        </p>
+                        <p className="text-xs text-gray-500">Homepage</p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-purple-600">
+                          {dayWiseData.daily_stats.find(d => d.date === customStartDate)?.product || dayWiseData.totals?.product || 0}
+                        </p>
+                        <p className="text-xs text-gray-500">Product</p>
+                      </div>
+                      <div className="bg-white p-3 rounded-lg text-center">
+                        <p className="text-2xl font-bold text-orange-600">
+                          {dayWiseData.daily_stats.find(d => d.date === customStartDate)?.checkout || dayWiseData.totals?.checkout || 0}
+                        </p>
+                        <p className="text-xs text-gray-500">Checkout</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {customStartDate && dayWiseData && (!dayWiseData.daily_stats || dayWiseData.daily_stats.length === 0) && (
+                  <div className="mt-4 p-4 bg-gray-50 rounded-xl text-center text-gray-500">
+                    No visitor data for this date
+                  </div>
+                )}
+                
+                {loadingDayWise && (
+                  <div className="mt-4 text-center text-gray-500">
+                    <RefreshCw className="w-5 h-5 animate-spin inline mr-2" />
+                    Loading...
+                  </div>
+                )}
+              </div>
+
               {/* Live Visitors Banner */}
               <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-5 mb-6 text-white">
                 <div className="flex items-center justify-between flex-wrap gap-4">
