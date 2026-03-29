@@ -324,12 +324,13 @@ Remember: Write like a helpful friend sharing beauty secrets, not like a corpora
         
         return unused_states[:count]
 
-    async def generate_location_blogs(self, states: List[str] = None, count: int = 12) -> dict:
+    async def generate_location_blogs(self, states: List[str] = None, count: int = 12, force: bool = False) -> dict:
         """Generate SEO blogs targeting specific Indian states
         
         Args:
             states: List of states to generate blogs for. If None, uses cycling logic.
             count: Maximum number of blogs to generate (default 12)
+            force: If True, generate even for states that have recent blogs
         """
         results = {
             "success": True,
@@ -343,14 +344,18 @@ Remember: Write like a helpful friend sharing beauty secrets, not like a corpora
         if not states:
             states = await self.get_next_states_for_cycling(count)
         
-        # Filter out already used states (avoid duplicates)
-        used_states = await self.get_used_states(days=30)
-        states_to_generate = []
-        for state in states:
-            if state not in used_states:
-                states_to_generate.append(state)
-            else:
-                results["skipped_states"].append(state)
+        # Filter out already used states (avoid duplicates) - unless force is True
+        if force:
+            # When force=True (manual trigger), allow regeneration
+            states_to_generate = states[:count]
+        else:
+            used_states = await self.get_used_states(days=30)
+            states_to_generate = []
+            for state in states:
+                if state not in used_states:
+                    states_to_generate.append(state)
+                else:
+                    results["skipped_states"].append(state)
         
         # Limit to count
         states_to_generate = states_to_generate[:count]
@@ -479,12 +484,13 @@ Return as JSON:
         
         return results
 
-    async def generate_topic_blogs(self, topics: List[str], count: int = 12) -> dict:
+    async def generate_topic_blogs(self, topics: List[str], count: int = 12, force: bool = False) -> dict:
         """Generate SEO blogs for specific user-defined topics
         
         Args:
             topics: List of topics to generate blogs for
             count: Maximum number of blogs to generate (default 12)
+            force: If True, generate even for similar topics that have recent blogs
         """
         results = {
             "success": True,
@@ -494,31 +500,39 @@ Return as JSON:
             "skipped_topics": []
         }
         
-        # Get recently used topics to avoid duplicates
-        used_topics = await self.get_used_topics(days=30)
-        
         # Filter and prepare topics
         topics_to_generate = []
-        for topic_text in topics:
-            topic_text = topic_text.strip()
-            if not topic_text:
-                continue
+        
+        if force:
+            # When force=True (manual trigger), skip duplicate check
+            for topic_text in topics:
+                topic_text = topic_text.strip()
+                if topic_text:
+                    topics_to_generate.append(topic_text)
+        else:
+            # Get recently used topics to avoid duplicates
+            used_topics = await self.get_used_topics(days=30)
             
-            # Check if similar topic was already generated
-            topic_lower = topic_text.lower()
-            is_duplicate = False
-            for used in used_topics:
-                # Check for significant overlap (more than 60% word match)
-                topic_words = set(topic_lower.split())
-                used_words = set(used.split())
-                if len(topic_words & used_words) / max(len(topic_words), 1) > 0.6:
-                    is_duplicate = True
-                    break
-            
-            if is_duplicate:
-                results["skipped_topics"].append(topic_text)
-            else:
-                topics_to_generate.append(topic_text)
+            for topic_text in topics:
+                topic_text = topic_text.strip()
+                if not topic_text:
+                    continue
+                
+                # Check if similar topic was already generated
+                topic_lower = topic_text.lower()
+                is_duplicate = False
+                for used in used_topics:
+                    # Check for significant overlap (more than 60% word match)
+                    topic_words = set(topic_lower.split())
+                    used_words = set(used.split())
+                    if len(topic_words & used_words) / max(len(topic_words), 1) > 0.6:
+                        is_duplicate = True
+                        break
+                
+                if is_duplicate:
+                    results["skipped_topics"].append(topic_text)
+                else:
+                    topics_to_generate.append(topic_text)
         
         # Limit to count
         topics_to_generate = topics_to_generate[:count]

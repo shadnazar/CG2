@@ -758,7 +758,8 @@ async def batch_location_blogs(request: BatchLocationBlogsRequest, x_admin_token
     """Generate blogs targeting specific Indian states"""
     verify_admin_token(x_admin_token)
     
-    result = await auto_blog_generator.generate_location_blogs(states=request.states)
+    # When user manually selects states, force=True to allow regeneration
+    result = await auto_blog_generator.generate_location_blogs(states=request.states, force=True)
     return result
 
 
@@ -767,7 +768,8 @@ async def batch_topic_blogs(request: BatchTopicBlogsRequest, x_admin_token: str 
     """Generate blogs for specific user-defined topics"""
     verify_admin_token(x_admin_token)
     
-    result = await auto_blog_generator.generate_topic_blogs(topics=request.topics)
+    # When user manually enters topics, force=True to allow regeneration
+    result = await auto_blog_generator.generate_topic_blogs(topics=request.topics, force=True)
     return result
 
 

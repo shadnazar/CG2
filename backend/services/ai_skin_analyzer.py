@@ -73,7 +73,8 @@ class AISkinAnalyzer:
             return self._get_default_analysis(image_position)
         
         try:
-            from emergentintegrations.llm.chat import chat, Message, ContentType
+            from emergentintegrations.llm.chat import LlmChat, UserMessage, ImageContent
+            import uuid
             
             # Build position-specific prompt
             position_context = {
@@ -84,23 +85,21 @@ class AISkinAnalyzer:
             
             full_prompt = f"{SKIN_ANALYSIS_PROMPT}\n\nImage Context: {position_context.get(image_position, 'Analyze the visible skin areas.')}"
             
-            # Call GPT-4 Vision
-            response = await chat(
+            # Create chat with GPT-4o (vision capable)
+            chat = LlmChat(
                 api_key=self.api_key,
-                messages=[
-                    Message(
-                        role="user",
-                        content=[
-                            {"type": ContentType.TEXT, "text": full_prompt},
-                            {"type": ContentType.IMAGE_BASE64, "image_base64": image_base64}
-                        ]
-                    )
-                ],
-                model="gpt-4o"
+                session_id=f"skin-{uuid.uuid4().hex[:8]}",
+                system_message="You are an expert dermatologist analyzing skin photos."
+            ).with_model("openai", "gpt-4o")
+            
+            # Create user message with image
+            user_message = UserMessage(
+                text=full_prompt,
+                file_contents=[ImageContent(image_base64=image_base64)]
             )
             
-            # Parse JSON response
-            response_text = response.message.content if hasattr(response, 'message') else str(response)
+            # Send and get response
+            response_text = await chat.send_message(user_message)
             
             # Extract JSON from response
             json_start = response_text.find('{')

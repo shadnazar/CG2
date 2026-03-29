@@ -114,7 +114,8 @@ class TrendingNewsBlogGenerator:
             return None
         
         try:
-            from emergentintegrations.llm.chat import chat, Message
+            from emergentintegrations.llm.chat import LlmChat, UserMessage
+            import uuid
             
             prompt = TRENDING_BLOG_PROMPT.format(
                 news_title=news_item.get("title", ""),
@@ -122,13 +123,13 @@ class TrendingNewsBlogGenerator:
                 pub_date=news_item.get("pub_date", "")
             )
             
-            response = await chat(
+            chat = LlmChat(
                 api_key=self.api_key,
-                messages=[Message(role="user", content=prompt)],
-                model="gpt-4o"
-            )
+                session_id=f"trending-{uuid.uuid4().hex[:8]}",
+                system_message="You are an expert beauty blogger who connects trending news to skincare advice."
+            ).with_model("openai", "gpt-4o")
             
-            response_text = response.message.content if hasattr(response, 'message') else str(response)
+            response_text = await chat.send_message(UserMessage(text=prompt))
             
             # Extract JSON from response
             json_start = response_text.find('{')
