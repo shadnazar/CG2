@@ -95,6 +95,19 @@ async def get_questions(lang: str = Query("en", description="Language code: en, 
                 ]
             },
             {
+                "id": 7,
+                "question": "What is your MAJOR skin issue right now?",
+                "subtitle": "Select the one that bothers you most",
+                "type": "single",
+                "options": [
+                    {"value": "aging", "label": "Aging & Wrinkles", "desc": "Fine lines, sagging, loss of firmness"},
+                    {"value": "acne", "label": "Acne & Breakouts", "desc": "Pimples, blackheads, oily skin"},
+                    {"value": "dullness", "label": "Dull & Lifeless Skin", "desc": "Lack of glow, tired appearance"},
+                    {"value": "pigmentation", "label": "Dark Spots & Uneven Tone", "desc": "Sun spots, melasma, discoloration"},
+                    {"value": "sensitivity", "label": "Sensitivity & Redness", "desc": "Easily irritated, rosacea"}
+                ]
+            },
+            {
                 "id": 4,
                 "question": "How much time do you spend in the sun daily?",
                 "type": "single",
@@ -168,6 +181,19 @@ async def get_questions(lang: str = Query("en", description="Language code: en, 
                     {"value": "pigmentation", "label": "पिगमेंटेशन और काले धब्बे"},
                     {"value": "dull_skin", "label": "बेजान और थकी त्वचा"},
                     {"value": "uneven_texture", "label": "असमान बनावट"}
+                ]
+            },
+            {
+                "id": 7,
+                "question": "अभी आपकी सबसे बड़ी त्वचा समस्या क्या है?",
+                "subtitle": "वह चुनें जो आपको सबसे ज्यादा परेशान करती है",
+                "type": "single",
+                "options": [
+                    {"value": "aging", "label": "उम्र बढ़ना और झुर्रियां", "desc": "महीन रेखाएं, ढीलापन"},
+                    {"value": "acne", "label": "मुंहासे और दाने", "desc": "पिंपल्स, ब्लैकहेड्स"},
+                    {"value": "dullness", "label": "बेजान त्वचा", "desc": "चमक की कमी, थकी दिखती"},
+                    {"value": "pigmentation", "label": "काले धब्बे", "desc": "सन स्पॉट्स, मेलास्मा"},
+                    {"value": "sensitivity", "label": "संवेदनशील त्वचा", "desc": "आसानी से जलन"}
                 ]
             },
             {

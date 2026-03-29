@@ -8,6 +8,7 @@ from models.consultation import (
     ConsultationAnswers, ConsultationResult, AgingLevel,
     SkinType, SkinConcern, SunExposure, SunscreenUsage, Lifestyle, SkincareUsage, AgeGroup
 )
+from services.ai_skin_analyzer import ai_skin_analyzer
 
 
 class ConsultationService:
@@ -276,11 +277,36 @@ class ConsultationService:
         location: dict,
         language: str = "en"
     ) -> dict:
-        """Save consultation to database and return result"""
+        """Save consultation to database and return result with AI skin analysis"""
         result = self.generate_result(answers, language)
         
         consultation_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc).isoformat()
+        
+        # Perform AI skin analysis if images are provided
+        ai_analysis = None
+        if face_images and len(face_images) > 0:
+            try:
+                # Prepare images for analysis
+                image_data = []
+                positions = ["front", "left", "right"]
+                for i, img in enumerate(face_images[:3]):
+                    if img and len(img) > 100:  # Basic check for valid base64
+                        # Remove data URL prefix if present
+                        base64_data = img
+                        if "base64," in img:
+                            base64_data = img.split("base64,")[1]
+                        image_data.append({
+                            "base64": base64_data,
+                            "position": positions[i] if i < len(positions) else "front"
+                        })
+                
+                if image_data:
+                    ai_analysis = await ai_skin_analyzer.analyze_multiple_images(image_data)
+            except Exception as e:
+                import logging
+                logging.error(f"AI skin analysis failed: {str(e)}")
+                ai_analysis = ai_skin_analyzer._get_combined_default()
         
         consultation_doc = {
             "id": consultation_id,
@@ -288,6 +314,7 @@ class ConsultationService:
             "answers": answers.model_dump(),
             "result": result.model_dump(),
             "face_images": face_images,
+            "ai_skin_analysis": ai_analysis,
             "location": location,
             "language": language,
             "created_at": now,

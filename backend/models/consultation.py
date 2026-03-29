@@ -59,10 +59,19 @@ class AgingLevel(str, Enum):
     HIGH = "high"
 
 
+class MajorIssue(str, Enum):
+    AGING = "aging"
+    ACNE = "acne"
+    DULLNESS = "dullness"
+    PIGMENTATION = "pigmentation"
+    SENSITIVITY = "sensitivity"
+
+
 class ConsultationAnswers(BaseModel):
     age_group: AgeGroup
     skin_type: SkinType
     concerns: List[SkinConcern] = Field(max_length=2)
+    major_issue: Optional[MajorIssue] = MajorIssue.AGING
     sun_exposure: SunExposure
     sunscreen_usage: SunscreenUsage
     lifestyle: Lifestyle

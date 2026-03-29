@@ -1080,6 +1080,126 @@ function ConsultationPage() {
             </div>
           )}
 
+          {/* AI Skin Analysis Scores Card */}
+          {result.ai_skin_analysis && result.ai_skin_analysis.combined_scores && (
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-5 shadow-sm border border-purple-100">
+              <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Star className="w-5 h-5 text-purple-500" />
+                AI Skin Analysis Scores
+              </h3>
+              
+              {/* Beauty Score - Main Score */}
+              <div className="bg-white rounded-xl p-4 mb-4 text-center">
+                <div className="text-4xl font-bold text-purple-600 mb-1">
+                  {result.ai_skin_analysis.combined_scores.beauty_score || 7}/10
+                </div>
+                <div className="text-sm font-medium text-gray-700 mb-2">Overall Beauty Score</div>
+                <p className="text-xs text-gray-500">
+                  {result.ai_skin_analysis.combined_scores.beauty_reason || 
+                   result.ai_skin_analysis.individual_analyses?.[0]?.beauty_reason ||
+                   "Based on overall skin health and clarity"}
+                </p>
+              </div>
+              
+              {/* Individual Scores Grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Aging Score */}
+                <div className="bg-white rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Aging</span>
+                    <span className="text-lg font-bold text-orange-500">
+                      {result.ai_skin_analysis.combined_scores.aging_score || 6}/10
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-orange-500 h-2 rounded-full" 
+                      style={{width: `${(result.ai_skin_analysis.combined_scores.aging_score || 6) * 10}%`}}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                    {result.ai_skin_analysis.combined_scores.aging_reason?.slice(0, 50) || "Fine lines detected"}...
+                  </p>
+                </div>
+                
+                {/* Acne Score */}
+                <div className="bg-white rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Acne</span>
+                    <span className="text-lg font-bold text-red-500">
+                      {result.ai_skin_analysis.combined_scores.acne_score || 7}/10
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-red-500 h-2 rounded-full" 
+                      style={{width: `${(result.ai_skin_analysis.combined_scores.acne_score || 7) * 10}%`}}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                    {result.ai_skin_analysis.combined_scores.acne_reason?.slice(0, 50) || "Minor blemishes"}...
+                  </p>
+                </div>
+                
+                {/* Dullness Score */}
+                <div className="bg-white rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Radiance</span>
+                    <span className="text-lg font-bold text-yellow-500">
+                      {result.ai_skin_analysis.combined_scores.dullness_score || 5}/10
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-yellow-500 h-2 rounded-full" 
+                      style={{width: `${(result.ai_skin_analysis.combined_scores.dullness_score || 5) * 10}%`}}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                    {result.ai_skin_analysis.combined_scores.dullness_reason?.slice(0, 50) || "Needs more glow"}...
+                  </p>
+                </div>
+                
+                {/* Pigmentation Score */}
+                <div className="bg-white rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs text-gray-500">Even Tone</span>
+                    <span className="text-lg font-bold text-blue-500">
+                      {result.ai_skin_analysis.combined_scores.pigmentation_score || 6}/10
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-blue-500 h-2 rounded-full" 
+                      style={{width: `${(result.ai_skin_analysis.combined_scores.pigmentation_score || 6) * 10}%`}}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                    {result.ai_skin_analysis.combined_scores.pigmentation_reason?.slice(0, 50) || "Some uneven areas"}...
+                  </p>
+                </div>
+              </div>
+              
+              {/* Primary Concern & Tips */}
+              {result.ai_skin_analysis.overall_assessment && (
+                <div className="mt-4 bg-white rounded-xl p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertCircle className="w-4 h-4 text-purple-500" />
+                    <span className="text-sm font-medium text-gray-700">Primary Concern:</span>
+                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium capitalize">
+                      {result.ai_skin_analysis.overall_assessment.primary_concern || 'Aging'}
+                    </span>
+                  </div>
+                  {result.ai_skin_analysis.overall_assessment.personalized_tips?.[0] && (
+                    <p className="text-xs text-gray-600 mt-2">
+                      <strong>Tip:</strong> {result.ai_skin_analysis.overall_assessment.personalized_tips[0]}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Aging Level Card */}
           <div className="bg-white rounded-2xl p-5 shadow-sm">
             <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
