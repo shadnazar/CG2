@@ -205,7 +205,11 @@ function AdminAIStudio() {
       });
       
       if (res.data.topics && res.data.topics.length > 0) {
-        setCustomTopics(res.data.topics.join('\n'));
+        // Handle both string and object topics (extract 'topic' field if object)
+        const topicStrings = res.data.topics.map(t => 
+          typeof t === 'string' ? t : (t.topic || t.title || String(t))
+        );
+        setCustomTopics(topicStrings.join('\n'));
       } else if (res.data.error) {
         setError(res.data.error);
       }
