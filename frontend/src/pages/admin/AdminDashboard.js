@@ -40,6 +40,7 @@ function AdminDashboard() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dayWiseData, setDayWiseData] = useState(null);
   const [loadingDayWise, setLoadingDayWise] = useState(false);
+  const [blogStats, setBlogStats] = useState(null);
   
   const navigate = useNavigate();
   const adminToken = localStorage.getItem('adminToken');
@@ -53,17 +54,19 @@ function AdminDashboard() {
     try {
       const headers = { 'X-Admin-Token': adminToken };
       
-      const [overviewRes, liveRes, pagesRes, leadsRes] = await Promise.all([
+      const [overviewRes, liveRes, pagesRes, leadsRes, blogStatsRes] = await Promise.all([
         axios.get(`${API}/admin/analytics/overview`, { headers }),
         axios.get(`${API}/admin/analytics/live`, { headers }),
         axios.get(`${API}/admin/analytics/pages?days=7`, { headers }),
-        axios.get(`${API}/admin/analytics/leads`, { headers })
+        axios.get(`${API}/admin/analytics/leads`, { headers }),
+        axios.get(`${API}/admin/blog-stats`, { headers }).catch(() => ({ data: null }))
       ]);
       
       setAnalytics(overviewRes.data);
       setLiveAnalytics(liveRes.data);
       setPageAnalytics(pagesRes.data);
       setLeadsData(leadsRes.data);
+      setBlogStats(blogStatsRes.data);
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) {
         localStorage.removeItem('adminToken');
@@ -510,24 +513,79 @@ function AdminDashboard() {
                   </div>
                 </div>
 
+                {/* Blog Stats & Latest Blogs */}
                 <div className="bg-white rounded-2xl p-6 border border-gray-100">
-                  <h3 className="font-semibold text-gray-900 mb-4">Recent Orders</h3>
-                  {analytics?.recent_orders?.length > 0 ? (
-                    <div className="space-y-3">
-                      {analytics.recent_orders.slice(0, 3).map((order) => (
-                        <div key={order.order_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-                          <div>
-                            <p className="font-medium text-gray-900">{order.name}</p>
-                            <p className="text-xs text-gray-500">{order.order_id}</p>
-                          </div>
-                          <p className="font-bold text-green-600">₹{order.amount}</p>
+                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-pink-500" />
+                    Blog Performance
+                  </h3>
+                  {blogStats ? (
+                    <>
+                      <div className="grid grid-cols-2 gap-3 mb-4">
+                        <div className="bg-pink-50 p-3 rounded-xl text-center">
+                          <p className="text-2xl font-bold text-pink-600">{blogStats.total_blogs}</p>
+                          <p className="text-xs text-pink-500">Total Blogs</p>
                         </div>
-                      ))}
-                    </div>
+                        <div className="bg-blue-50 p-3 rounded-xl text-center">
+                          <p className="text-2xl font-bold text-blue-600">{blogStats.total_views}</p>
+                          <p className="text-xs text-blue-500">Total Views</p>
+                        </div>
+                        <div className="bg-green-50 p-3 rounded-xl text-center">
+                          <p className="text-2xl font-bold text-green-600">{blogStats.today_blogs}</p>
+                          <p className="text-xs text-green-500">Today's Blogs</p>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded-xl text-center">
+                          <p className="text-2xl font-bold text-purple-600">{blogStats.trending_count}</p>
+                          <p className="text-xs text-purple-500">Trending</p>
+                        </div>
+                      </div>
+                      
+                      {/* Recent Blogs */}
+                      <h4 className="text-sm font-medium text-gray-700 mb-2">Latest Blogs</h4>
+                      <div className="space-y-2 max-h-48 overflow-y-auto">
+                        {blogStats.recent_blogs?.slice(0, 5).map((blog, i) => (
+                          <div key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm">
+                            <div className="flex-1 min-w-0 mr-2">
+                              <p className="font-medium text-gray-900 truncate">{blog.title}</p>
+                              <p className="text-xs text-gray-400">
+                                {new Date(blog.created_at).toLocaleDateString()}
+                                {blog.is_trending && <span className="ml-1 text-pink-500">Trending</span>}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1 text-green-600">
+                              <Eye className="w-3 h-3" />
+                              <span className="text-xs font-medium">{blog.views || 0}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   ) : (
-                    <p className="text-gray-500 text-sm text-center py-4">No orders yet</p>
+                    <div className="text-center py-4 text-gray-500">
+                      <FileText className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                      <p className="text-sm">Loading blog stats...</p>
+                    </div>
                   )}
                 </div>
+              </div>
+
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
+                <h3 className="font-semibold text-gray-900 mb-4">Recent Orders</h3>
+                {analytics?.recent_orders?.length > 0 ? (
+                  <div className="space-y-3">
+                    {analytics.recent_orders.slice(0, 3).map((order) => (
+                      <div key={order.order_id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                        <div>
+                          <p className="font-medium text-gray-900">{order.name}</p>
+                          <p className="text-xs text-gray-500">{order.order_id}</p>
+                        </div>
+                        <p className="font-bold text-green-600">₹{order.amount}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-sm text-center py-4">No orders yet</p>
+                )}
               </div>
             </>
           )}

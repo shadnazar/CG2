@@ -925,6 +925,108 @@ async def track_user_action(data: TrackingData):
     return await user_behavior_tracker.track_action(data.model_dump())
 
 
+@api_router.post("/tracking/update-location")
+async def update_visitor_location(data: dict):
+    """Update visitor profile with browser geolocation"""
+    visitor_id = data.get("visitor_id")
+    location = data.get("location")
+    
+    if visitor_id and location:
+        await db.visitor_profiles.update_one(
+            {"visitor_id": visitor_id},
+            {
+                "$set": {
+                    "browser_location": location,
+                    "location_updated_at": datetime.now(timezone.utc).isoformat()
+                }
+            },
+            upsert=True
+        )
+    return {"updated": True}
+
+
+@api_router.post("/tracking/blog-view")
+async def track_blog_view(data: dict):
+    """Track blog view and increment view counter"""
+    blog_slug = data.get("blog_slug")
+    visitor_id = data.get("visitor_id")
+    
+    if blog_slug:
+        # Increment blog view count
+        await db.blogs.update_one(
+            {"slug": blog_slug},
+            {"$inc": {"views": 1, "view_count": 1}}
+        )
+        
+        # Log the view
+        await db.blog_views.insert_one({
+            "blog_slug": blog_slug,
+            "blog_title": data.get("blog_title", ""),
+            "visitor_id": visitor_id,
+            "session_id": data.get("session_id"),
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        
+        # Update visitor profile with blogs viewed
+        if visitor_id:
+            await db.visitor_profiles.update_one(
+                {"visitor_id": visitor_id},
+                {
+                    "$addToSet": {"blogs_viewed": blog_slug},
+                    "$inc": {"total_blog_views": 1}
+                }
+            )
+    
+    return {"tracked": True}
+
+
+@api_router.get("/admin/blog-stats")
+async def get_blog_stats(x_admin_token: str = Header(None)):
+    """Get blog statistics for admin dashboard"""
+    verify_admin_token(x_admin_token)
+    
+    total_blogs = await db.blogs.count_documents({})
+    
+    # Today's blogs
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_blogs = await db.blogs.count_documents({"created_at": {"$regex": f"^{today}"}})
+    
+    # Total views
+    pipeline = [
+        {"$group": {"_id": None, "total_views": {"$sum": {"$ifNull": ["$views", 0]}}}}
+    ]
+    views_result = await db.blogs.aggregate(pipeline).to_list(1)
+    total_views = views_result[0]["total_views"] if views_result else 0
+    
+    # Today's views
+    today_views = await db.blog_views.count_documents({"timestamp": {"$regex": f"^{today}"}})
+    
+    # Top blogs by views
+    top_blogs = await db.blogs.find(
+        {"views": {"$gt": 0}},
+        {"_id": 0, "title": 1, "slug": 1, "views": 1, "category": 1}
+    ).sort("views", -1).limit(5).to_list(5)
+    
+    # Recent blogs
+    recent_blogs = await db.blogs.find(
+        {},
+        {"_id": 0, "title": 1, "slug": 1, "created_at": 1, "views": 1, "is_trending": 1}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    # Trending blogs count
+    trending_count = await db.blogs.count_documents({"is_trending": True})
+    
+    return {
+        "total_blogs": total_blogs,
+        "today_blogs": today_blogs,
+        "total_views": total_views,
+        "today_views": today_views,
+        "top_blogs": top_blogs,
+        "recent_blogs": recent_blogs,
+        "trending_count": trending_count
+    }
+
+
 @api_router.get("/admin/user-tracking/visitors")
 async def get_tracked_visitors(
     x_admin_token: str = Header(None),

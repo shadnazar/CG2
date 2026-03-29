@@ -27,11 +27,94 @@ export const getSessionId = () => {
   return sessionId;
 };
 
+// Request browser geolocation permission and get precise location
+export const requestLocationPermission = async () => {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve({ error: 'Geolocation not supported' });
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const location = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          timestamp: new Date().toISOString()
+        };
+        
+        // Store in localStorage
+        localStorage.setItem('userLocation', JSON.stringify(location));
+        
+        // Update visitor profile with location
+        await updateVisitorLocation(location);
+        
+        resolve(location);
+      },
+      (error) => {
+        console.log('Location permission denied:', error.message);
+        resolve({ error: error.message });
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+  });
+};
+
+// Get stored location
+export const getStoredLocation = () => {
+  const stored = localStorage.getItem('userLocation');
+  return stored ? JSON.parse(stored) : null;
+};
+
+// Update visitor profile with location
+export const updateVisitorLocation = async (location) => {
+  const visitorId = getVisitorId();
+  const sessionId = getSessionId();
+  
+  try {
+    await fetch(`${API}/tracking/update-location`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        visitor_id: visitorId,
+        session_id: sessionId,
+        location: location
+      })
+    });
+  } catch (err) {
+    console.log('Location update error:', err);
+  }
+};
+
+// Track blog view
+export const trackBlogView = async (blogSlug, blogTitle) => {
+  const visitorId = getVisitorId();
+  const sessionId = getSessionId();
+  
+  try {
+    await fetch(`${API}/tracking/blog-view`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        visitor_id: visitorId,
+        session_id: sessionId,
+        blog_slug: blogSlug,
+        blog_title: blogTitle,
+        timestamp: new Date().toISOString()
+      })
+    });
+  } catch (err) {
+    console.log('Blog view tracking error:', err);
+  }
+};
+
 // Track page visit with detailed info
 export const trackPageVisit = async (page, additionalData = {}) => {
   // Always track page visits for analytics - consent only affects detailed tracking
   const visitorId = getVisitorId();
   const sessionId = getSessionId();
+  const storedLocation = getStoredLocation();
   
   const trackingData = {
     visitor_id: visitorId,
@@ -42,6 +125,7 @@ export const trackPageVisit = async (page, additionalData = {}) => {
     user_agent: navigator.userAgent,
     screen_width: window.innerWidth,
     screen_height: window.innerHeight,
+    location: storedLocation,
     ...additionalData
   };
 
@@ -147,5 +231,9 @@ export default {
   trackFormComplete,
   trackScrollDepth,
   trackCheckoutStep,
+  trackBlogView,
+  requestLocationPermission,
+  getStoredLocation,
+  updateVisitorLocation,
   usePageTracking
 };

@@ -95,9 +95,19 @@ function BlogList() {
   }, [userLocation, blogs]);
 
   const filteredBlogs = blogs.filter(blog => {
-    const matchesSearch = blog.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         blog.meta_description?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || blog.category === selectedCategory;
+    // Search in title, meta_description, content, keywords, category, and tags
+    const searchLower = searchQuery.toLowerCase().trim();
+    const matchesSearch = !searchLower || 
+      (blog.title || '').toLowerCase().includes(searchLower) ||
+      (blog.meta_description || '').toLowerCase().includes(searchLower) ||
+      (blog.content || '').toLowerCase().includes(searchLower) ||
+      (blog.keywords || '').toLowerCase().includes(searchLower) ||
+      (blog.category || '').toLowerCase().includes(searchLower) ||
+      (blog.location_target || '').toLowerCase().includes(searchLower) ||
+      (blog.tags || []).some(tag => tag.toLowerCase().includes(searchLower));
+    
+    const matchesCategory = selectedCategory === 'all' || 
+      (blog.category || '').toLowerCase() === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import axios from 'axios';
 import { 
   ChevronRight, ChevronLeft, Check, Camera, X, Phone, 
@@ -9,6 +10,15 @@ import {
 import { trackViewContent, trackCTAClick } from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// SEO Meta Data for Skin Analysis Page
+const SEO_DATA = {
+  title: "Free AI Skin Analysis & Anti-Aging Consultation | Celesta Glow",
+  description: "Get your FREE personalized skin analysis in 60 seconds. AI-powered anti-aging consultation with beauty score, aging assessment & custom skincare routine. Trusted by 10,000+ Indian women.",
+  keywords: "free skin analysis, skin consultation online, anti-aging test, skin type test, beauty score, wrinkle analysis, skin assessment free, dermatologist consultation online india, skincare routine generator, personalized skincare, skin concerns analysis, aging skin treatment, fine lines treatment, pigmentation solution, dull skin remedy",
+  canonical: "https://celestaglow.com/consultation",
+  ogImage: "https://celestaglow.com/og-skin-analysis.jpg"
+};
 
 // Language options - Main Indian languages
 const LANGUAGES = [
@@ -634,6 +644,56 @@ function ConsultationPage() {
   if (step === 'landing') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 pb-24">
+        {/* SEO Meta Tags */}
+        <Helmet>
+          <title>{SEO_DATA.title}</title>
+          <meta name="description" content={SEO_DATA.description} />
+          <meta name="keywords" content={SEO_DATA.keywords} />
+          <link rel="canonical" href={SEO_DATA.canonical} />
+          
+          {/* Open Graph */}
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content={SEO_DATA.title} />
+          <meta property="og:description" content={SEO_DATA.description} />
+          <meta property="og:url" content={SEO_DATA.canonical} />
+          <meta property="og:site_name" content="Celesta Glow" />
+          
+          {/* Twitter Card */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={SEO_DATA.title} />
+          <meta name="twitter:description" content={SEO_DATA.description} />
+          
+          {/* Additional SEO */}
+          <meta name="robots" content="index, follow" />
+          <meta name="author" content="Celesta Glow" />
+          <meta name="language" content="English, Hindi" />
+          <meta name="geo.region" content="IN" />
+          <meta name="geo.country" content="India" />
+          
+          {/* Schema.org structured data */}
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "Celesta Glow Skin Analysis",
+              "description": SEO_DATA.description,
+              "url": SEO_DATA.canonical,
+              "applicationCategory": "HealthApplication",
+              "operatingSystem": "Web",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "INR"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "4.8",
+                "ratingCount": "2847"
+              }
+            })}
+          </script>
+        </Helmet>
+
         {/* Back to Home Button */}
         <div className="px-4 pt-4">
           <Link 
