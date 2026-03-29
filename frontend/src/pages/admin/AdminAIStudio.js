@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   ChevronLeft, Sparkles, FileText, MapPin, Lightbulb, 
-  Loader2, Check, AlertCircle, Copy, Save, Zap, Clock, History, Globe, Tag
+  Loader2, Check, AlertCircle, Copy, Save, Zap, Clock, History, Globe, Tag,
+  TrendingUp, Newspaper, Share2, Timer, RefreshCw
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -44,6 +45,38 @@ function AdminAIStudio() {
   const [topicGenerating, setTopicGenerating] = useState(false);
   const [topicResult, setTopicResult] = useState(null);
   const [customTopics, setCustomTopics] = useState('');
+  
+  // Cron status and timer
+  const [cronStatus, setCronStatus] = useState(null);
+  const [countdown, setCountdown] = useState('');
+  
+  // Trending news
+  const [trendingNews, setTrendingNews] = useState([]);
+  const [trendingGenerating, setTrendingGenerating] = useState(false);
+  const [trendingResult, setTrendingResult] = useState(null);
+  const [trendingStats, setTrendingStats] = useState(null);
+
+  const fetchCronStatus = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/admin/cron/status`, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      setCronStatus(res.data);
+    } catch (err) {
+      console.error('Failed to fetch cron status');
+    }
+  }, [adminToken]);
+
+  const fetchTrendingStats = useCallback(async () => {
+    try {
+      const res = await axios.get(`${API}/admin/ai/trending-stats`, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      setTrendingStats(res.data);
+    } catch (err) {
+      console.error('Failed to fetch trending stats');
+    }
+  }, [adminToken]);
 
   useEffect(() => {
     if (!adminToken) {
@@ -51,7 +84,32 @@ function AdminAIStudio() {
       return;
     }
     fetchGenerationHistory();
-  }, [adminToken, navigate]);
+    fetchCronStatus();
+    fetchTrendingStats();
+    
+    // Update countdown every second
+    const timer = setInterval(() => {
+      if (cronStatus?.time_until_next_seconds > 0) {
+        const secs = cronStatus.time_until_next_seconds - Math.floor((Date.now() - cronStatus._fetchedAt) / 1000);
+        if (secs > 0) {
+          const h = Math.floor(secs / 3600);
+          const m = Math.floor((secs % 3600) / 60);
+          const s = secs % 60;
+          setCountdown(`${h}h ${m}m ${s}s`);
+        } else {
+          setCountdown('Generating...');
+          fetchCronStatus(); // Refresh status
+        }
+      }
+    }, 1000);
+    
+    // Store fetch time
+    if (cronStatus) {
+      cronStatus._fetchedAt = Date.now();
+    }
+    
+    return () => clearInterval(timer);
+  }, [adminToken, navigate, cronStatus, fetchCronStatus, fetchTrendingStats]);
 
   const fetchGenerationHistory = async () => {
     try {
@@ -132,6 +190,39 @@ function AdminAIStudio() {
       setError(err.response?.data?.detail || 'Failed to generate topic blogs');
     } finally {
       setTopicGenerating(false);
+    }
+  };
+
+  // Fetch trending news
+  const fetchTrendingNews = async () => {
+    try {
+      const res = await axios.get(`${API}/admin/ai/trending-news?feed_type=celebrity_india`, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      setTrendingNews(res.data.news || []);
+    } catch (err) {
+      console.error('Failed to fetch trending news');
+    }
+  };
+
+  // Generate trending blogs
+  const handleGenerateTrendingBlogs = async () => {
+    setTrendingGenerating(true);
+    setError('');
+    setTrendingResult(null);
+    
+    try {
+      const res = await axios.post(`${API}/admin/ai/generate-trending-blogs?count=3`, {}, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      
+      setTrendingResult(res.data);
+      fetchGenerationHistory();
+      fetchTrendingStats();
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to generate trending blogs');
+    } finally {
+      setTrendingGenerating(false);
     }
   };
 
@@ -360,7 +451,58 @@ function AdminAIStudio() {
           >
             <Lightbulb size={18} /> Ideas
           </button>
+          <button
+            onClick={() => { setActiveMode('trending'); fetchTrendingNews(); }}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-colors ${
+              activeMode === 'trending' 
+                ? 'bg-pink-500 text-white' 
+                : 'bg-white text-gray-600 border border-gray-200'
+            }`}
+            data-testid="tab-trending"
+          >
+            <TrendingUp size={18} /> Trending
+          </button>
         </div>
+
+        {/* Auto-Generation Timer Card */}
+        {cronStatus && (
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl p-5 mb-6 text-white">
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <Timer className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-indigo-100 text-sm">Next Auto-Generation In</p>
+                  <p className="text-2xl font-bold">{countdown || cronStatus.time_until_next_formatted}</p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-indigo-100 text-sm">Schedule: {cronStatus.schedule}</p>
+                <div className="flex items-center gap-4 mt-2">
+                  <div>
+                    <p className="text-xl font-bold">{cronStatus.today_blogs_generated}</p>
+                    <p className="text-xs text-indigo-200">Today</p>
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold">{cronStatus.total_blogs}</p>
+                    <p className="text-xs text-indigo-200">Total</p>
+                  </div>
+                  <div>
+                    <p className="text-xl font-bold">{cronStatus.blogs_per_run}</p>
+                    <p className="text-xs text-indigo-200">Per Run</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button
+              onClick={fetchCronStatus}
+              className="mt-3 text-sm text-indigo-200 hover:text-white flex items-center gap-1"
+            >
+              <RefreshCw size={14} /> Refresh Status
+            </button>
+          </div>
+        )}
 
         {/* Error */}
         {error && (
@@ -729,6 +871,155 @@ Anti-aging diet tips for glowing skin`)}
                 >
                   View All Blogs
                 </Link>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Trending News Blog Generator */}
+        {activeMode === 'trending' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-r from-pink-500 to-rose-600 rounded-2xl p-6 text-white">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold">Trending News Blogs</h2>
+                  <p className="text-pink-100 text-sm">Generate skincare blogs from real-time celebrity & beauty news</p>
+                </div>
+              </div>
+              
+              <div className="bg-white/10 rounded-xl p-4 mb-4">
+                <p className="text-sm text-pink-100 mb-3">Powered by Google News:</p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-center gap-2">
+                    <Check size={16} /> Real-time celebrity beauty news
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} /> Bollywood skincare trends
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} /> AI connects news to skincare tips
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check size={16} /> Shareable, viral content
+                  </li>
+                </ul>
+              </div>
+              
+              {/* Trending Stats */}
+              {trendingStats && (
+                <div className="flex items-center gap-4 mb-4 bg-white/10 rounded-xl p-3">
+                  <div>
+                    <p className="text-2xl font-bold">{trendingStats.total_trending_blogs}</p>
+                    <p className="text-xs text-pink-200">Total Trending</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{trendingStats.today_trending_blogs}</p>
+                    <p className="text-xs text-pink-200">Today</p>
+                  </div>
+                </div>
+              )}
+              
+              <button
+                onClick={handleGenerateTrendingBlogs}
+                disabled={trendingGenerating}
+                className="w-full py-3 bg-white text-pink-600 font-bold rounded-xl hover:bg-gray-100 disabled:opacity-50 flex items-center justify-center gap-2"
+                data-testid="generate-trending-btn"
+              >
+                {trendingGenerating ? (
+                  <>
+                    <Loader2 className="animate-spin" size={20} />
+                    Generating from News...
+                  </>
+                ) : (
+                  <>
+                    <Newspaper size={20} />
+                    Generate 3 Trending Blogs
+                  </>
+                )}
+              </button>
+            </div>
+            
+            {/* Trending News Preview */}
+            {trendingNews.length > 0 && (
+              <div className="bg-white rounded-2xl p-6 border border-gray-100">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Newspaper size={18} className="text-pink-500" />
+                  Current Trending News
+                </h3>
+                <div className="space-y-3 max-h-80 overflow-y-auto">
+                  {trendingNews.map((news, i) => (
+                    <div key={i} className="p-3 bg-gray-50 rounded-xl">
+                      <p className="font-medium text-gray-900 text-sm line-clamp-2">{news.title}</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-gray-500">{news.source}</span>
+                        <a 
+                          href={news.link} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs text-pink-500 hover:underline"
+                        >
+                          Read →
+                        </a>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={fetchTrendingNews}
+                  className="mt-3 text-sm text-gray-500 hover:text-pink-500 flex items-center gap-1"
+                >
+                  <RefreshCw size={14} /> Refresh News
+                </button>
+              </div>
+            )}
+            
+            {/* Trending Generation Result */}
+            {trendingResult && (
+              <div className="bg-white rounded-2xl p-6 border border-green-200">
+                <div className="flex items-center gap-2 mb-4">
+                  <Check className="w-5 h-5 text-green-500" />
+                  <span className="font-semibold text-green-800">
+                    Generated {trendingResult.successful} of {trendingResult.total_attempted} trending blogs!
+                  </span>
+                </div>
+                
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {trendingResult.blogs?.map((blog, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-gray-900 truncate">{blog.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <span className="text-xs bg-pink-100 text-pink-600 px-2 py-0.5 rounded">{blog.category}</span>
+                          <span className="text-xs text-gray-500 truncate">{blog.news_source}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => navigator.share ? navigator.share({title: blog.title, url: `/blog/${blog.slug}`}) : copyToClipboard(`${window.location.origin}/blog/${blog.slug}`)}
+                          className="p-2 text-gray-400 hover:text-pink-500"
+                        >
+                          <Share2 size={16} />
+                        </button>
+                        <Link 
+                          to={`/blog/${blog.slug}`}
+                          target="_blank"
+                          className="text-pink-500 text-sm hover:underline"
+                        >
+                          View →
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {trendingResult.errors?.length > 0 && (
+                  <div className="mt-3 text-xs text-red-500">
+                    Errors: {trendingResult.errors.slice(0, 2).join(', ')}
+                  </div>
+                )}
               </div>
             )}
           </div>

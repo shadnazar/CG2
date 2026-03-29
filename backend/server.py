@@ -26,6 +26,7 @@ from services.auto_blog_generator import AutoBlogGenerator
 from services.image_service import get_image_for_category, get_image_for_keywords
 from services.user_behavior_tracker import UserBehaviorTracker
 from services.whatsapp_service import WhatsAppService
+from services.trending_news_generator import TrendingNewsBlogGenerator
 
 
 ROOT_DIR = Path(__file__).parent
@@ -43,6 +44,7 @@ ai_content_generator = AIContentGenerator(db)
 auto_blog_generator = AutoBlogGenerator(db)
 user_behavior_tracker = UserBehaviorTracker(db)
 whatsapp_service = WhatsAppService(db)
+trending_news_generator = TrendingNewsBlogGenerator(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
@@ -1014,6 +1016,99 @@ async def get_cron_logs(
     ).sort("timestamp", -1).limit(limit).to_list(limit)
     
     return {"logs": logs}
+
+
+@api_router.get("/admin/cron/status")
+async def get_cron_status(x_admin_token: str = Header(None)):
+    """Get cron job status and next run time"""
+    verify_admin_token(x_admin_token)
+    
+    # Get last generation log
+    last_log = await db.cron_logs.find_one(
+        {"job": {"$in": ["auto_blog_generation", "manual_blog_generation", "trending_blog_generation"]}},
+        {"_id": 0},
+        sort=[("timestamp", -1)]
+    )
+    
+    # Calculate next run times (6 AM and 6 PM)
+    now = datetime.now(timezone.utc)
+    next_runs = []
+    
+    # Today's 6 AM and 6 PM
+    today_6am = now.replace(hour=6, minute=0, second=0, microsecond=0)
+    today_6pm = now.replace(hour=18, minute=0, second=0, microsecond=0)
+    tomorrow_6am = today_6am.replace(day=now.day + 1) if now.hour >= 6 else today_6am
+    
+    if now < today_6am:
+        next_runs.append(today_6am)
+        next_runs.append(today_6pm)
+    elif now < today_6pm:
+        next_runs.append(today_6pm)
+        next_runs.append(tomorrow_6am)
+    else:
+        next_runs.append(tomorrow_6am)
+    
+    next_run = next_runs[0] if next_runs else None
+    time_until_next = (next_run - now).total_seconds() if next_run else 0
+    
+    # Get today's blog count
+    today_str = now.strftime("%Y-%m-%d")
+    today_blogs = await db.blogs.count_documents({"created_at": {"$regex": f"^{today_str}"}})
+    total_blogs = await db.blogs.count_documents({})
+    trending_blogs = await db.blogs.count_documents({"is_trending": True})
+    
+    return {
+        "cron_active": True,
+        "schedule": "Every 12 hours (6 AM and 6 PM IST)",
+        "next_run": next_run.isoformat() if next_run else None,
+        "time_until_next_seconds": int(time_until_next),
+        "time_until_next_formatted": f"{int(time_until_next // 3600)}h {int((time_until_next % 3600) // 60)}m",
+        "last_run": last_log.get("timestamp") if last_log else None,
+        "last_run_generated": last_log.get("generated", 0) if last_log else 0,
+        "today_blogs_generated": today_blogs,
+        "total_blogs": total_blogs,
+        "trending_blogs": trending_blogs,
+        "blogs_per_run": 12
+    }
+
+
+# ==================== TRENDING NEWS BLOG ENDPOINTS ====================
+
+@api_router.get("/admin/ai/trending-news")
+async def get_trending_news(x_admin_token: str = Header(None), feed_type: str = Query("celebrity_india")):
+    """Fetch current trending news for preview"""
+    verify_admin_token(x_admin_token)
+    
+    news = await trending_news_generator.fetch_trending_news(feed_type, limit=10)
+    return {"news": news, "feed_type": feed_type}
+
+
+@api_router.post("/admin/ai/generate-trending-blogs")
+async def generate_trending_blogs(x_admin_token: str = Header(None), count: int = Query(3, ge=1, le=5)):
+    """Generate blogs from trending news"""
+    verify_admin_token(x_admin_token)
+    
+    result = await trending_news_generator.generate_trending_blogs(count=count)
+    
+    # Log the generation
+    await db.cron_logs.insert_one({
+        "job": "trending_blog_generation",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "generated": result.get("successful", 0),
+        "failed": result.get("failed", 0),
+        "triggered_by": "admin"
+    })
+    
+    return result
+
+
+@api_router.get("/admin/ai/trending-stats")
+async def get_trending_blog_stats(x_admin_token: str = Header(None)):
+    """Get trending blog statistics"""
+    verify_admin_token(x_admin_token)
+    
+    stats = await trending_news_generator.get_trending_stats()
+    return stats
 
 
 # ==================== WHATSAPP API ENDPOINTS ====================
