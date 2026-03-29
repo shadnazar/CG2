@@ -45,6 +45,7 @@ function AdminAIStudio() {
   const [topicGenerating, setTopicGenerating] = useState(false);
   const [topicResult, setTopicResult] = useState(null);
   const [customTopics, setCustomTopics] = useState('');
+  const [loadingTopics, setLoadingTopics] = useState(false);
   
   // Cron status and timer
   const [cronStatus, setCronStatus] = useState(null);
@@ -190,6 +191,28 @@ function AdminAIStudio() {
       setError(err.response?.data?.detail || 'Failed to generate topic blogs');
     } finally {
       setTopicGenerating(false);
+    }
+  };
+
+  // Load AI-generated trending topic suggestions
+  const handleLoadTrendingTopics = async () => {
+    setLoadingTopics(true);
+    setError('');
+    
+    try {
+      const res = await axios.get(`${API}/admin/ai/suggest-topics?count=6`, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      
+      if (res.data.topics && res.data.topics.length > 0) {
+        setCustomTopics(res.data.topics.join('\n'));
+      } else if (res.data.error) {
+        setError(res.data.error);
+      }
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to load trending topics');
+    } finally {
+      setLoadingTopics(false);
     }
   };
 
@@ -795,15 +818,21 @@ function AdminAIStudio() {
               
               <div className="flex gap-3 mb-4">
                 <button
-                  onClick={() => setCustomTopics(`Best anti-aging ingredients for Indian skin
-How to reduce wrinkles naturally at home
-Night skincare routine for women over 30
-Benefits of retinol and vitamin C serum
-How to prevent premature aging
-Anti-aging diet tips for glowing skin`)}
-                  className="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30"
+                  onClick={handleLoadTrendingTopics}
+                  disabled={loadingTopics}
+                  className="px-3 py-1 bg-white/20 rounded-lg text-sm hover:bg-white/30 flex items-center gap-2"
                 >
-                  Load Sample Topics
+                  {loadingTopics ? (
+                    <>
+                      <Loader2 className="animate-spin" size={14} />
+                      Loading...
+                    </>
+                  ) : (
+                    <>
+                      <TrendingUp size={14} />
+                      Load Trending Topics
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={() => setCustomTopics('')}

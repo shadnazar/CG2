@@ -142,46 +142,53 @@ Consider:
         if not self.api_key:
             raise ValueError("EMERGENT_LLM_KEY not configured")
         
-        prompt = f"""Suggest {count} trending blog topics for an anti-aging skincare brand targeting Indian women aged 28-50.
+        from datetime import datetime
+        current_month = datetime.now().strftime("%B %Y")
+        current_day = datetime.now().strftime("%A")
+        
+        prompt = f"""Generate exactly {count} FRESH and TRENDING skincare blog topic titles for {current_day}, {current_month} in India.
 
-Return as JSON array:
-[
-    {{
-        "topic": "Topic title",
-        "description": "Brief description of what the article should cover",
-        "keywords": ["keyword1", "keyword2", "keyword3"],
-        "difficulty": "easy|medium|hard"
-    }}
-]
+Requirements:
+- Target audience: Indian women aged 28-50
+- Topics: anti-aging, skincare tips, celebrity beauty secrets, ingredient education
+- Each title should be catchy, specific, and SEO-friendly (50-70 characters)
+- Mix different types: celebrity secrets, DIY remedies, seasonal tips, ingredient guides, routines
 
-Focus on:
-1. Current skincare trends in India
-2. Common anti-aging concerns
-3. Seasonal skincare needs
-4. Ingredient education
-5. How-to guides"""
+IMPORTANT: Return ONLY a JSON array of topic title strings. Example:
+["Celebrity Beauty Secret: How Deepika Maintains Youthful Skin", "5 Monsoon Skincare Mistakes That Age Your Skin Faster"]
+
+Do NOT return objects or explanations - ONLY an array of {count} topic title strings."""
 
         try:
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=f"topics-gen-{uuid.uuid4().hex[:8]}",
-                system_message="You are a skincare content strategist."
+                system_message="You return ONLY JSON arrays of strings. No objects, no explanations."
             ).with_model("openai", "gpt-4o")
             
             user_message = UserMessage(text=prompt)
             response = await chat.send_message(user_message)
             
             # Parse JSON array from response
-            json_match = re.search(r'\[[\s\S]*\]', response)
+            json_match = re.search(r'\[[\s\S]*?\]', response)
             if json_match:
-                topics = json.loads(json_match.group())
+                topics_raw = json.loads(json_match.group())
+                
+                # Extract simple strings from any complex structure
+                topics = []
+                for t in topics_raw:
+                    if isinstance(t, str):
+                        topics.append(t)
+                    elif isinstance(t, dict):
+                        # Extract title/topic from dict if AI returned complex structure
+                        topics.append(t.get('topic', t.get('title', str(t))))
+                
+                return {
+                    "success": True,
+                    "topics": topics
+                }
             else:
                 raise ValueError("Could not parse JSON from AI response")
-            
-            return {
-                "success": True,
-                "topics": topics
-            }
             
         except Exception as e:
             return {

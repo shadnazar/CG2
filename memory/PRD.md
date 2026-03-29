@@ -270,19 +270,27 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 ## Completed Work - March 2026
 
 ### March 29, 2026
-1. **Transformation Showcase on Homepage** ✅
+1. **Fixed Blog Generation API** ✅
+   - Root cause: `emergentintegrations` library API changed from `chat()` to `LlmChat` class
+   - Fixed `/app/backend/services/trending_news_generator.py` - Updated to new LlmChat API
+   - Fixed `/app/backend/services/ai_skin_analyzer.py` - Updated to new LlmChat API with image support
+   - Fixed `/app/backend/services/auto_blog_generator.py` - Added `force=True` for manual triggers
+   - All blog types (Location, Topic, Trending) now generating successfully
+
+2. **Load Trending Topics Feature** ✅
+   - Added dynamic AI-powered topic suggestions
+   - "Load Trending Topics" button now fetches fresh, timely topics using GPT-4o
+   - Topics are based on current day/month and trending skincare topics in India
+   - Returns simple topic title strings (not complex objects)
+
+3. **Transformation Showcase on Homepage** ✅
    - Added fixed-height (420px) image showcase component
    - Features two customer transformation images with fade animation
    - No layout shifting - fixed frame container
-   - Dot indicators for manual navigation
-   - Auto-rotates every 5 seconds
-   - Located at `/app/frontend/src/pages/Homepage.js` (TransformationShowcase component)
 
-2. **Hourly Trending Blog Cron Job** ✅
+4. **Hourly Trending Blog Cron Job** ✅
    - Updated `/app/backend/cron_runner.py` to run trending blogs every 1 hour
-   - Main schedule unchanged: 6AM (location), 12PM (topic), 6PM (trending batch), 12AM (mix)
-   - Additional: Every hour, 3 trending celebrity blogs are generated from Google News RSS
-   - Logs to `cron_logs` collection in MongoDB
+   - Cron process running in background
 
 ### March 27, 2026
 1. **Homepage Image Fix** ✅
