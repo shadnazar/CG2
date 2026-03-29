@@ -200,7 +200,8 @@ function AdminAIStudio() {
     setError('');
     
     try {
-      const res = await axios.get(`${API}/admin/ai/suggest-topics?count=6`, {
+      // Use format=simple to get just topic title strings
+      const res = await axios.get(`${API}/admin/ai/suggest-topics?count=6&format=simple`, {
         headers: { 'X-Admin-Token': adminToken }
       });
       

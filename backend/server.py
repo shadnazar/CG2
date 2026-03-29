@@ -718,11 +718,19 @@ async def generate_location_with_ai(request: LocationGenerateRequest, x_admin_to
 
 
 @api_router.get("/admin/ai/suggest-topics")
-async def suggest_blog_topics(x_admin_token: str = Header(None), count: int = Query(5, ge=1, le=10)):
-    """Get AI-suggested blog topics"""
+async def suggest_blog_topics(
+    x_admin_token: str = Header(None), 
+    count: int = Query(5, ge=1, le=10),
+    format: str = Query("full", description="'full' for objects with description, 'simple' for title strings only")
+):
+    """Get AI-suggested blog topics
+    
+    Args:
+        format: 'full' returns {topic, description, keywords}, 'simple' returns just topic titles
+    """
     verify_admin_token(x_admin_token)
     
-    result = await ai_content_generator.suggest_blog_topics(count=count)
+    result = await ai_content_generator.suggest_blog_topics(count=count, format=format)
     
     if not result["success"]:
         raise HTTPException(status_code=500, detail=result.get("error", "AI generation failed"))

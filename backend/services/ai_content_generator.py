@@ -136,8 +136,13 @@ Consider:
                 "error": str(e)
             }
     
-    async def suggest_blog_topics(self, count: int = 5):
-        """Generate blog topic suggestions based on trending skincare topics"""
+    async def suggest_blog_topics(self, count: int = 5, format: str = "full"):
+        """Generate blog topic suggestions based on trending skincare topics
+        
+        Args:
+            count: Number of topics to generate
+            format: 'full' for objects with description, 'simple' for title strings only
+        """
         
         if not self.api_key:
             raise ValueError("EMERGENT_LLM_KEY not configured")
@@ -146,7 +151,9 @@ Consider:
         current_month = datetime.now().strftime("%B %Y")
         current_day = datetime.now().strftime("%A")
         
-        prompt = f"""Generate exactly {count} FRESH and TRENDING skincare blog topic titles for {current_day}, {current_month} in India.
+        if format == "simple":
+            # Simple format - just topic titles as strings
+            prompt = f"""Generate exactly {count} FRESH and TRENDING skincare blog topic titles for {current_day}, {current_month} in India.
 
 Requirements:
 - Target audience: Indian women aged 28-50
@@ -158,35 +165,76 @@ IMPORTANT: Return ONLY a JSON array of topic title strings. Example:
 ["Celebrity Beauty Secret: How Deepika Maintains Youthful Skin", "5 Monsoon Skincare Mistakes That Age Your Skin Faster"]
 
 Do NOT return objects or explanations - ONLY an array of {count} topic title strings."""
+            system_msg = "You return ONLY JSON arrays of strings. No objects, no explanations."
+        else:
+            # Full format - objects with topic, description, keywords
+            prompt = f"""Generate {count} skincare blog topic ideas for Indian women aged 28-50.
+
+Return ONLY a valid JSON array with this exact structure (no extra text):
+[
+  {{"topic": "Title here", "description": "Brief description", "keywords": ["kw1", "kw2"], "difficulty": "easy"}},
+  {{"topic": "Title 2", "description": "Description 2", "keywords": ["kw1"], "difficulty": "medium"}}
+]
+
+Topics should cover: anti-aging, skincare trends, celebrity secrets, ingredient guides.
+Current date: {current_day}, {current_month}"""
+            system_msg = "You return ONLY valid JSON arrays. No markdown, no explanation."
 
         try:
             chat = LlmChat(
                 api_key=self.api_key,
                 session_id=f"topics-gen-{uuid.uuid4().hex[:8]}",
-                system_message="You return ONLY JSON arrays of strings. No objects, no explanations."
+                system_message=system_msg
             ).with_model("openai", "gpt-4o")
             
             user_message = UserMessage(text=prompt)
             response = await chat.send_message(user_message)
             
-            # Parse JSON array from response
-            json_match = re.search(r'\[[\s\S]*?\]', response)
+            # Parse JSON array from response - use greedy match to get full array
+            json_match = re.search(r'\[[\s\S]*\]', response)
             if json_match:
-                topics_raw = json.loads(json_match.group())
+                json_str = json_match.group()
                 
-                # Extract simple strings from any complex structure
-                topics = []
-                for t in topics_raw:
-                    if isinstance(t, str):
-                        topics.append(t)
-                    elif isinstance(t, dict):
-                        # Extract title/topic from dict if AI returned complex structure
-                        topics.append(t.get('topic', t.get('title', str(t))))
+                # Clean up common JSON issues
+                json_str = re.sub(r',\s*]', ']', json_str)  # Remove trailing commas before ]
+                json_str = re.sub(r',\s*}', '}', json_str)  # Remove trailing commas before }
+                json_str = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', json_str)  # Remove control characters
+                json_str = json_str.replace('\n', ' ').replace('\r', '')  # Remove newlines in strings
                 
-                return {
-                    "success": True,
-                    "topics": topics
-                }
+                try:
+                    topics_raw = json.loads(json_str)
+                except json.JSONDecodeError as e:
+                    # If still fails, return error with details
+                    return {"success": False, "error": f"JSON parse error: {str(e)}", "raw": json_str[:200]}
+                
+                if format == "simple":
+                    # Extract simple strings from any complex structure
+                    topics = []
+                    for t in topics_raw:
+                        if isinstance(t, str):
+                            topics.append(t)
+                        elif isinstance(t, dict):
+                            topics.append(t.get('topic', t.get('title', str(t))))
+                    return {"success": True, "topics": topics}
+                else:
+                    # Return full objects - ensure each has required fields
+                    topics = []
+                    for t in topics_raw:
+                        if isinstance(t, dict):
+                            topics.append({
+                                "topic": t.get('topic', t.get('title', 'Untitled')),
+                                "description": t.get('description', ''),
+                                "keywords": t.get('keywords', []),
+                                "difficulty": t.get('difficulty', 'medium')
+                            })
+                        elif isinstance(t, str):
+                            topics.append({
+                                "topic": t,
+                                "description": "",
+                                "keywords": [],
+                                "difficulty": "medium"
+                            })
+                    return {"success": True, "topics": topics}
             else:
                 raise ValueError("Could not parse JSON from AI response")
             
