@@ -501,12 +501,12 @@ function AdminAIStudio() {
                   <Timer className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-indigo-100 text-sm">Next Auto-Generation In</p>
+                  <p className="text-indigo-100 text-sm">Next: {cronStatus.next_run_type || 'Auto-Generation'}</p>
                   <p className="text-2xl font-bold">{countdown || cronStatus.time_until_next_formatted}</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-indigo-100 text-sm">Schedule: {cronStatus.schedule}</p>
+                <p className="text-indigo-100 text-sm">{cronStatus.schedule}</p>
                 <div className="flex items-center gap-4 mt-2">
                   <div>
                     <p className="text-xl font-bold">{cronStatus.today_blogs_generated}</p>

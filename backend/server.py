@@ -9,7 +9,7 @@ from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 import uuid
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import random
 import smtplib
 from email.mime.text import MIMEText
@@ -1142,26 +1142,43 @@ async def get_cron_status(x_admin_token: str = Header(None)):
         sort=[("timestamp", -1)]
     )
     
-    # Calculate next run times (6 AM and 6 PM)
+    # Calculate next run times based on staggered schedule:
+    # 6 AM - Location blogs (12)
+    # 12 PM - Topic blogs (6)
+    # 6 PM - Trending blogs (6)
+    # 12 AM - Mix blogs (6)
+    # PLUS: Hourly trending blogs
     now = datetime.now(timezone.utc)
-    next_runs = []
     
-    # Today's 6 AM and 6 PM
-    today_6am = now.replace(hour=6, minute=0, second=0, microsecond=0)
-    today_6pm = now.replace(hour=18, minute=0, second=0, microsecond=0)
-    tomorrow_6am = today_6am.replace(day=now.day + 1) if now.hour >= 6 else today_6am
+    scheduled_hours = [0, 6, 12, 18]  # 12AM, 6AM, 12PM, 6PM
+    next_scheduled = None
     
-    if now < today_6am:
-        next_runs.append(today_6am)
-        next_runs.append(today_6pm)
-    elif now < today_6pm:
-        next_runs.append(today_6pm)
-        next_runs.append(tomorrow_6am)
+    for hour in scheduled_hours:
+        target = now.replace(hour=hour, minute=0, second=0, microsecond=0)
+        if now.hour < hour:
+            next_scheduled = target
+            break
+    
+    if not next_scheduled:
+        # Next day 12 AM
+        next_scheduled = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    
+    time_until_scheduled = (next_scheduled - now).total_seconds()
+    
+    # Next hourly trending (runs every hour)
+    next_hourly = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+    time_until_hourly = (next_hourly - now).total_seconds()
+    
+    # Use the sooner of the two
+    if time_until_hourly < time_until_scheduled:
+        next_run = next_hourly
+        time_until_next = time_until_hourly
+        next_type = "Hourly Trending"
     else:
-        next_runs.append(tomorrow_6am)
-    
-    next_run = next_runs[0] if next_runs else None
-    time_until_next = (next_run - now).total_seconds() if next_run else 0
+        next_run = next_scheduled
+        time_until_next = time_until_scheduled
+        job_map = {0: "Mix Blogs", 6: "Location Blogs", 12: "Topic Blogs", 18: "Trending Batch"}
+        next_type = job_map.get(next_scheduled.hour, "Auto Blogs")
     
     # Get today's blog count
     today_str = now.strftime("%Y-%m-%d")
@@ -1171,8 +1188,9 @@ async def get_cron_status(x_admin_token: str = Header(None)):
     
     return {
         "cron_active": True,
-        "schedule": "Every 12 hours (6 AM and 6 PM IST)",
+        "schedule": "Staggered (6AM/12PM/6PM/12AM) + Hourly Trending",
         "next_run": next_run.isoformat() if next_run else None,
+        "next_run_type": next_type,
         "time_until_next_seconds": int(time_until_next),
         "time_until_next_formatted": f"{int(time_until_next // 3600)}h {int((time_until_next % 3600) // 60)}m",
         "last_run": last_log.get("timestamp") if last_log else None,
