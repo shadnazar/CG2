@@ -283,14 +283,27 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
    - Topics are based on current day/month and trending skincare topics in India
    - Returns simple topic title strings (not complex objects)
 
-3. **Transformation Showcase on Homepage** ✅
-   - Added fixed-height (420px) image showcase component
-   - Features two customer transformation images with fade animation
-   - No layout shifting - fixed frame container
+3. **Updated Timer Display** ✅
+   - Timer now shows next run type (Hourly Trending, Location Blogs, etc.)
+   - Schedule displays: "Staggered (6AM/12PM/6PM/12AM) + Hourly Trending"
 
-4. **Hourly Trending Blog Cron Job** ✅
-   - Updated `/app/backend/cron_runner.py` to run trending blogs every 1 hour
-   - Cron process running in background
+4. **Exit Intent ₹100 Discount** ✅
+   - Exit popup ₹100 discount now saves to localStorage
+   - Discount automatically applies at checkout
+   - Discount amount correctly reflected (₹100 vs ₹50 welcome offer)
+   - Banner shows discount type: "Special exit offer" or "Welcome offer"
+
+5. **Enhanced Customer Profiles** ✅
+   - Location tracking with reverse geocoding (lat/long → City, State, Pincode)
+   - Phone number tracking from discount claims
+   - Discount claimed status (type: regular/exit, amount)
+   - Visitor cards show location badge, phone badge, discount badge
+   - Expanded profile shows full customer details
+
+6. **Tracking Improvements** ✅
+   - New `/api/tracking/discount-claimed` endpoint
+   - Location reverse geocoding using OpenStreetMap Nominatim API
+   - Discount tracking for both ₹50 welcome and ₹100 exit offers
 
 ### March 27, 2026
 1. **Homepage Image Fix** ✅

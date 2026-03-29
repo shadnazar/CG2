@@ -83,6 +83,19 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
         localStorage.setItem('discountClaimed', 'true');
         localStorage.setItem('discountCode', res.data.discount_code);
         
+        // Track discount claim with phone number
+        const visitorId = getVisitorId();
+        try {
+          await axios.post(`${API}/tracking/discount-claimed`, {
+            visitor_id: visitorId,
+            discount_type: 'regular',
+            amount: 50,
+            phone: cleanPhone
+          });
+        } catch (trackErr) {
+          console.log('Tracking error:', trackErr);
+        }
+        
         // Track Lead event
         trackLead('discount_claimed');
       } else if (res.data.already_claimed) {

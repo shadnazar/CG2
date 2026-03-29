@@ -937,22 +937,50 @@ async def track_user_action(data: TrackingData):
 
 @api_router.post("/tracking/update-location")
 async def update_visitor_location(data: dict):
-    """Update visitor profile with browser geolocation"""
+    """Update visitor profile with browser geolocation and reverse geocode to actual place"""
+    import httpx
+    
     visitor_id = data.get("visitor_id")
     location = data.get("location")
     
     if visitor_id and location:
+        lat = location.get("latitude")
+        lng = location.get("longitude")
+        
+        # Reverse geocode to get actual place name
+        place_info = {}
+        if lat and lng:
+            try:
+                async with httpx.AsyncClient(timeout=5.0) as client:
+                    # Use OpenStreetMap Nominatim API (free, no key needed)
+                    url = f"https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lng}&zoom=10&addressdetails=1"
+                    response = await client.get(url, headers={"User-Agent": "CelestaGlow/1.0"})
+                    if response.status_code == 200:
+                        geo_data = response.json()
+                        address = geo_data.get("address", {})
+                        place_info = {
+                            "city": address.get("city") or address.get("town") or address.get("village") or address.get("suburb", ""),
+                            "district": address.get("state_district") or address.get("county", ""),
+                            "state": address.get("state", ""),
+                            "country": address.get("country", "India"),
+                            "pincode": address.get("postcode", ""),
+                            "display_name": geo_data.get("display_name", "")[:100]
+                        }
+            except Exception as e:
+                logging.warning(f"Reverse geocode failed: {e}")
+        
         await db.visitor_profiles.update_one(
             {"visitor_id": visitor_id},
             {
                 "$set": {
                     "browser_location": location,
+                    "location_place": place_info,
                     "location_updated_at": datetime.now(timezone.utc).isoformat()
                 }
             },
             upsert=True
         )
-    return {"updated": True}
+    return {"updated": True, "place": place_info if 'place_info' in dir() else {}}
 
 
 @api_router.post("/tracking/blog-view")
@@ -986,6 +1014,36 @@ async def track_blog_view(data: dict):
                     "$inc": {"total_blog_views": 1}
                 }
             )
+    
+    return {"tracked": True}
+
+
+@api_router.post("/tracking/discount-claimed")
+async def track_discount_claimed(data: dict):
+    """Track when a visitor claims a discount"""
+    visitor_id = data.get("visitor_id")
+    discount_type = data.get("discount_type", "regular")  # "regular" (₹50) or "exit" (₹100)
+    discount_amount = data.get("amount", 50)
+    phone = data.get("phone", "")
+    
+    if visitor_id:
+        update_data = {
+            "$set": {
+                "discount_claimed": True,
+                "discount_type": discount_type,
+                "discount_amount": discount_amount,
+                "discount_claimed_at": datetime.now(timezone.utc).isoformat()
+            }
+        }
+        
+        if phone:
+            update_data["$set"]["phone"] = phone
+        
+        await db.visitor_profiles.update_one(
+            {"visitor_id": visitor_id},
+            update_data,
+            upsert=True
+        )
     
     return {"tracked": True}
 

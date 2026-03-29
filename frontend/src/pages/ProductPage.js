@@ -13,7 +13,7 @@ import {
   trackFAQInteraction,
   trackTimeOnPage
 } from '../utils/metaPixel';
-import { trackPageVisit, trackTimeSpent, trackFormComplete, trackAction, getSessionId } from '../utils/userTracking';
+import { trackPageVisit, trackTimeSpent, trackFormComplete, trackAction, getSessionId, getVisitorId } from '../utils/userTracking';
 import { getSharedStats, updateSharedStats } from '../utils/sharedStats';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -24,6 +24,7 @@ const COD_PRICE = 699;
 const COD_ADVANCE = 99;
 const MRP = 1499;
 const DISCOUNT_AMOUNT = 50;
+const EXIT_DISCOUNT_AMOUNT = 100;
 
 // User uploaded bottle product image - with packaging
 const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_050b785b-bdfe-40d2-9088-b4c5bddc18c5/artifacts/f3fkk4tr_IMG_9115.png';
@@ -49,6 +50,7 @@ function ProductPage() {
   // Discount state
   const [hasDiscount, setHasDiscount] = useState(false);
   const [discountApplied, setDiscountApplied] = useState(false);
+  const [discountAmount, setDiscountAmount] = useState(DISCOUNT_AMOUNT); // Track actual discount amount
   
   // Exit-Intent Popup state
   const [showExitPopup, setShowExitPopup] = useState(false);
@@ -155,23 +157,32 @@ function ProductPage() {
   // Check if user has a discount - Auto apply if claimed
   const checkDiscountStatus = async () => {
     // Check localStorage for claimed discount - AUTO APPLY
-    if (localStorage.getItem('discountClaimed')) {
+    // Priority: Exit discount (₹100) > Regular discount (₹50)
+    const exitDiscountClaimed = localStorage.getItem('exitDiscountClaimed');
+    const regularDiscountClaimed = localStorage.getItem('discountClaimed');
+    
+    if (exitDiscountClaimed) {
       setHasDiscount(true);
-      setDiscountApplied(true); // Auto-apply discount!
+      setDiscountApplied(true);
+      setDiscountAmount(EXIT_DISCOUNT_AMOUNT); // ₹100
+    } else if (regularDiscountClaimed) {
+      setHasDiscount(true);
+      setDiscountApplied(true);
+      setDiscountAmount(DISCOUNT_AMOUNT); // ₹50
     }
   };
 
   // Calculate prices with discount - ALWAYS apply if has discount
   const getFinalPrepaidPrice = () => {
     if (hasDiscount) {
-      return PREPAID_PRICE - DISCOUNT_AMOUNT;
+      return PREPAID_PRICE - discountAmount;
     }
     return PREPAID_PRICE;
   };
 
   const getFinalCodPrice = () => {
     if (hasDiscount) {
-      return COD_PRICE - DISCOUNT_AMOUNT;
+      return COD_PRICE - discountAmount;
     }
     return COD_PRICE;
   };
@@ -228,9 +239,9 @@ function ProductPage() {
     if (!validateForm()) return;
     setLoading(true);
 
-    // Calculate final amount with discount
+    // Calculate final amount with discount (use dynamic discount amount)
     const baseAmount = paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_ADVANCE;
-    const amount = discountApplied ? Math.max(baseAmount - DISCOUNT_AMOUNT, 0) : baseAmount;
+    const amount = discountApplied ? Math.max(baseAmount - discountAmount, 0) : baseAmount;
     
     // Track InitiateCheckout
     trackInitiateCheckout(
@@ -268,7 +279,7 @@ function ProductPage() {
               ...formData,
               payment_method: paymentMethod === 'prepaid' ? 'Prepaid' : 'COD (Advance Paid)',
               amount: finalPrice,
-              discount_applied: discountApplied ? DISCOUNT_AMOUNT : 0
+              discount_applied: discountApplied ? discountAmount : 0
             });
             
             setOrderConfirmed(order.data);
@@ -758,9 +769,29 @@ function ProductPage() {
                 </div>
                 
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     setShowExitPopup(false);
+                    // Save exit discount to localStorage
+                    localStorage.setItem('exitDiscountClaimed', 'true');
+                    setHasDiscount(true);
+                    setDiscountApplied(true);
+                    setDiscountAmount(EXIT_DISCOUNT_AMOUNT);
                     trackCTAClick('exit_popup_buy', 'exit_popup');
+                    // Track the discount claim
+                    trackAction('exit_discount_claimed', { amount: EXIT_DISCOUNT_AMOUNT });
+                    
+                    // Also track to backend
+                    try {
+                      const visitorId = getVisitorId();
+                      await axios.post(`${API}/tracking/discount-claimed`, {
+                        visitor_id: visitorId,
+                        discount_type: 'exit',
+                        amount: EXIT_DISCOUNT_AMOUNT
+                      });
+                    } catch (err) {
+                      console.log('Tracking error:', err);
+                    }
+                    
                     setStep('checkout');
                   }}
                   className="w-full bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-4 rounded-xl shadow-lg hover:shadow-xl transition-all"
@@ -831,8 +862,8 @@ function ProductPage() {
                   <Gift className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-green-800 font-bold text-base">🎉 ₹{DISCOUNT_AMOUNT} Discount Applied!</p>
-                  <p className="text-green-600 text-sm">Your exclusive welcome offer is active</p>
+                  <p className="text-green-800 font-bold text-base">🎉 ₹{discountAmount} Discount Applied!</p>
+                  <p className="text-green-600 text-sm">{discountAmount === EXIT_DISCOUNT_AMOUNT ? 'Special exit offer activated!' : 'Your exclusive welcome offer is active'}</p>
                 </div>
               </div>
             </div>
@@ -1030,7 +1061,7 @@ function ProductPage() {
                   <p className="font-semibold text-gray-900 text-sm">
                     Cash on Delivery — {discountApplied && <span className="line-through text-gray-400">₹{COD_PRICE}</span>} ₹{getFinalCodPrice()}
                   </p>
-                  <p className="text-gray-500 text-xs">Pay ₹{Math.max(COD_ADVANCE - (discountApplied ? DISCOUNT_AMOUNT : 0), 49)} now + ₹{getFinalCodPrice() - Math.max(COD_ADVANCE - (discountApplied ? DISCOUNT_AMOUNT : 0), 49)} on delivery</p>
+                  <p className="text-gray-500 text-xs">Pay ₹{Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} now + ₹{getFinalCodPrice() - Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} on delivery</p>
                 </div>
                 <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">53% OFF</span>
               </label>
@@ -1044,7 +1075,7 @@ function ProductPage() {
             className={`w-full mt-6 py-4 rounded-full font-semibold transition-all ${loading ? 'bg-gray-300 text-gray-500' : 'btn-cg-primary'}`}
             data-testid="place-order-button"
           >
-            {loading ? 'Processing...' : `Pay ₹${paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : Math.max(COD_ADVANCE - (discountApplied ? DISCOUNT_AMOUNT : 0), 49)} & Place Order`}
+            {loading ? 'Processing...' : `Pay ₹${paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} & Place Order`}
           </button>
 
           {/* Trust Signals */}
