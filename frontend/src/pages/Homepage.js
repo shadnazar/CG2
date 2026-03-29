@@ -27,6 +27,98 @@ const HERO_IMAGE = 'https://customer-assets.emergentagent.com/job_ae0c9586-b94c-
 // Bottle Product Image
 const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_ae0c9586-b94c-4054-b869-8b9baeb452c6/artifacts/gwxje1nv_1F955957-C2EB-4ED0-A713-0B302C9B4892.jpeg';
 
+// Transformation Images - Before/While Using/After
+const TRANSFORMATION_IMAGES = [
+  {
+    url: 'https://customer-assets.emergentagent.com/job_26148967-6968-4918-8b5d-0a2c0e5259b2/artifacts/v7ijo66v_e1038299-e6d4-495a-aeb8-d34f76107e22.jpeg',
+    label: 'Priya, 34 - Delhi',
+    testimonial: '"My skin looks 10 years younger!"'
+  },
+  {
+    url: 'https://customer-assets.emergentagent.com/job_26148967-6968-4918-8b5d-0a2c0e5259b2/artifacts/hl39qfua_6d8c1ed3-65ac-4b5e-80c8-22a3f43c0981.jpeg',
+    label: 'Rahul, 38 - Mumbai',
+    testimonial: '"Fine lines reduced in just 4 weeks!"'
+  }
+];
+
+// Transformation Showcase Component - Fixed Height with Animation
+function TransformationShowcase() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIsAnimating(true);
+      setTimeout(() => {
+        setCurrentIndex((prev) => (prev + 1) % TRANSFORMATION_IMAGES.length);
+        setIsAnimating(false);
+      }, 500);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const current = TRANSFORMATION_IMAGES[currentIndex];
+
+  return (
+    <section className="px-5 py-8" data-testid="transformation-showcase">
+      <div className="text-center mb-4">
+        <p className="text-xs font-semibold text-green-600 tracking-wider uppercase">Real Results</p>
+        <h3 className="text-xl font-bold text-gray-900">Before / While Using / After</h3>
+      </div>
+      
+      {/* Fixed Height Container - Prevents Layout Shift */}
+      <div 
+        className="relative mx-auto overflow-hidden rounded-2xl shadow-xl bg-gradient-to-br from-green-50 to-emerald-100"
+        style={{ height: '420px', maxWidth: '350px' }}
+      >
+        {/* Image with Fade Animation */}
+        <div 
+          className={`absolute inset-0 transition-opacity duration-500 ease-in-out ${
+            isAnimating ? 'opacity-0' : 'opacity-100'
+          }`}
+        >
+          <img
+            src={current.url}
+            alt={`Transformation result - ${current.label}`}
+            className="w-full h-full object-contain"
+            style={{ maxHeight: '420px' }}
+          />
+        </div>
+        
+        {/* Bottom Overlay with Text */}
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+          <p className="text-white font-semibold text-sm">{current.label}</p>
+          <p className="text-white/90 text-xs italic">{current.testimonial}</p>
+        </div>
+        
+        {/* Dots Indicator */}
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
+          {TRANSFORMATION_IMAGES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => {
+                setIsAnimating(true);
+                setTimeout(() => {
+                  setCurrentIndex(i);
+                  setIsAnimating(false);
+                }, 300);
+              }}
+              className={`w-2 h-2 rounded-full transition-all ${
+                i === currentIndex ? 'bg-white w-6' : 'bg-white/50'
+              }`}
+            />
+          ))}
+        </div>
+      </div>
+      
+      {/* Trust Text Below */}
+      <p className="text-center text-xs text-gray-500 mt-3">
+        Results may vary. Consistent use recommended for best results.
+      </p>
+    </section>
+  );
+}
+
 function Homepage() {
   const navigate = useNavigate();
   const [expandedFaq, setExpandedFaq] = useState(null);
@@ -285,6 +377,9 @@ function Homepage() {
           ))}
         </div>
       </section>
+
+      {/* Real Results Showcase - Fixed Height Frame */}
+      <TransformationShowcase />
 
       {/* Introducing Section */}
       <section className="px-5 py-8">
