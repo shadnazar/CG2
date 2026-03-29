@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Background cron runner for blog generation
-Staggered schedule: Location blogs at 6AM, Topic blogs at 12PM, Trending at 6PM
+- Main blogs: Staggered schedule (6AM location, 12PM topic, 6PM trending, 12AM mix)
+- Trending blogs: Every 1 hour (separate loop)
 """
 import asyncio
 import time
@@ -9,6 +10,10 @@ from datetime import datetime, timedelta
 import subprocess
 import sys
 import os
+import threading
+
+# Track last hourly trending run to avoid duplicates
+last_hourly_trending = None
 
 def get_next_run():
     """Calculate next run time with staggered schedule"""
@@ -97,28 +102,44 @@ asyncio.run(generate())
         print(f"Errors: {result.stderr[:500]}")
 
 def main():
-    """Main loop - staggered blog generation"""
+    """Main loop - staggered blog generation + hourly trending"""
     print(f"[{datetime.now()}] Staggered Blog Cron Runner started")
     print("Schedule: 6AM (12 location), 12PM (6 topic), 6PM (trending), 12AM (6 mix)")
+    print("PLUS: Hourly trending celebrity blogs (every 1 hour)")
+    
+    global last_hourly_trending
+    last_hourly_trending = datetime.now()
     
     while True:
-        next_run, job_type = get_next_run()
-        wait_seconds = (next_run - datetime.now()).total_seconds()
-        
-        if wait_seconds > 0:
-            print(f"[{datetime.now()}] Next: {job_type} blogs at {next_run}")
-            print(f"Sleeping for {wait_seconds/3600:.1f} hours...")
-            time.sleep(min(wait_seconds, 1800))  # Wake up every 30 min to check
-        
-        # Check if it's time to run
         now = datetime.now()
+        
+        # ============ HOURLY TRENDING BLOGS ============
+        # Check if 1 hour has passed since last trending run
+        if last_hourly_trending is None or (now - last_hourly_trending).total_seconds() >= 3600:
+            print(f"[{now}] Running HOURLY trending blog generation...")
+            try:
+                run_blog_generation("trending")
+                last_hourly_trending = now
+                print(f"[{now}] Hourly trending complete. Next in 1 hour.")
+            except Exception as e:
+                print(f"[{now}] Hourly trending error: {e}")
+        
+        # ============ MAIN STAGGERED SCHEDULE ============
+        next_run, job_type = get_next_run()
         target_hours = [0, 6, 12, 18]
+        
+        # Check if it's time for a main scheduled job
         if now.hour in target_hours and now.minute < 5:
-            _, current_job = get_next_run()
             # Determine current job based on hour
             job_map = {6: "location", 12: "topic", 18: "trending", 0: "mix"}
-            run_blog_generation(job_map.get(now.hour, "location"))
-            time.sleep(300)  # Avoid re-running
+            scheduled_job = job_map.get(now.hour, "location")
+            print(f"[{now}] Running SCHEDULED {scheduled_job} blog generation...")
+            run_blog_generation(scheduled_job)
+            time.sleep(300)  # Avoid re-running scheduled job
+        
+        # Sleep for 5 minutes between checks (to catch hourly trigger)
+        print(f"[{now}] Next hourly trending in: {max(0, 3600 - (now - last_hourly_trending).total_seconds()):.0f}s")
+        time.sleep(300)  # Check every 5 minutes
 
 if __name__ == "__main__":
     main()

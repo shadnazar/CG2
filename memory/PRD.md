@@ -57,13 +57,19 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - **Terms & Conditions** (`/terms`): Covers cookies, tracking, data usage, returns policy
 - **Privacy Policy** (`/privacy`): Detailed cookie types, data collection, third-party services
 
-#### 5. Auto Blog Cron Job (12-hour cycle)
-- **Schedule**: Runs at 6 AM and 6 PM automatically
-- **Morning run**: Generates 12 location-based blogs with state cycling
-- **Evening run**: Generates 12 auto SEO blogs
+#### 5. Auto Blog Cron Job (Staggered + Hourly Trending)
+- **Staggered Schedule**:
+  - 6 AM: 12 location-based blogs with state cycling
+  - 12 PM: 6 topic blogs
+  - 6 PM: 6 trending celebrity blogs (batch)
+  - 12 AM: 6 mix blogs
+- **HOURLY Trending Blogs** (NEW Mar 29, 2026):
+  - Every 1 hour, generates 3 trending celebrity blogs
+  - Fetches from Google News RSS (celebrity skincare, Bollywood, beauty trends)
+  - AI connects trending news to skincare tips
 - **Duplicate avoidance**: Skips states/topics used in last 30 days
-- **Manual trigger**: Available via `/api/admin/cron/trigger-blog-generation`
-- **Cron logs**: View history at `/api/admin/cron/logs`
+- **Manual trigger**: Available via Admin AI Studio
+- **Cron logs**: Stored in MongoDB `cron_logs` collection
 
 #### 4. AI Content Engine
 - GPT-4o powered blog generation
@@ -262,6 +268,21 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 4. Customer video testimonials collection system
 
 ## Completed Work - March 2026
+
+### March 29, 2026
+1. **Transformation Showcase on Homepage** ✅
+   - Added fixed-height (420px) image showcase component
+   - Features two customer transformation images with fade animation
+   - No layout shifting - fixed frame container
+   - Dot indicators for manual navigation
+   - Auto-rotates every 5 seconds
+   - Located at `/app/frontend/src/pages/Homepage.js` (TransformationShowcase component)
+
+2. **Hourly Trending Blog Cron Job** ✅
+   - Updated `/app/backend/cron_runner.py` to run trending blogs every 1 hour
+   - Main schedule unchanged: 6AM (location), 12PM (topic), 6PM (trending batch), 12AM (mix)
+   - Additional: Every hour, 3 trending celebrity blogs are generated from Google News RSS
+   - Logs to `cron_logs` collection in MongoDB
 
 ### March 27, 2026
 1. **Homepage Image Fix** ✅
