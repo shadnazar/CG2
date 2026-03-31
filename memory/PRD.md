@@ -269,6 +269,35 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 
 ## Completed Work - March 2026
 
+### March 31, 2026
+1. **Meta Pixel Implementation - COMPLETE** ✅
+   - Pixel ID: 690863659974240
+   - **ViewContent**: Fires on product page with value: 599, content_ids: ['celestaglow_serum_001']
+   - **InitiateCheckout**: Fires when user clicks Buy Now and sees checkout form
+   - **Purchase**: Fires on order confirmation with order_id for deduplication
+   - No AddToCart event (direct Buy Now flow as specified)
+   - All events use exact format from Meta Pixel Implementation Guide
+
+2. **Admin Login Fix** ✅
+   - Added `/api/admin/login` endpoint
+   - Fixed token verification to accept plain password
+   - Password: celestaglow2024
+
+3. **Blog Search Fix** ✅
+   - Fixed search to handle "anti aging" → "anti-aging" variants
+   - Fixed keywords array handling (was causing TypeError)
+   - Shows "No articles found" instead of blank page
+
+4. **Location-Based Blogs** ✅
+   - Detects user location from localStorage/geolocation
+   - Reverse geocodes coordinates to city/state
+   - Shows blogs from user's state or nearby states
+
+5. **Exit Intent ₹100 Discount** ✅
+   - Saves to localStorage when claimed
+   - Auto-applies at checkout
+   - trackExitIntent() fires when popup shown
+
 ### March 29, 2026
 1. **Fixed Blog Generation API** ✅
    - Root cause: `emergentintegrations` library API changed from `chat()` to `LlmChat` class

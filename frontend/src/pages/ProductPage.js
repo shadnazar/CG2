@@ -5,13 +5,11 @@ import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, Chevr
 import RecentPurchaseNotification from '../components/RecentPurchaseNotification';
 import {
   trackViewContent,
-  trackAddToCart,
   trackInitiateCheckout,
   trackAddPaymentInfo,
   trackPurchase,
   trackCTAClick,
-  trackFAQInteraction,
-  trackTimeOnPage
+  trackExitIntent
 } from '../utils/metaPixel';
 import { trackPageVisit, trackTimeSpent, trackFormComplete, trackAction, getSessionId, getVisitorId } from '../utils/userTracking';
 import { getSharedStats, updateSharedStats } from '../utils/sharedStats';
@@ -138,6 +136,7 @@ function ProductPage() {
         setShowExitPopup(true);
         setExitPopupShown(true);
         localStorage.setItem('exitPopupShown', 'true');
+        trackExitIntent(); // Track exit intent shown
       }
     };
 
@@ -147,7 +146,7 @@ function ProductPage() {
     // Track time on page when leaving
     return () => { 
       const timeOnPage = Math.round((Date.now() - pageStartTime.current) / 1000);
-      trackTimeOnPage('product', timeOnPage);
+      trackTimeSpent('product', timeOnPage);
       clearInterval(timer); 
       clearInterval(viewerInterval);
       document.removeEventListener('mouseleave', handleMouseLeave);
@@ -282,7 +281,7 @@ function ProductPage() {
             setStep('confirmation');
             
             // Track Purchase with order_id - CRITICAL for conversion tracking
-            trackPurchase(order.data.order_id, finalPrice, paymentMethod);
+            trackPurchase(order.data.order_id, finalPrice);
           } catch (error) {
             alert('Order creation failed. Please contact support.');
           }
@@ -528,7 +527,6 @@ function ProductPage() {
           {/* Buy Button */}
           <button
             onClick={() => {
-              trackAddToCart(PREPAID_PRICE);
               trackCTAClick('buy_now_main', 'product_page');
               setStep('checkout');
             }}
@@ -710,7 +708,6 @@ function ProductPage() {
             </div>
             <button
               onClick={() => {
-                trackAddToCart(PREPAID_PRICE);
                 trackCTAClick('buy_now_sticky', 'product_page_sticky');
                 setStep('checkout');
               }}
