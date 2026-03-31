@@ -10,14 +10,26 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - Complete user behavior tracking
 
 ## User Personas
-1. **Customers**: Women 25-50 seeking anti-aging solutions
+1. **Customers**: Men & Women 25-55 seeking anti-aging solutions
 2. **Admin**: Business owner managing content, orders, and analytics
 
 ## Core Requirements
 
 ### Implemented Features ✅
 
-#### 1. E-Commerce Core
+#### 1. E-Commerce Core & Homepage (Updated Mar 31, 2026)
+- **Anti-aging focused messaging**:
+  - "TIRED OF LOOKING OLDER THAN YOU FEEL?" problem badge
+  - "Reverse 10 Years of Aging in Just 4 Weeks" headline
+  - "India's #1 Premium Anti-Aging Serum" positioning
+  - Key benefits: Reduces Wrinkles 87%, Firms Sagging Skin, Visible in 14 Days
+- **Gender inclusive**: "Trusted by Men & Women ages 25-55"
+- **"Signs of Aging You Can't Ignore"** problem awareness section
+- **Time-based realistic social proof stats**:
+  - Morning (6AM-12PM): 15-25 viewers, 8-20 sold
+  - Afternoon (12PM-6PM): 25-45 viewers, 20-40 sold
+  - Evening (6PM-10PM): 30-50 viewers, 35-55 sold
+  - Night (10PM-6AM): 8-18 viewers, 45-70 sold
 - Product page with pricing (₹599 prepaid, ₹1499 MRP)
 - Razorpay payment integration
 - COD option with advance payment

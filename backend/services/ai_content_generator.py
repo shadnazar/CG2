@@ -150,25 +150,36 @@ Consider:
         from datetime import datetime
         current_month = datetime.now().strftime("%B %Y")
         current_day = datetime.now().strftime("%A")
+        current_hour = datetime.now().hour
+        current_date = datetime.now().strftime("%d %B %Y")
+        
+        # Time of day context for more relevant topics
+        time_context = "morning" if 6 <= current_hour < 12 else "afternoon" if 12 <= current_hour < 17 else "evening" if 17 <= current_hour < 21 else "night"
         
         if format == "simple":
             # Simple format - just topic titles as strings
-            prompt = f"""Generate exactly {count} FRESH and TRENDING skincare blog topic titles for {current_day}, {current_month} in India.
+            prompt = f"""Generate exactly {count} FRESH and UNIQUE skincare blog topic titles for RIGHT NOW - {current_day}, {current_date}, {time_context} time in India.
 
 Requirements:
-- Target audience: Indian women aged 28-50
+- Target audience: Indian men AND women aged 25-55
 - Topics: anti-aging, skincare tips, celebrity beauty secrets, ingredient education
 - Each title should be catchy, specific, and SEO-friendly (50-70 characters)
 - Mix different types: celebrity secrets, DIY remedies, seasonal tips, ingredient guides, routines
+- MUST be relevant to current trends and season
+- Include at least one topic specifically for men's anti-aging
 
-IMPORTANT: Return ONLY a JSON array of topic title strings. Example:
-["Celebrity Beauty Secret: How Deepika Maintains Youthful Skin", "5 Monsoon Skincare Mistakes That Age Your Skin Faster"]
+IMPORTANT: 
+1. These topics must be DIFFERENT from previous suggestions - generate completely NEW ideas
+2. Return ONLY a JSON array of topic title strings. Example:
+["Celebrity Beauty Secret: How Deepika Maintains Youthful Skin", "Men's Anti-Aging Guide: Varun Dhawan's Skincare Routine"]
 
 Do NOT return objects or explanations - ONLY an array of {count} topic title strings."""
-            system_msg = "You return ONLY JSON arrays of strings. No objects, no explanations."
+            system_msg = "You return ONLY JSON arrays of strings. No objects, no explanations. Generate UNIQUE topics each time."
         else:
             # Full format - objects with topic, description, keywords
-            prompt = f"""Generate {count} skincare blog topic ideas for Indian women aged 28-50.
+            prompt = f"""Generate {count} FRESH and UNIQUE skincare blog topic ideas for Indian men AND women aged 25-55.
+
+Current context: {current_day}, {current_date}, {time_context} time in India.
 
 Return ONLY a valid JSON array with this exact structure (no extra text):
 [
@@ -176,9 +187,14 @@ Return ONLY a valid JSON array with this exact structure (no extra text):
   {{"topic": "Title 2", "description": "Description 2", "keywords": ["kw1"], "difficulty": "medium"}}
 ]
 
-Topics should cover: anti-aging, skincare trends, celebrity secrets, ingredient guides.
-Current date: {current_day}, {current_month}"""
-            system_msg = "You return ONLY valid JSON arrays. No markdown, no explanation."
+Topics should:
+- Cover anti-aging, skincare trends, celebrity secrets (both male & female), ingredient guides
+- Be relevant to current trends and season
+- Include at least one topic for men's skincare
+- Be COMPLETELY DIFFERENT from any previous suggestions
+
+Current date context: {current_day}, {current_date}"""
+            system_msg = "You return ONLY valid JSON arrays. No markdown, no explanation. Generate UNIQUE topics each time."
 
         try:
             chat = LlmChat(
