@@ -190,7 +190,11 @@ class UserBehaviorTracker:
         query = {}
         
         if date:
-            query["first_seen"] = {"$gte": f"{date}T00:00:00", "$lte": f"{date}T23:59:59"}
+            # For specific date, look at visitors active on that day
+            query["$or"] = [
+                {"first_seen": {"$gte": f"{date}T00:00:00", "$lte": f"{date}T23:59:59"}},
+                {"last_seen": {"$gte": f"{date}T00:00:00", "$lte": f"{date}T23:59:59"}}
+            ]
         else:
             cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
             query["last_seen"] = {"$gte": cutoff}
@@ -213,24 +217,27 @@ class UserBehaviorTracker:
     async def get_visitor_stats(self, days: int = 7, date: str = None) -> dict:
         """Get visitor statistics - supports both days range and single date"""
         if date:
-            # Filter for a specific date
+            # Filter for a specific date - look for visitors active on that day
             date_start = f"{date}T00:00:00"
             date_end = f"{date}T23:59:59"
-            query = {"first_seen": {"$gte": date_start, "$lte": date_end}}
+            query = {"$or": [
+                {"first_seen": {"$gte": date_start, "$lte": date_end}},
+                {"last_seen": {"$gte": date_start, "$lte": date_end}}
+            ]}
         else:
             # Filter for last N days
             cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
-            query = {"first_seen": {"$gte": cutoff}}
+            query = {"last_seen": {"$gte": cutoff}}
         
         total_visitors = await self.db.visitor_profiles.count_documents(query)
         
-        returning_query = {**query, "total_visits": {"$gt": 1}}
+        returning_query = {"$and": [query, {"total_visits": {"$gt": 1}}]}
         returning_visitors = await self.db.visitor_profiles.count_documents(returning_query)
         
-        checkout_query = {**query, "reached_checkout": True}
+        checkout_query = {"$and": [query, {"reached_checkout": True}]}
         reached_checkout = await self.db.visitor_profiles.count_documents(checkout_query)
         
-        address_query = {**query, "address_entered": True}
+        address_query = {"$and": [query, {"address_entered": True}]}
         address_entered = await self.db.visitor_profiles.count_documents(address_query)
         
         # Average time spent

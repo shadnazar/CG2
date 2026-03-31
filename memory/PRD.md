@@ -102,6 +102,33 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - "Recently Purchased" social proof notifications
 - **Free Skin Analysis CTA on homepage**
 
+#### 7. User Journey Analytics (Redesigned Mar 31, 2026)
+**Overview Tab:**
+- Stats cards: Total Visitors, New, Returning, Checkout, Address, Avg Time
+- Conversion Funnel visualization with percentages
+- Overall Conversion Rate
+- Major Drop-off Points analysis
+
+**Visitors Tab:**
+- Pagination (20 per page)
+- Device type badge (Mobile/Tablet/Desktop) based on screen size
+- Pages visited, actions count, time spent
+- Status badges: Checkout, Address, Discount
+- Phone and Location badges
+
+**Expanded Visitor Details:**
+- Profile summary: First Visit, Last Seen, Total Visits, Device
+- Customer Info Cards: Mobile Number, Customer Name, Location
+- Journey Progress: Homepage → Product → Checkout → Address → Payment (with ✓ marks)
+- Exit Point indicator
+- Time Spent by Page breakdown
+- Actions Timeline (last 20 actions with timestamps)
+- Page Visits Timeline
+
+**Insights Tab:**
+- AI-Powered Suggestions based on drop-off analysis
+- Device Breakdown (Mobile/Tablet/Desktop counts)
+
 #### 6. Consultations (Skin Analysis)
 - 6-question skin analysis funnel
 - Optional 3-face photo upload
