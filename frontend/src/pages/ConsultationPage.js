@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import axios from 'axios';
+import { jsPDF } from 'jspdf';
 import { 
   ChevronRight, ChevronLeft, Check, Camera, X, Phone, 
   Download, Sun, Droplets, Sparkles, Heart, Dumbbell,
@@ -40,8 +41,8 @@ const UI_TEXT = {
     next: "Next",
     back: "Back",
     skip: "Skip",
-    uploadTitle: "Upload Your Photos",
-    uploadSubtitle: "Optional: Help us understand your skin better",
+    uploadTitle: "Upload Your Photo",
+    uploadSubtitle: "Required: Upload at least one photo for accurate skin analysis",
     uploadFront: "Front Face",
     uploadLeft: "Left Side",
     uploadRight: "Right Side",
@@ -62,7 +63,8 @@ const UI_TEXT = {
     buyNow: "Buy Now",
     low: "Low",
     moderate: "Moderate",
-    high: "High"
+    high: "High",
+    photoRequired: "Please upload at least one photo to continue"
   },
   hi: {
     title: "मुफ्त त्वचा परामर्श",
@@ -72,7 +74,7 @@ const UI_TEXT = {
     back: "वापस",
     skip: "छोड़ें",
     uploadTitle: "अपनी फोटो अपलोड करें",
-    uploadSubtitle: "वैकल्पिक: आपकी त्वचा को बेहतर समझने में मदद करें",
+    uploadSubtitle: "आवश्यक: सटीक त्वचा विश्लेषण के लिए कम से कम एक फोटो अपलोड करें",
     uploadFront: "सामने का चेहरा",
     uploadLeft: "बाईं तरफ",
     uploadRight: "दाईं तरफ",
@@ -273,6 +275,7 @@ function ConsultationPage() {
   const [uploadType, setUploadType] = useState(null);
   const [analyzeProgress, setAnalyzeProgress] = useState(0);
   const [analyzeText, setAnalyzeText] = useState('');
+  const [uploadError, setUploadError] = useState('');
 
   const t = UI_TEXT[language] || UI_TEXT.en;
 
@@ -431,6 +434,13 @@ function ConsultationPage() {
   };
 
   const handleContinueToPhone = () => {
+    // Check if at least one photo is uploaded (MANDATORY)
+    const hasPhoto = Object.values(faceImages).some(img => img !== null);
+    if (!hasPhoto) {
+      setUploadError(t.photoRequired || 'Please upload at least one photo to continue');
+      return;
+    }
+    setUploadError('');
     trackEvent('face_upload_completed');
     setStep('phone');
   };
@@ -515,8 +525,7 @@ function ConsultationPage() {
     trackEvent('pdf_downloaded');
     await axios.post(`${API}/consultation/${result.id}/pdf-downloaded?session_id=${sessionId}`);
     
-    // Generate PDF using browser
-    const { jsPDF } = await import('jspdf');
+    // Generate PDF
     const doc = new jsPDF();
     
     // Header
@@ -533,101 +542,166 @@ function ConsultationPage() {
     doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 45);
     doc.text(`Phone: +91 ${result.phone}`, 20, 52);
     
+    // Add uploaded photo if available
+    const uploadedImages = result.face_images?.length > 0 ? result.face_images : Object.values(faceImages).filter(Boolean);
+    let yPosition = 60;
+    
+    if (uploadedImages.length > 0) {
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Your Photo:', 20, yPosition);
+      yPosition += 5;
+      
+      try {
+        // Add the first uploaded image
+        const imgData = uploadedImages[0];
+        if (imgData) {
+          doc.addImage(imgData, 'JPEG', 20, yPosition, 40, 40);
+          yPosition += 50;
+        }
+      } catch (e) {
+        console.log('Could not add image to PDF');
+        yPosition += 10;
+      }
+    }
+    
+    // AI Skin Scores
+    if (result.ai_skin_analysis?.combined_scores) {
+      doc.setFontSize(14);
+      doc.setTextColor(128, 90, 213);
+      doc.text('AI Skin Analysis Scores', 20, yPosition);
+      yPosition += 8;
+      
+      const scores = result.ai_skin_analysis.combined_scores;
+      doc.setFontSize(11);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Beauty Score: ${scores.beauty_score || 7}/10`, 25, yPosition);
+      yPosition += 6;
+      doc.text(`Aging Score: ${scores.aging_score || 6}/10`, 25, yPosition);
+      yPosition += 6;
+      doc.text(`Acne Score: ${scores.acne_score || 7}/10`, 25, yPosition);
+      yPosition += 6;
+      doc.text(`Dullness Score: ${scores.dullness_score || 6}/10`, 25, yPosition);
+      yPosition += 10;
+    }
+    
     // Aging Level
     doc.setFontSize(14);
     doc.setTextColor(0, 0, 0);
-    doc.text('Aging Level:', 20, 65);
+    doc.text('Aging Level:', 20, yPosition);
     const levelColor = result.result.aging_level === 'high' ? [239, 68, 68] : 
                        result.result.aging_level === 'moderate' ? [245, 158, 11] : [34, 197, 94];
     doc.setTextColor(...levelColor);
-    doc.text(result.result.aging_level.toUpperCase(), 70, 65);
+    doc.text(result.result.aging_level.toUpperCase(), 70, yPosition);
+    yPosition += 15;
     
     // Causes
-    let y = 80;
     doc.setTextColor(0, 0, 0);
     doc.setFontSize(12);
-    doc.text('Causes:', 20, y);
-    y += 7;
+    doc.text('Causes:', 20, yPosition);
+    yPosition += 7;
     doc.setFontSize(10);
     result.result.causes.forEach(cause => {
-      doc.text(`• ${cause}`, 25, y);
-      y += 6;
+      doc.text(`• ${cause}`, 25, yPosition);
+      yPosition += 6;
     });
     
     // Morning Routine
-    y += 5;
+    yPosition += 5;
     doc.setFontSize(12);
-    doc.text('Morning Routine:', 20, y);
-    y += 7;
+    doc.text('Morning Routine:', 20, yPosition);
+    yPosition += 7;
     doc.setFontSize(10);
     result.result.morning_routine.forEach(item => {
-      doc.text(`• ${item}`, 25, y);
-      y += 6;
+      doc.text(`• ${item}`, 25, yPosition);
+      yPosition += 6;
     });
     
     // Night Routine
-    y += 5;
+    yPosition += 5;
     doc.setFontSize(12);
-    doc.text('Night Routine:', 20, y);
-    y += 7;
+    doc.text('Night Routine:', 20, yPosition);
+    yPosition += 7;
     doc.setFontSize(10);
     result.result.night_routine.forEach(item => {
-      doc.text(`• ${item}`, 25, y);
-      y += 6;
+      doc.text(`• ${item}`, 25, yPosition);
+      yPosition += 6;
     });
     
+    // Check if need new page
+    if (yPosition > 220) {
+      doc.addPage();
+      yPosition = 20;
+    }
+    
     // Rules
-    y += 5;
+    yPosition += 5;
     doc.setFontSize(12);
-    doc.text('Important Rules:', 20, y);
-    y += 7;
+    doc.text('Important Rules:', 20, yPosition);
+    yPosition += 7;
     doc.setFontSize(10);
     result.result.rules.forEach(rule => {
       const lines = doc.splitTextToSize(`• ${rule}`, 170);
       lines.forEach(line => {
-        doc.text(line, 25, y);
-        y += 5;
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        doc.text(line, 25, yPosition);
+        yPosition += 5;
       });
     });
     
     // Diet
-    y += 5;
+    yPosition += 5;
     doc.setFontSize(12);
-    doc.text('Diet Tips:', 20, y);
-    y += 7;
+    doc.text('Diet Tips:', 20, yPosition);
+    yPosition += 7;
     doc.setFontSize(10);
     result.result.diet_tips.forEach(tip => {
-      doc.text(`• ${tip}`, 25, y);
-      y += 6;
+      if (yPosition > 270) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      doc.text(`• ${tip}`, 25, yPosition);
+      yPosition += 6;
     });
     
     // Exercise
-    y += 5;
+    yPosition += 5;
     doc.setFontSize(12);
-    doc.text('Exercise Tips:', 20, y);
-    y += 7;
+    doc.text('Exercise Tips:', 20, yPosition);
+    yPosition += 7;
     doc.setFontSize(10);
     result.result.exercise_tips.forEach(tip => {
-      doc.text(`• ${tip}`, 25, y);
-      y += 6;
+      if (yPosition > 270) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      doc.text(`• ${tip}`, 25, yPosition);
+      yPosition += 6;
     });
     
     // Product Recommendation
-    if (y > 240) {
+    if (yPosition > 240) {
       doc.addPage();
-      y = 20;
+      yPosition = 20;
     }
-    y += 10;
+    yPosition += 10;
     doc.setFontSize(14);
     doc.setTextColor(34, 197, 94);
-    doc.text('Recommended: Celesta Glow Anti-Aging Serum', 20, y);
-    y += 8;
+    doc.text('Recommended: Celesta Glow Anti-Aging Serum', 20, yPosition);
+    yPosition += 8;
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
     const usageLines = doc.splitTextToSize(result.result.product_usage, 170);
     usageLines.forEach(line => {
-      doc.text(line, 20, y);
-      y += 5;
+      if (yPosition > 270) {
+        doc.addPage();
+        yPosition = 20;
+      }
+      doc.text(line, 20, yPosition);
+      yPosition += 5;
     });
     
     // Footer
@@ -965,23 +1039,30 @@ function ConsultationPage() {
           <div className="bg-blue-50 rounded-xl p-4 mb-6">
             <p className="text-sm text-blue-700">
               <AlertCircle className="w-4 h-4 inline mr-1" />
-              Photos are optional and help us understand your skin better. They are stored securely.
+              Photo upload is required for accurate AI skin analysis. Your photos are stored securely.
             </p>
           </div>
+
+          {uploadError && (
+            <div className="bg-red-50 rounded-xl p-4 mb-4">
+              <p className="text-sm text-red-600 flex items-center gap-2">
+                <AlertCircle className="w-4 h-4" />
+                {uploadError}
+              </p>
+            </div>
+          )}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 space-y-2">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100">
           <button
             onClick={handleContinueToPhone}
-            className="w-full py-4 bg-green-500 text-white rounded-full font-semibold flex items-center justify-center gap-2"
+            className={`w-full py-4 rounded-full font-semibold flex items-center justify-center gap-2 ${
+              Object.values(faceImages).some(img => img !== null)
+                ? 'bg-green-500 text-white'
+                : 'bg-gray-200 text-gray-500'
+            }`}
           >
             {t.next} <ChevronRight size={20} />
-          </button>
-          <button
-            onClick={handleSkipUpload}
-            className="w-full py-3 text-gray-500 font-medium"
-          >
-            {t.skip}
           </button>
         </div>
       </div>
