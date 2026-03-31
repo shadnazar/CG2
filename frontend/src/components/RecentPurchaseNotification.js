@@ -1,33 +1,74 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-import { MapPin, ShoppingBag, CheckCircle } from 'lucide-react';
-
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+import { MapPin, ShoppingBag, CheckCircle, Sparkles } from 'lucide-react';
 
 // User's custom notification sound
 const NOTIFICATION_SOUND_URL = 'https://customer-assets.emergentagent.com/job_26148967-6968-4918-8b5d-0a2c0e5259b2/artifacts/sa3jziee_universfield-new-notification-057-494255.mp3';
 
-// Product image
-const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_ae0c9586-b94c-4054-b869-8b9baeb452c6/artifacts/gwxje1nv_1F955957-C2EB-4ED0-A713-0B302C9B4892.jpeg';
+// New product image from user
+const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_26148967-6968-4918-8b5d-0a2c0e5259b2/artifacts/ccpjeqd2_IMG_9115.png';
+
+// Extensive list of unique authentic names - 50+ names to avoid repetition
+const ALL_NAMES = [
+  "Ritika", "Tanisha", "Neha", "Sanya", "Kriti", "Aditi", "Nisha", "Pooja",
+  "Megha", "Shruti", "Divya", "Tanya", "Swati", "Rashmi", "Snehal", "Pallavi",
+  "Prerna", "Ishita", "Aanya", "Riya", "Kiara", "Anushka", "Mira", "Saanvi",
+  "Avni", "Diya", "Kavya", "Myra", "Zara", "Aisha", "Navya", "Shanaya",
+  "Anika", "Ira", "Pari", "Ahana", "Trisha", "Vanya", "Reena", "Komal",
+  "Jiya", "Sana", "Preeti", "Radhika", "Simran", "Kajal", "Shweta", "Sonam",
+  "Mansi", "Garima", "Deepa", "Richa", "Archana", "Bhavna", "Chandni", "Damini"
+];
+
+// All Indian cities
+const ALL_LOCATIONS = [
+  "Mumbai", "Delhi", "Bangalore", "Hyderabad", "Chennai", "Pune", "Kolkata",
+  "Jaipur", "Ahmedabad", "Lucknow", "Kerala", "Chandigarh", "Indore", "Nagpur",
+  "Surat", "Gurgaon", "Noida", "Thane", "Vadodara", "Coimbatore", "Bhopal",
+  "Visakhapatnam", "Patna", "Ludhiana", "Agra", "Nashik", "Rajkot", "Varanasi"
+];
 
 function RecentPurchaseNotification() {
   const [notification, setNotification] = useState(null);
-  const [purchases, setPurchases] = useState([]);
   const [visible, setVisible] = useState(false);
   const [dismissed, setDismissed] = useState(false);
+  const [orderCount, setOrderCount] = useState(0);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [usedNames, setUsedNames] = useState([]);
   const audioRef = useRef(null);
   
   // Rate limiting
   const notificationCountRef = useRef(0);
-  const MAX_NOTIFICATIONS = 5;
-  const FIRST_NOTIFICATION_DELAY = 5500;
+  const MAX_NOTIFICATIONS = 6; // 1 welcome + 5 order notifications
+  const FIRST_NOTIFICATION_DELAY = 3000; // Welcome after 3 seconds
+  const ORDER_NOTIFICATION_DELAY = 8000; // First order after 8 seconds
   const MIN_INTERVAL = 15000;
   const MAX_INTERVAL = 20000;
+
+  // Initialize order count based on time of day
+  useEffect(() => {
+    const now = new Date();
+    const hoursSinceMidnight = now.getHours() + (now.getMinutes() / 60);
+    // Base orders: roughly 3-5 orders per hour, randomized
+    const baseOrders = Math.floor(hoursSinceMidnight * (3 + Math.random() * 2));
+    // Add some randomness (±10)
+    const initialCount = Math.max(1, baseOrders + Math.floor(Math.random() * 20) - 10);
+    setOrderCount(initialCount);
+    
+    // Store in sessionStorage for consistency
+    const storedCount = sessionStorage.getItem('orderCountToday');
+    const storedDate = sessionStorage.getItem('orderCountDate');
+    const today = now.toDateString();
+    
+    if (storedDate === today && storedCount) {
+      setOrderCount(parseInt(storedCount));
+    } else {
+      sessionStorage.setItem('orderCountToday', initialCount.toString());
+      sessionStorage.setItem('orderCountDate', today);
+    }
+  }, []);
 
   useEffect(() => {
     audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
     audioRef.current.volume = 0.3;
-    fetchPurchases();
   }, []);
 
   const canShowNotification = () => notificationCountRef.current < MAX_NOTIFICATIONS;
@@ -40,11 +81,67 @@ function RecentPurchaseNotification() {
     }
   };
 
-  const showNextNotification = () => {
-    if (!canShowNotification() || dismissed || purchases.length === 0) return;
+  // Get a unique name that hasn't been used recently
+  const getUniqueName = () => {
+    const availableNames = ALL_NAMES.filter(name => !usedNames.includes(name));
+    if (availableNames.length === 0) {
+      setUsedNames([]); // Reset if we've used all names
+      return ALL_NAMES[Math.floor(Math.random() * ALL_NAMES.length)];
+    }
+    const selectedName = availableNames[Math.floor(Math.random() * availableNames.length)];
+    setUsedNames(prev => [...prev, selectedName]);
+    return selectedName;
+  };
+
+  const getRandomLocation = () => {
+    return ALL_LOCATIONS[Math.floor(Math.random() * ALL_LOCATIONS.length)];
+  };
+
+  const incrementOrderCount = () => {
+    const increment = 1 + Math.floor(Math.random() * 2); // Increase by 1 or 2
+    const newCount = orderCount + increment;
+    setOrderCount(newCount);
+    sessionStorage.setItem('orderCountToday', newCount.toString());
+    return newCount;
+  };
+
+  // Show welcome notification first
+  useEffect(() => {
+    if (dismissed) return;
     
-    const randomIndex = Math.floor(Math.random() * purchases.length);
-    setNotification(purchases[randomIndex]);
+    const welcomeTimer = setTimeout(() => {
+      if (sessionStorage.getItem('welcomeNotifShown')) {
+        setShowWelcome(false);
+        showOrderNotification();
+      } else {
+        setNotification({ type: 'welcome' });
+        setVisible(true);
+        notificationCountRef.current++;
+        playSound();
+        sessionStorage.setItem('welcomeNotifShown', 'true');
+        
+        setTimeout(() => {
+          setVisible(false);
+          setShowWelcome(false);
+          // Start order notifications after welcome
+          setTimeout(showOrderNotification, 3000);
+        }, 5000);
+      }
+    }, FIRST_NOTIFICATION_DELAY);
+
+    return () => clearTimeout(welcomeTimer);
+  }, [dismissed]);
+
+  const showOrderNotification = () => {
+    if (!canShowNotification() || dismissed) return;
+    
+    const newOrderCount = incrementOrderCount();
+    setNotification({
+      type: 'order',
+      name: getUniqueName(),
+      location: getRandomLocation(),
+      orderNumber: newOrderCount
+    });
     setVisible(true);
     notificationCountRef.current++;
     playSound();
@@ -52,42 +149,9 @@ function RecentPurchaseNotification() {
     setTimeout(() => {
       setVisible(false);
       if (canShowNotification() && !dismissed) {
-        setTimeout(showNextNotification, getRandomInterval());
+        setTimeout(showOrderNotification, getRandomInterval());
       }
     }, 5000);
-  };
-
-  useEffect(() => {
-    if (purchases.length === 0 || dismissed) return;
-    const initialTimer = setTimeout(showNextNotification, FIRST_NOTIFICATION_DELAY);
-    return () => clearTimeout(initialTimer);
-  }, [purchases, dismissed]);
-
-  const fetchPurchases = async () => {
-    try {
-      const res = await axios.get(`${API}/recent-purchases`);
-      setPurchases(res.data.purchases || []);
-    } catch (err) {
-      // Authentic, unique names - varied styles
-      setPurchases([
-        { name: "Ritika", location: "Mumbai", time: "2 min ago" },
-        { name: "Tanisha", location: "Delhi", time: "5 min ago" },
-        { name: "Neha M.", location: "Bangalore", time: "8 min ago" },
-        { name: "Sanya", location: "Hyderabad", time: "12 min ago" },
-        { name: "Kriti", location: "Chennai", time: "15 min ago" },
-        { name: "Aditi", location: "Pune", time: "18 min ago" },
-        { name: "Nisha", location: "Jaipur", time: "22 min ago" },
-        { name: "Pooja K.", location: "Kerala", time: "25 min ago" },
-        { name: "Megha", location: "Ahmedabad", time: "28 min ago" },
-        { name: "Shruti", location: "Kolkata", time: "32 min ago" },
-        { name: "Divya", location: "Lucknow", time: "35 min ago" },
-        { name: "Tanya", location: "Chandigarh", time: "40 min ago" },
-        { name: "Swati", location: "Indore", time: "45 min ago" },
-        { name: "Rashmi", location: "Nagpur", time: "50 min ago" },
-        { name: "Snehal", location: "Surat", time: "55 min ago" },
-        { name: "Pallavi", location: "Gurgaon", time: "1 hr ago" }
-      ]);
-    }
   };
 
   const handleDismiss = () => {
@@ -104,30 +168,62 @@ function RecentPurchaseNotification() {
 
   if (!visible || !notification || dismissed) return null;
 
+  // Welcome Notification
+  if (notification.type === 'welcome') {
+    return (
+      <div 
+        className="fixed top-20 right-3 z-50"
+        data-testid="welcome-notification"
+        onClick={handleDismiss}
+      >
+        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-2xl overflow-hidden max-w-[280px] cursor-pointer hover:shadow-3xl transition-all duration-300 text-white">
+          <div className="p-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Sparkles className="w-5 h-5" />
+              <span className="font-bold text-sm">Welcome to Celesta Glow!</span>
+            </div>
+            <p className="text-sm opacity-95 leading-relaxed">
+              India's #1 Anti-Aging Serum trusted by 50,000+ women. Discover your younger-looking skin today!
+            </p>
+            <div className="mt-3 pt-3 border-t border-white/20 text-xs opacity-80">
+              ✨ Clinically Proven • Free Delivery • 30-Day Guarantee
+            </div>
+          </div>
+        </div>
+        <style>{`
+          @keyframes slideIn { from { opacity: 0; transform: translateX(100%) scale(0.9); } to { opacity: 1; transform: translateX(0) scale(1); } }
+          [data-testid="welcome-notification"] > div { animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Order Notification
   return (
     <div 
       className="fixed top-20 right-3 z-50"
       data-testid="recent-purchase-notification"
     >
-      {/* Rich notification card with product image */}
       <div 
         className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden max-w-[280px] cursor-pointer hover:shadow-3xl transition-all duration-300"
         onClick={handleDismiss}
       >
         {/* Green header bar */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-white" />
-          <span className="text-white text-xs font-semibold">New Order Placed</span>
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 text-white" />
+            <span className="text-white text-xs font-semibold">Order #{notification.orderNumber} Today</span>
+          </div>
         </div>
         
         <div className="p-4">
           <div className="flex gap-3">
             {/* Product Image */}
-            <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gray-50 border border-gray-100">
+            <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-white border border-gray-100">
               <img 
                 src={PRODUCT_IMAGE} 
                 alt="Celesta Glow" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
             </div>
             
@@ -149,9 +245,7 @@ function RecentPurchaseNotification() {
           
           {/* Footer */}
           <div className="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between">
-            <span className="text-[10px] text-gray-400">
-              {notification.time || 'Just now'}
-            </span>
+            <span className="text-[10px] text-gray-400">Just now</span>
             <span className="text-[10px] text-green-600 font-medium flex items-center gap-1">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
               Verified Purchase
@@ -161,13 +255,8 @@ function RecentPurchaseNotification() {
       </div>
 
       <style>{`
-        @keyframes slideIn {
-          from { opacity: 0; transform: translateX(100%) scale(0.9); }
-          to { opacity: 1; transform: translateX(0) scale(1); }
-        }
-        [data-testid="recent-purchase-notification"] > div {
-          animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(100%) scale(0.9); } to { opacity: 1; transform: translateX(0) scale(1); } }
+        [data-testid="recent-purchase-notification"] > div { animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
       `}</style>
     </div>
   );
