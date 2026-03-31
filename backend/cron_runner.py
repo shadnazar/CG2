@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 """
 Background cron runner for blog generation
-- Main blogs: Staggered schedule (6AM location, 12PM topic, 6PM trending, 12AM mix)
-- Trending blogs: Every 1 hour (separate loop)
+NEW SCHEDULE: Every 2 hours, with 5-minute intervals between each blog type
+- Minute 0: Trending News Blogs (3 blogs)
+- Minute 5: Topic Blogs (Load topics + generate)
+- Minute 10: Auto Blog Generator (12 blogs)
+- Minute 15: Location Blogs (All states)
+Repeats every 2 hours forever
 """
 import asyncio
 import time
@@ -10,41 +14,16 @@ from datetime import datetime, timedelta
 import subprocess
 import sys
 import os
-import threading
 
-# Track last hourly trending run to avoid duplicates
-last_hourly_trending = None
+# Track last cycle start to avoid overlapping
+last_cycle_start = None
 
-def get_next_run():
-    """Calculate next run time with staggered schedule"""
-    now = datetime.now()
-    
-    # Staggered schedule:
-    # 6:00 AM - Location blogs (12)
-    # 12:00 PM - Topic blogs (6)
-    # 6:00 PM - Trending blogs (6)
-    # 12:00 AM - Mix blogs (6)
-    
-    times = [
-        (6, "location"),
-        (12, "topic"),
-        (18, "trending"),
-        (0, "mix")
-    ]
-    
-    for hour, job_type in times:
-        target = now.replace(hour=hour, minute=0, second=0, microsecond=0)
-        if now < target:
-            return target, job_type
-    
-    # Next day 6 AM
-    return now.replace(hour=6, minute=0, second=0, microsecond=0) + timedelta(days=1), "location"
-
-def run_blog_generation(job_type):
+def run_blog_generation(job_type, count=None):
     """Execute blog generation based on job type"""
     print(f"[{datetime.now()}] Running {job_type} blog generation...")
     
-    script = f'''
+    if job_type == "trending":
+        script = '''
 import asyncio
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
@@ -55,40 +34,133 @@ async def generate():
     client = AsyncIOMotorClient(os.environ.get('MONGO_URL'))
     db = client[os.environ.get('DB_NAME', 'serum_ecommerce')]
     
-    from services.auto_blog_generator import AutoBlogGenerator
-    generator = AutoBlogGenerator(db)
-    
-    job_type = "{job_type}"
-    
-    if job_type == "location":
-        result = await generator.generate_location_blogs(count=12)
-        print(f"Location blogs: {{result.get('generated', 0)}} generated")
-    elif job_type == "topic":
-        result = await generator.generate_topic_blogs(count=6)
-        print(f"Topic blogs: {{result.get('generated', 0)}} generated")
-    elif job_type == "trending":
-        try:
-            from services.trending_news_generator import TrendingNewsBlogGenerator
-            trending = TrendingNewsBlogGenerator(db)
-            result = await trending.generate_trending_blogs(count=3)
-            print(f"Trending blogs: {{result.get('successful', 0)}} generated")
-        except Exception as e:
-            print(f"Trending generation failed: {{e}}")
-    else:
-        result = await generator.generate_location_blogs(count=6)
-        print(f"Mix blogs: {{result.get('generated', 0)}} generated")
-    
-    # Log to database
-    from datetime import datetime, timezone
-    await db.cron_logs.insert_one({{
-        "job": f"{{job_type}}_blog_generation",
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "generated": result.get('generated', result.get('successful', 0)),
-        "job_type": job_type
-    }})
+    try:
+        from services.trending_news_generator import TrendingNewsBlogGenerator
+        trending = TrendingNewsBlogGenerator(db)
+        result = await trending.generate_trending_blogs(count=3)
+        print(f"Trending blogs: {result.get('successful', 0)} generated")
+        
+        from datetime import datetime, timezone
+        await db.cron_logs.insert_one({
+            "job": "trending_blog_generation",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "generated": result.get('successful', 0),
+            "job_type": "trending"
+        })
+    except Exception as e:
+        print(f"Trending generation error: {e}")
 
 asyncio.run(generate())
 '''
+    elif job_type == "topic":
+        script = '''
+import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+import sys
+sys.path.insert(0, '/app/backend')
+
+async def generate():
+    client = AsyncIOMotorClient(os.environ.get('MONGO_URL'))
+    db = client[os.environ.get('DB_NAME', 'serum_ecommerce')]
+    
+    try:
+        from services.auto_blog_generator import AutoBlogGenerator
+        generator = AutoBlogGenerator(db)
+        
+        # Default trending topics for skincare
+        default_topics = [
+            "Best anti-aging ingredients for Indian skin",
+            "How to reduce wrinkles naturally",
+            "Night skincare routine for 30+",
+            "Benefits of retinol serum",
+            "Korean skincare routine for beginners",
+            "How to get glowing skin in summer"
+        ]
+        
+        # Generate topic blogs
+        result = await generator.generate_topic_blogs(topics=default_topics, count=6, force=True)
+        print(f"Topic blogs: {result.get('generated', 0)} generated")
+        
+        from datetime import datetime, timezone
+        await db.cron_logs.insert_one({
+            "job": "topic_blog_generation",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "generated": result.get('generated', 0),
+            "job_type": "topic"
+        })
+    except Exception as e:
+        print(f"Topic generation error: {e}")
+
+asyncio.run(generate())
+'''
+    elif job_type == "auto":
+        script = '''
+import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+import sys
+sys.path.insert(0, '/app/backend')
+
+async def generate():
+    client = AsyncIOMotorClient(os.environ.get('MONGO_URL'))
+    db = client[os.environ.get('DB_NAME', 'serum_ecommerce')]
+    
+    try:
+        from services.auto_blog_generator import AutoBlogGenerator
+        generator = AutoBlogGenerator(db)
+        
+        # Generate 12 auto blogs using generate_and_save_blogs
+        result = await generator.generate_and_save_blogs(count=12)
+        print(f"Auto blogs: {result.get('generated', 0)} generated")
+        
+        from datetime import datetime, timezone
+        await db.cron_logs.insert_one({
+            "job": "auto_blog_generation",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "generated": result.get('generated', 0),
+            "job_type": "auto"
+        })
+    except Exception as e:
+        print(f"Auto generation error: {e}")
+
+asyncio.run(generate())
+'''
+    elif job_type == "location":
+        script = '''
+import asyncio
+from motor.motor_asyncio import AsyncIOMotorClient
+import os
+import sys
+sys.path.insert(0, '/app/backend')
+
+async def generate():
+    client = AsyncIOMotorClient(os.environ.get('MONGO_URL'))
+    db = client[os.environ.get('DB_NAME', 'serum_ecommerce')]
+    
+    try:
+        from services.auto_blog_generator import AutoBlogGenerator
+        generator = AutoBlogGenerator(db)
+        
+        # Generate for ALL states (select all)
+        result = await generator.generate_location_blogs(count=15)
+        print(f"Location blogs: {result.get('generated', 0)} generated")
+        
+        from datetime import datetime, timezone
+        await db.cron_logs.insert_one({
+            "job": "location_blog_generation",
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "generated": result.get('generated', 0),
+            "job_type": "location"
+        })
+    except Exception as e:
+        print(f"Location generation error: {e}")
+
+asyncio.run(generate())
+'''
+    else:
+        print(f"Unknown job type: {job_type}")
+        return
     
     result = subprocess.run(
         [sys.executable, "-c", script],
@@ -101,45 +173,95 @@ asyncio.run(generate())
     if result.stderr:
         print(f"Errors: {result.stderr[:500]}")
 
-def main():
-    """Main loop - staggered blog generation + hourly trending"""
-    print(f"[{datetime.now()}] Staggered Blog Cron Runner started")
-    print("Schedule: 6AM (12 location), 12PM (6 topic), 6PM (trending), 12AM (6 mix)")
-    print("PLUS: Hourly trending celebrity blogs (every 1 hour)")
+def run_cycle():
+    """Run one complete blog generation cycle with 5-minute intervals"""
+    print(f"\n{'='*60}")
+    print(f"[{datetime.now()}] Starting new blog generation cycle")
+    print(f"{'='*60}")
     
-    global last_hourly_trending
-    last_hourly_trending = datetime.now()
+    # Step 1: Trending Blogs (Minute 0)
+    print(f"\n[Step 1/4] Generating Trending News Blogs...")
+    run_blog_generation("trending")
+    
+    # Wait 5 minutes
+    print(f"[{datetime.now()}] Waiting 5 minutes before next generation...")
+    time.sleep(300)
+    
+    # Step 2: Topic Blogs (Minute 5)
+    print(f"\n[Step 2/4] Generating Topic-Based Blogs...")
+    run_blog_generation("topic")
+    
+    # Wait 5 minutes
+    print(f"[{datetime.now()}] Waiting 5 minutes before next generation...")
+    time.sleep(300)
+    
+    # Step 3: Auto Blogs (Minute 10)
+    print(f"\n[Step 3/4] Generating Auto Blogs (12 blogs)...")
+    run_blog_generation("auto")
+    
+    # Wait 5 minutes
+    print(f"[{datetime.now()}] Waiting 5 minutes before next generation...")
+    time.sleep(300)
+    
+    # Step 4: Location Blogs (Minute 15)
+    print(f"\n[Step 4/4] Generating Location-Based Blogs (All States)...")
+    run_blog_generation("location")
+    
+    print(f"\n{'='*60}")
+    print(f"[{datetime.now()}] Cycle complete! All 4 blog types generated.")
+    print(f"{'='*60}")
+
+def main():
+    """Main loop - runs blog generation every 2 hours with 5-minute intervals"""
+    print(f"\n{'*'*60}")
+    print(f"[{datetime.now()}] BLOG CRON RUNNER STARTED")
+    print(f"{'*'*60}")
+    print("Schedule: Every 2 hours")
+    print("  - Minute 0: Trending News Blogs (3)")
+    print("  - Minute 5: Topic-Based Blogs (6)")
+    print("  - Minute 10: Auto Blogs (12)")
+    print("  - Minute 15: Location Blogs (All States)")
+    print(f"{'*'*60}\n")
+    
+    global last_cycle_start
     
     while True:
         now = datetime.now()
         
-        # ============ HOURLY TRENDING BLOGS ============
-        # Check if 1 hour has passed since last trending run
-        if last_hourly_trending is None or (now - last_hourly_trending).total_seconds() >= 3600:
-            print(f"[{now}] Running HOURLY trending blog generation...")
-            try:
-                run_blog_generation("trending")
-                last_hourly_trending = now
-                print(f"[{now}] Hourly trending complete. Next in 1 hour.")
-            except Exception as e:
-                print(f"[{now}] Hourly trending error: {e}")
+        # Check if it's time for a new cycle (every 2 hours)
+        # Run at even hours: 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22
+        should_run = (
+            now.hour % 2 == 0 and 
+            now.minute < 5 and
+            (last_cycle_start is None or (now - last_cycle_start).total_seconds() >= 7000)
+        )
         
-        # ============ MAIN STAGGERED SCHEDULE ============
-        next_run, job_type = get_next_run()
-        target_hours = [0, 6, 12, 18]
-        
-        # Check if it's time for a main scheduled job
-        if now.hour in target_hours and now.minute < 5:
-            # Determine current job based on hour
-            job_map = {6: "location", 12: "topic", 18: "trending", 0: "mix"}
-            scheduled_job = job_map.get(now.hour, "location")
-            print(f"[{now}] Running SCHEDULED {scheduled_job} blog generation...")
-            run_blog_generation(scheduled_job)
-            time.sleep(300)  # Avoid re-running scheduled job
-        
-        # Sleep for 5 minutes between checks (to catch hourly trigger)
-        print(f"[{now}] Next hourly trending in: {max(0, 3600 - (now - last_hourly_trending).total_seconds()):.0f}s")
-        time.sleep(300)  # Check every 5 minutes
+        if should_run:
+            last_cycle_start = now
+            run_cycle()
+            
+            # Calculate time until next cycle
+            next_cycle = (now + timedelta(hours=2)).replace(minute=0, second=0, microsecond=0)
+            wait_seconds = (next_cycle - datetime.now()).total_seconds()
+            
+            print(f"\n[{datetime.now()}] Next cycle at {next_cycle.strftime('%H:%M')}")
+            print(f"Sleeping for {wait_seconds/60:.1f} minutes...")
+            
+            # Sleep until next cycle (minus some buffer)
+            if wait_seconds > 60:
+                time.sleep(wait_seconds - 60)
+        else:
+            # Calculate when next cycle will be
+            if now.hour % 2 == 0:
+                next_hour = now.hour + 2
+            else:
+                next_hour = now.hour + 1
+            
+            if next_hour >= 24:
+                next_hour = next_hour % 24
+            
+            print(f"[{now.strftime('%H:%M:%S')}] Waiting... Next cycle at {next_hour:02d}:00")
+            time.sleep(60)  # Check every minute
 
 if __name__ == "__main__":
     main()

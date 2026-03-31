@@ -1,9 +1,13 @@
 /**
  * User Behavior Tracking Utility
  * Tracks visitor behavior across the site with unique visitor ID
+ * Enhanced with DOM-level click tracking (like Meta Pixel)
  */
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Google Analytics Measurement ID
+const GA_MEASUREMENT_ID = 'G-LSJCVKB8BP';
 
 // Get or create unique visitor ID
 export const getVisitorId = () => {
@@ -25,6 +29,128 @@ export const getSessionId = () => {
     sessionStorage.setItem('sessionStart', new Date().toISOString());
   }
   return sessionId;
+};
+
+// ============ GOOGLE ANALYTICS INTEGRATION ============
+export const initGoogleAnalytics = () => {
+  if (typeof window === 'undefined') return;
+  
+  // Check if already loaded
+  if (window.gtag) return;
+  
+  // Load Google Analytics script
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+  document.head.appendChild(script);
+  
+  // Initialize gtag
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function() { window.dataLayer.push(arguments); };
+  window.gtag('js', new Date());
+  window.gtag('config', GA_MEASUREMENT_ID, {
+    page_path: window.location.pathname,
+    user_id: getVisitorId()
+  });
+  
+  console.log('[Google Analytics] Initialized with ID:', GA_MEASUREMENT_ID);
+};
+
+// Track event to Google Analytics
+export const trackGAEvent = (eventName, eventParams = {}) => {
+  if (typeof window !== 'undefined' && window.gtag) {
+    window.gtag('event', eventName, {
+      ...eventParams,
+      visitor_id: getVisitorId(),
+      session_id: getSessionId()
+    });
+    console.log('[Google Analytics] Event:', eventName, eventParams);
+  }
+};
+
+// ============ DOM-LEVEL CLICK TRACKING (Like Meta Pixel) ============
+export const initClickTracking = () => {
+  if (typeof document === 'undefined') return;
+  
+  // Event delegation for button clicks
+  document.addEventListener('click', function(e) {
+    const target = e.target;
+    const buttonText = target.innerText || '';
+    const visitorId = getVisitorId();
+    const sessionId = getSessionId();
+    
+    // Track Buy Now / Order Now clicks
+    if (buttonText.includes('Buy Now') || buttonText.includes('Order Now')) {
+      trackAction('button_click', {
+        button_type: 'buy_now',
+        button_text: buttonText,
+        page: window.location.pathname
+      });
+      trackGAEvent('begin_checkout', { currency: 'INR', value: 599 });
+      console.log('[User Tracking] Buy Now clicked');
+    }
+    
+    // Track Add to Cart / Claim Offer clicks
+    if (buttonText.includes('Claim') || buttonText.includes('Add to Cart')) {
+      trackAction('button_click', {
+        button_type: 'claim_offer',
+        button_text: buttonText,
+        page: window.location.pathname
+      });
+      trackGAEvent('add_to_cart', { currency: 'INR', value: 599 });
+      console.log('[User Tracking] Claim/Add clicked');
+    }
+    
+    // Track Place Order / Pay clicks
+    if (buttonText.includes('Place Order') || buttonText.includes('Pay')) {
+      trackAction('button_click', {
+        button_type: 'place_order',
+        button_text: buttonText,
+        page: window.location.pathname
+      });
+      trackGAEvent('add_payment_info', { currency: 'INR', value: 599 });
+      console.log('[User Tracking] Place Order clicked');
+    }
+    
+    // Track Consultation / Skin Analysis clicks
+    if (buttonText.includes('Skin Analysis') || buttonText.includes('Consultation') || buttonText.includes('Free Analysis')) {
+      trackAction('button_click', {
+        button_type: 'consultation',
+        button_text: buttonText,
+        page: window.location.pathname
+      });
+      trackGAEvent('generate_lead', { lead_type: 'consultation' });
+      console.log('[User Tracking] Consultation clicked');
+    }
+    
+    // Track WhatsApp clicks
+    if (target.closest('a[href*="whatsapp"]') || buttonText.includes('WhatsApp')) {
+      trackAction('button_click', {
+        button_type: 'whatsapp',
+        button_text: buttonText,
+        page: window.location.pathname
+      });
+      trackGAEvent('contact', { method: 'whatsapp' });
+      console.log('[User Tracking] WhatsApp clicked');
+    }
+    
+    // Track generic button clicks for analytics
+    if (target.tagName === 'BUTTON' || target.closest('button')) {
+      trackAction('button_click', {
+        button_type: 'generic',
+        button_text: buttonText.substring(0, 50),
+        page: window.location.pathname
+      });
+    }
+  }, true); // Capture phase for reliability
+  
+  console.log('[User Tracking] DOM click tracking initialized');
+};
+
+// Initialize all tracking on page load
+export const initAllTracking = () => {
+  initGoogleAnalytics();
+  initClickTracking();
 };
 
 // Request browser geolocation permission and get precise location
@@ -235,5 +361,9 @@ export default {
   requestLocationPermission,
   getStoredLocation,
   updateVisitorLocation,
-  usePageTracking
+  usePageTracking,
+  initGoogleAnalytics,
+  trackGAEvent,
+  initClickTracking,
+  initAllTracking
 };

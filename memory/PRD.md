@@ -158,9 +158,35 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
   - emergentintegrations (GPT-4o)
   - Razorpay
   - SMTP (Gmail)
-  - Meta Pixel
+  - Meta Pixel (ID: 690863659974240)
+  - Google Analytics (G-LSJCVKB8BP) - NEW
   - jsPDF (PDF generation)
   - **WhatsApp Cloud API (Meta Graph API v18.0)** - NEW
+
+## Tracking Implementation (Mar 31, 2026)
+### Meta Pixel Events (Event Delegation Pattern)
+- **ViewContent**: Auto-fires on product page load
+- **InitiateCheckout**: Fires on button click (DOM event listener with capture phase)
+- **Purchase**: Fires on `/order-success/:orderId` page
+
+### Google Analytics Events
+- **begin_checkout**: On Buy Now click
+- **add_to_cart**: On Claim Offer click
+- **add_payment_info**: On Place Order click
+- **generate_lead**: On Consultation click
+- **contact**: On WhatsApp click
+
+### User Behavior Tracking (DOM Click Listener)
+- All button clicks tracked with type (buy_now, claim_offer, place_order, consultation, whatsapp)
+- Visitor ID + Session ID for each event
+- Page and timestamp recorded
+
+## Auto Blog Generation Schedule (Every 2 Hours)
+- **Minute 0**: Trending News Blogs (3 blogs)
+- **Minute 5**: Topic-Based Blogs (6 blogs)
+- **Minute 10**: Auto Blogs (12 blogs)
+- **Minute 15**: Location Blogs (All States, ~15 blogs)
+- Repeats at even hours: 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22
 
 ## Code Architecture
 ```

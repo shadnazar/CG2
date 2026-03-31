@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navigation from './components/Navigation';
 import ScrollToTop from './components/ScrollToTop';
@@ -13,6 +13,7 @@ import SearchResults from './pages/SearchResults';
 import ConsultationPage from './pages/ConsultationPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
+import { initAllTracking } from './utils/userTracking';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
@@ -39,6 +40,11 @@ function PublicLayout({ children }) {
 }
 
 function App() {
+  // Initialize all tracking (Google Analytics + DOM click tracking)
+  useEffect(() => {
+    initAllTracking();
+  }, []);
+
   return (
     <Router>
       <ScrollToTop />
