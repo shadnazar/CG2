@@ -104,8 +104,10 @@ function ProductPage() {
     axios.post(`${API}/track-visit?page=product&session_id=${currentSessionId}`).catch(() => {});
     
     // Initialize customer notifications with social proof
+    // Initialize customer notifications (for admin broadcasts only)
+    // Social proof is handled by RecentPurchaseNotification component
     initCustomerNotifications();
-    startSocialProofNotifications(55000); // Show "Someone just purchased" every 55 seconds
+    // DISABLED: startSocialProofNotifications - using RecentPurchaseNotification instead
     
     // Meta Pixel - ViewContent (product page) - with direct fallback
     trackViewContent(PREPAID_PRICE);

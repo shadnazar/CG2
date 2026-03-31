@@ -189,9 +189,10 @@ function Homepage() {
       setUserLocation(newLocation);
     }, 4000);
 
-    // Initialize customer notifications with social proof
+    // Initialize customer notifications (for admin broadcasts only)
+    // Social proof is handled by RecentPurchaseNotification component
     initCustomerNotifications();
-    startSocialProofNotifications(50000); // Show "Someone just purchased" every 50 seconds
+    // DISABLED: startSocialProofNotifications - using RecentPurchaseNotification instead
 
     // Exit intent detection with pixel tracking
     const handleMouseLeave = (e) => {

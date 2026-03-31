@@ -1,478 +1,104 @@
-# Celesta Glow E-Commerce Platform - PRD
+# Celesta Glow - Product Requirements Document
 
 ## Original Problem Statement
-Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
-- Full admin panel for content management
-- AI-powered blog generation (SEO-optimized, location-targeted)
-- Live visitor tracking & lead generation
-- Online consultation system
-- Meta Pixel deep integration
-- Complete user behavior tracking
-
-## User Personas
-1. **Customers**: Men & Women 25-55 seeking anti-aging solutions
-2. **Admin**: Business owner managing content, orders, and analytics
+Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow") with:
+- Full e-commerce functionality (product page, checkout, payments)
+- Admin panel with analytics and order management
+- AI-powered SEO blog generation
+- User behavior tracking and analytics
+- Meta Pixel and Google Analytics integration
+- Conversion rate optimization features
 
 ## Core Requirements
+- **E-commerce**: Product display, Razorpay payments (COD & Prepaid), order tracking
+- **Admin Panel**: Order management, visitor analytics, AI blog studio, user journey tracking
+- **Marketing**: Meta Pixel tracking, Google Analytics, social proof notifications
+- **Content**: AI-generated location and topic-based SEO blogs
 
-### Implemented Features ✅
+## What's Been Implemented
 
-#### 1. E-Commerce Core & Homepage (Updated Mar 31, 2026)
-- **24 Headline Variations** - Random rotation for each visitor:
-  - "Reverse 10 Years of Aging in Just 4 Weeks"
-  - "The Secret to Ageless Skin Finally Revealed"
-  - "Erase Wrinkles & Look Years Younger Naturally"
-  - "India's #1 Anti-Aging Solution is Here"
-  - ...and 20 more conversion-optimized variations
-- **Anti-aging focused messaging**:
-  - "TIRED OF LOOKING OLDER THAN YOU FEEL?" problem badge
-  - "India's #1 Premium Anti-Aging Serum" positioning
-  - Key benefits: Reduces Wrinkles 87%, Firms Sagging Skin, Visible in 14 Days
-- **Gender inclusive**: "Trusted by Men & Women ages 25-55"
-- **"Signs of Aging You Can't Ignore"** problem awareness section
-- **Time-based realistic social proof stats**:
-  - Morning (6AM-12PM): 15-25 viewers, 8-20 sold
-  - Afternoon (12PM-6PM): 25-45 viewers, 20-40 sold
-  - Evening (6PM-10PM): 30-50 viewers, 35-55 sold
-  - Night (10PM-6AM): 8-18 viewers, 45-70 sold
-- Product page with pricing (₹599 prepaid, ₹1499 MRP)
-- Razorpay payment integration
-- COD option with advance payment
-- Order confirmation emails
+### March 31, 2026
+- **Notification System Overhaul**
+  - Moved notifications to top-right (away from buy buttons)
+  - Max 5 notifications per 3-minute session
+  - First notification after 45 seconds, then every 60 seconds
+  - Soft Instagram/Messenger DM-like sound
+  - Removed duplicate notification system
 
-#### 2. Admin Panel (`/admin`)
-- Secure login (password: celestaglow2024)
-- Analytics dashboard (live visitors, page stats, leads)
-- **Order Notification System** (Mar 31, 2026):
-  - Sound notification when new order placed
-  - Toggle Sound ON/OFF button
-  - Test notification sound button
-  - Visual alert banner for new orders
-- **Day-wise Visitor Analytics with date filters**
-  - Preset filters: Last 7/14/30 days, 3/6 months, 1 year
-  - Custom date picker
-  - Shows Homepage, Product, Checkout visits per day
-- **Page visit totals for Homepage, Product, Checkout**
-- **Top Visitor Locations by state**
-- **Password change functionality**
-- Blog CRUD management
-- Location management
-- Order viewer with status management (Shipped/Delivered)
-- AI Content Studio (manual blog generation)
-- **Consultations management with phone numbers and face photos**
-- **Quick Actions**: Direct links to Consultations and User Journey
+- **User Journey Analytics**
+  - Pagination: 50 users per page, supports 1000+ total
+  - "First Seen" date visible in visitor list
+  - Day-wise filtering working correctly
 
-#### 3. User Journey Tracking Dashboard (Mar 2026)
-- **Cookie consent integrated into Discount Popup** - No separate banner
-- **Unique Visitor ID**: Each user gets a unique tracking ID after accepting terms
-- **Complete Behavior Tracking**:
-  - Pages visited with timestamps
-  - Time spent on each page
-  - Actions taken (clicks, form fills, scroll)
-  - Whether address was entered
-  - Checkout funnel progression
-- **Date Picker**: Filter visitors by specific date
-- **Stats Dashboard**: Total visitors, new vs returning, checkout rate, avg time
-- **Individual Journey View**: Expand any visitor to see their complete journey
-- **Date Filtering Fix** (Mar 31, 2026): Uses page_visits collection for accurate date queries
-- **Limit increased to 1000 visitors** (was 100)
+- **UI Polish**
+  - Removed unnecessary hyphens ("Anti Aging", "30 Day Money Back")
+  - Added FREE shipping/tax breakdown in checkout
+  - Broadcast notifications working (admin can send site-wide alerts)
 
-#### 4. Customer Notification System (Mar 31, 2026)
-- **Social Proof Notifications**: "Someone from Mumbai just ordered!" with sound
-  - Appears every 50 seconds on Homepage, 55 seconds on Product page
-  - Rotates through 15 Indian cities
-  - Soft notification sound plays with each notification
-- **Push Notification Subscription**: Permission requested when claiming discount
-- **Admin Broadcast**: Send push notifications to all subscribers from dashboard
+### Previous Implementations
+- Meta Pixel `Purchase` event on `/order-success/:orderId` page
+- DOM-level click tracking for `InitiateCheckout`
+- 24 randomized conversion headlines on Homepage
+- Service Worker for push notifications
+- Admin notification sound for new orders
+- Background cron for auto-blog generation (2hr cycle)
+- Order status management (Shipped/Delivered) with email triggers
+- Exit-intent popup, sticky add-to-cart, trust badges
 
-#### 5. Legal Pages (Mar 2026)
-- **Terms & Conditions** (`/terms`): Covers cookies, tracking, data usage, returns policy
-- **Privacy Policy** (`/privacy`): Detailed cookie types, data collection, third-party services
-
-#### 5. Auto Blog Cron Job (Staggered + Hourly Trending)
-- **Staggered Schedule**:
-  - 6 AM: 12 location-based blogs with state cycling
-  - 12 PM: 6 topic blogs
-  - 6 PM: 6 trending celebrity blogs (batch)
-  - 12 AM: 6 mix blogs
-- **HOURLY Trending Blogs** (NEW Mar 29, 2026):
-  - Every 1 hour, generates 3 trending celebrity blogs
-  - Fetches from Google News RSS (celebrity skincare, Bollywood, beauty trends)
-  - AI connects trending news to skincare tips
-- **Duplicate avoidance**: Skips states/topics used in last 30 days
-- **Manual trigger**: Available via Admin AI Studio
-- **Cron logs**: Stored in MongoDB `cron_logs` collection
-
-#### 4. AI Content Engine
-- GPT-4o powered blog generation
-- Auto-generates blogs every 2 hours with staggered schedule:
-  - Minute 0: Trending News (3 blogs)
-  - Minute 5: Topic-Based (6 blogs)
-  - Minute 10: Auto Blogs (12 blogs)
-  - Minute 15: Location-Based (All States)
-- **1-Click Location Blogs generation (up to 12 states)**
-- **1-Click Topic Blogs generation (up to 12 topics)**
-- **Duplicate avoidance - cycles through states without repeating**
-- Location-targeted content
-- **Blog images from Unsplash/Pexels**
-
-#### 5. Order Management (Admin)
-- View all orders with search/filter
-- **Status Management (Mar 31, 2026):**
-  - "Mark Shipped" button - sends shipping email to customer
-  - "Mark Delivered" button - sends delivery confirmation email
-  - Professional HTML email templates with order details
-  - Shows notification type (email or SMS/WhatsApp only)
-
-#### 6. CRO Features
-- **Exit-Intent Popup**: Shows ₹100 extra discount when user tries to leave
-- **Enhanced Sticky Add-to-Cart**: With FLASH SALE badge, countdown timer
-- **Trust Badges Section**: 100% Genuine, Dermatologist Tested, Secure Payment, Free Delivery + Payment logos
-- Phone capture popup (₹50 discount)
-- Auto-applied discounts at checkout
-- Auto-scrolling testimonials
-- "Recently Purchased" social proof notifications
-- **Free Skin Analysis CTA on homepage**
-
-#### 7. User Journey Analytics (Redesigned Mar 31, 2026)
-**Overview Tab:**
-- Stats cards: Total Visitors, New, Returning, Checkout, Address, Avg Time
-- Conversion Funnel visualization with percentages
-- Overall Conversion Rate
-- Major Drop-off Points analysis
-
-**Visitors Tab:**
-- Pagination (20 per page)
-- Device type badge (Mobile/Tablet/Desktop) based on screen size
-- Pages visited, actions count, time spent
-- Status badges: Checkout, Address, Discount
-- Phone and Location badges
-
-**Expanded Visitor Details:**
-- Profile summary: First Visit, Last Seen, Total Visits, Device
-- Customer Info Cards: Mobile Number, Customer Name, Location
-- Journey Progress: Homepage → Product → Checkout → Address → Payment (with ✓ marks)
-- Exit Point indicator
-- Time Spent by Page breakdown
-- Actions Timeline (last 20 actions with timestamps)
-- Page Visits Timeline
-
-**Insights Tab:**
-- AI-Powered Suggestions based on drop-off analysis
-- Device Breakdown (Mobile/Tablet/Desktop counts)
-
-#### 6. Consultations (Skin Analysis)
-- 6-question skin analysis funnel
-- Optional 3-face photo upload
-- Phone number capture (no OTP)
-- Personalized recommendations based on answers
-- PDF report generation
-- Admin panel shows all consultations with photos and phone numbers
-
-#### 7. Meta Pixel Integration (ID: 690863659974240)
-**Strict Single-Page Checkout Blueprint Implementation** (Mar 31, 2026):
-- **ViewContent**: Fires on product page load via module + direct inline backup + HTML-level auto-fire
-- **InitiateCheckout**: Fires on **BUTTON CLICK** (all 3 Buy Now buttons) via module + direct fbq call
-  - Main "Order Now" button
-  - Sticky bottom "Buy Now" button
-  - Exit-intent popup "Claim ₹100 OFF & Buy Now" button
-- **Purchase**: Fires on **SEPARATE ORDER SUCCESS PAGE** (`/order-success/:orderId`) via module + direct fbq call with:
-  - `value` (dynamic final price from order)
-  - `currency` ('INR')
-  - `content_ids` (['celestaglow_serum_001'])
-  - `content_type` ('product')
-  - `num_items` (1)
-  - `order_id` (unique from backend response)
-- **No AddToCart event** (direct Buy Now flow)
-- Lead tracking (discount claimed)
-- Blog view tracking
-- Search tracking  
-- CTA click tracking
-- FAQ interaction tracking
-- Custom events: TimeOnPage, ExitIntent, PopupShown, etc.
-
-#### 6. Online Consultation System (NEW) ✅
-- **Landing page** with language switcher (EN/HI/ML)
-- **6-question flow**:
-  - Q1: Age group
-  - Q2: Skin type
-  - Q3: Main concerns (max 2)
-  - Q4: Sun exposure + Sunscreen usage
-  - Q5: Lifestyle
-  - Q6: Skincare usage
-- **Face upload** (optional, 3 images: Front/Left/Right)
-- **Image compression** for faster loading
-- **Phone number input** (mandatory, no OTP)
-- **Animated analyzing screen** with progress (0-100%)
-- **Personalized result page**:
-  - Aging Level (Low/Moderate/High)
-  - Causes (based on answers)
-  - Morning Routine
-  - Night Routine (featuring Celesta Glow)
-  - Important Rules
-  - Diet Tips
-  - Exercise Tips
-  - Product Recommendation (highlighted)
-  - **Uploaded photos display (NEW)**
-- **PDF download** with full report
-- **Admin panel integration**:
-  - View all consultations
-  - Full answers, causes, recommendations
-  - Uploaded photos display
-  - Analytics: completion rate, drop-off, aging distribution
-
-## Tech Stack
-- **Frontend**: React, Tailwind CSS, Lucide Icons, Shadcn/UI
-- **Backend**: FastAPI, Motor (Async MongoDB)
-- **Database**: MongoDB
-- **Integrations**: 
-  - emergentintegrations (GPT-4o)
-  - Razorpay
-  - SMTP (Gmail)
-  - Meta Pixel (ID: 690863659974240)
-  - Google Analytics (G-LSJCVKB8BP) - NEW
-  - jsPDF (PDF generation)
-  - **WhatsApp Cloud API (Meta Graph API v18.0)** - NEW
-
-## Tracking Implementation (Mar 31, 2026)
-### Meta Pixel Events (Event Delegation Pattern)
-- **ViewContent**: Auto-fires on product page load
-- **InitiateCheckout**: Fires on button click (DOM event listener with capture phase)
-- **Purchase**: Fires on `/order-success/:orderId` page
-
-### Google Analytics Events
-- **begin_checkout**: On Buy Now click
-- **add_to_cart**: On Claim Offer click
-- **add_payment_info**: On Place Order click
-- **generate_lead**: On Consultation click
-- **contact**: On WhatsApp click
-
-### User Behavior Tracking (DOM Click Listener)
-- All button clicks tracked with type (buy_now, claim_offer, place_order, consultation, whatsapp)
-- Visitor ID + Session ID for each event
-- Page and timestamp recorded
-
-## Auto Blog Generation Schedule (Every 2 Hours)
-- **Minute 0**: Trending News Blogs (3 blogs)
-- **Minute 5**: Topic-Based Blogs (6 blogs)
-- **Minute 10**: Auto Blogs (12 blogs)
-- **Minute 15**: Location Blogs (All States, ~15 blogs)
-- Repeats at even hours: 0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22
-
-## Code Architecture
+## Architecture
 ```
 /app
 ├── backend/
 │   ├── models/
-│   │   ├── blog.py
-│   │   ├── location.py
-│   │   └── consultation.py (NEW)
 │   ├── routes/
-│   │   ├── admin.py
-│   │   ├── i18n.py
-│   │   └── consultation.py (NEW)
 │   ├── services/
 │   │   ├── ai_content_generator.py
 │   │   ├── auto_blog_generator.py
-│   │   ├── enhanced_analytics.py
-│   │   ├── image_service.py (NEW)
-│   │   ├── consultation_service.py (NEW)
-│   │   └── whatsapp_service.py (NEW - Mar 2026)
+│   │   ├── user_behavior_tracker.py
+│   ├── cron_runner.py (Background - 2hr cycle)
 │   └── server.py
 └── frontend/
+    ├── public/sw.js (Service Worker)
     └── src/
         ├── components/
+        │   ├── RecentPurchaseNotification.js (Social proof - rate limited)
         │   ├── DiscountPopup.js
-        │   ├── Navigation.js (updated with Skin Analysis link)
-        │   ├── RecentPurchaseNotification.js
-        │   └── ScrollToTop.js
         ├── pages/
-        │   ├── ConsultationPage.js (NEW)
-        │   ├── BlogList.js (updated with images)
-        │   ├── BlogPost.js (updated with hero image)
-        │   ├── Homepage.js (updated with consultation CTA)
-        │   └── admin/
-        │       ├── AdminConsultations.js (NEW)
-        │       └── AdminWhatsApp.js (NEW - Mar 2026)
+        │   ├── admin/
+        │   ├── Homepage.js
+        │   ├── ProductPage.js
+        │   ├── OrderSuccessPage.js
         └── utils/
-            └── metaPixel.js (NEW)
+            ├── customerNotifications.js (Admin broadcasts only)
+            ├── metaPixel.js
+            ├── userTracking.js
 ```
 
-## API Endpoints
+## Pending/Future Tasks
 
-### Consultation APIs (NEW)
-- `GET /api/consultation/questions?lang=en` - Get questions
-- `GET /api/consultation/labels?lang=en` - Get labels
-- `POST /api/consultation/submit` - Submit consultation
-- `GET /api/consultation/{id}` - Get consultation by ID
-- `POST /api/consultation/{id}/pdf-downloaded` - Mark PDF downloaded
-- `POST /api/consultation/track-event` - Track funnel events
-- `GET /api/consultation/admin/all` - Get all consultations (admin)
-- `GET /api/consultation/admin/stats` - Get consultation stats (admin)
+### P0 (High Priority)
+- WhatsApp Cloud API integration (credentials in backend/.env)
 
-### Blog APIs
-- `POST /api/admin/blogs/backfill-images` - Add images to existing blogs (NEW)
+### P2 (Medium Priority)
+- Customer referral program
+- Customer video testimonials collection
 
-## Admin Panel Access
-- **URL**: `https://antiaging.celestaglow.com/admin` (production) or `/admin` on preview
-- **Password**: `celestaglow2024`
+### P3 (Low Priority)
+- Refactor ProductPage.js (approaching 1200 lines)
+- Refactor ConsultationPage.js
 
-## Completed Work (This Session - December 25, 2025)
-
-### December 25, 2025
-1. **Blog Images Feature** ✅
-   - Created image_service.py with category-based image mapping
-   - Updated auto_blog_generator.py to include images
-   - Added backfill endpoint for existing blogs
-   - Updated BlogList.js and BlogPost.js to display images
-   - All 7 blogs now have images
-
-2. **Meta Pixel Deep Integration** ✅
-   - Created metaPixel.js utility with 20+ tracking functions
-   - Integrated across Homepage, ProductPage, BlogList, BlogPost
-   - Added to DiscountPopup for Lead tracking
-   - Pixel ID: 690863659974240
-
-3. **Online Consultation System** ✅
-   - Complete 6-question flow
-   - Multi-language support (EN/HI/ML)
-   - Face upload with compression
-   - Animated analyzing screen (0-100%)
-   - Personalized results with all sections
-   - PDF download
-   - Admin panel with full data + analytics
-   - Uploaded images shown on result + admin
-
-4. **Product Page Visual Enhancement** ✅
-   - **Enhanced Ingredients Section**: 
-     - Gradient icon cards (purple/blue/amber/green)
-     - Detailed descriptions for each ingredient
-     - Green checkmark indicators
-   - **"Why 10,000+ Choose Celesta Glow" Section**:
-     - Dark gradient background
-     - Stats: 94% Visible Results, 100% Safe Formula, #1 Award Winning
-   - **Improved Accordion**:
-     - 4 sections with emoji icons
-     - Highlight badges (4-in-1 Formula, Night Use Only, 8-Week Study, 30ml Bottle)
-   - **Trust Section at Bottom**:
-     - 5-star rating with customer count
-     - FDA Approved, Cruelty Free, Made in India badges
-
-5. **Comprehensive Testing** ✅
-   - All pages verified for conversion optimization
-   - 100% frontend pass rate
-   - Meta Pixel working on all pages
-   - Admin panel fully functional
-
-## Backlog / Future Tasks (P1)
-1. A/B Testing Framework
-2. ~~WhatsApp integration for order updates~~ ✅ COMPLETED (Mar 2026)
-3. Referral program
-4. Customer video testimonials collection system
-
-## Completed Work - March 2026
-
-### March 31, 2026
-1. **Meta Pixel Implementation - COMPLETE** ✅
-   - Pixel ID: 690863659974240
-   - **ViewContent**: Fires on product page with value: 599, content_ids: ['celestaglow_serum_001']
-   - **InitiateCheckout**: Fires when user clicks Buy Now and sees checkout form
-   - **Purchase**: Fires on order confirmation with order_id for deduplication
-   - No AddToCart event (direct Buy Now flow as specified)
-   - All events use exact format from Meta Pixel Implementation Guide
-
-2. **Admin Login Fix** ✅
-   - Added `/api/admin/login` endpoint
-   - Fixed token verification to accept plain password
-   - Password: celestaglow2024
-
-3. **Blog Search Fix** ✅
-   - Fixed search to handle "anti aging" → "anti-aging" variants
-   - Fixed keywords array handling (was causing TypeError)
-   - Shows "No articles found" instead of blank page
-
-4. **Location-Based Blogs** ✅
-   - Detects user location from localStorage/geolocation
-   - Reverse geocodes coordinates to city/state
-   - Shows blogs from user's state or nearby states
-
-5. **Exit Intent ₹100 Discount** ✅
-   - Saves to localStorage when claimed
-   - Auto-applies at checkout
-   - trackExitIntent() fires when popup shown
-
-### March 29, 2026
-1. **Fixed Blog Generation API** ✅
-   - Root cause: `emergentintegrations` library API changed from `chat()` to `LlmChat` class
-   - Fixed `/app/backend/services/trending_news_generator.py` - Updated to new LlmChat API
-   - Fixed `/app/backend/services/ai_skin_analyzer.py` - Updated to new LlmChat API with image support
-   - Fixed `/app/backend/services/auto_blog_generator.py` - Added `force=True` for manual triggers
-   - All blog types (Location, Topic, Trending) now generating successfully
-
-2. **Load Trending Topics Feature** ✅
-   - Added dynamic AI-powered topic suggestions
-   - "Load Trending Topics" button now fetches fresh, timely topics using GPT-4o
-   - Topics are based on current day/month and trending skincare topics in India
-   - Returns simple topic title strings (not complex objects)
-
-3. **Updated Timer Display** ✅
-   - Timer now shows next run type (Hourly Trending, Location Blogs, etc.)
-   - Schedule displays: "Staggered (6AM/12PM/6PM/12AM) + Hourly Trending"
-
-4. **Exit Intent ₹100 Discount** ✅
-   - Exit popup ₹100 discount now saves to localStorage
-   - Discount automatically applies at checkout
-   - Discount amount correctly reflected (₹100 vs ₹50 welcome offer)
-   - Banner shows discount type: "Special exit offer" or "Welcome offer"
-
-5. **Enhanced Customer Profiles** ✅
-   - Location tracking with reverse geocoding (lat/long → City, State, Pincode)
-   - Phone number tracking from discount claims
-   - Discount claimed status (type: regular/exit, amount)
-   - Visitor cards show location badge, phone badge, discount badge
-   - Expanded profile shows full customer details
-
-6. **Tracking Improvements** ✅
-   - New `/api/tracking/discount-claimed` endpoint
-   - Location reverse geocoding using OpenStreetMap Nominatim API
-   - Discount tracking for both ₹50 welcome and ₹100 exit offers
-
-### March 27, 2026
-1. **Homepage Image Fix** ✅
-   - Replaced broken celestaglow.com CDN image with uploaded customer-assets image
-   - New hero image showing Before/While Using/After transformation
-
-2. **WhatsApp Cloud API Integration** ✅
-   - **Backend Service** (`/app/backend/services/whatsapp_service.py`):
-     - Meta Graph API v18.0 integration
-     - Phone number formatting for India (+91)
-     - Order confirmation messages
-     - Consultation result messages
-     - Custom message sending
-     - Bulk messaging support
-     - Message logging to MongoDB
-   - **API Endpoints**:
-     - `POST /api/admin/whatsapp/send` - Send custom message
-     - `POST /api/admin/whatsapp/send-bulk` - Bulk messaging
-     - `POST /api/admin/whatsapp/notify-order` - Order confirmation
-     - `POST /api/admin/whatsapp/notify-consultation` - Consultation results
-     - `GET /api/admin/whatsapp/logs` - Message logs
-     - `GET /api/admin/whatsapp/stats` - Statistics
-     - `POST /api/admin/whatsapp/test` - Test connection
-   - **Admin Panel** (`/admin/whatsapp`):
-     - Stats dashboard (total, sent, failed, success rate, today)
-     - Send custom message form with templates
-     - Test connection feature
-     - Order notifications tab
-     - Consultation notifications tab
-     - Message logs tab
-   - **WhatsApp Credentials** (in `/app/backend/.env`):
-     - Phone Number ID: 782109748323556
-     - Business Account ID: 1109104574684503
-     - API Token: Configured
+## 3rd Party Integrations
+- **OpenAI GPT-4o** - Emergent LLM Key (blog generation)
+- **Razorpay** - Live payments configured
+- **Meta Pixel** - ID: 690863659974240
+- **Google Analytics** - ID: G-LSJCVKB8BP
+- **WhatsApp Cloud API** - Credentials ready, integration pending
 
 ## Credentials
-- **Admin Password**: celestaglow2024
-- **Meta Pixel ID**: 690863659974240
-- **Razorpay/SMTP**: In /app/backend/.env
-- **WhatsApp API**: In /app/backend/.env (Phone Number ID: 782109748323556)
+- Admin Password: `celestaglow2024`
+- Production URL: https://celestaglow.com
+- Preview URL: https://serum-ecommerce-ai.preview.emergentagent.com
+
+## Important Notes
+- Background cron (`cron_runner.py`) runs continuously - don't spawn duplicates
+- User sees Production site, agent works on Preview - remind to DEPLOY
