@@ -73,14 +73,26 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 
 #### 4. AI Content Engine
 - GPT-4o powered blog generation
-- Auto-generates 12 SEO blogs every 12 hours
+- Auto-generates blogs every 2 hours with staggered schedule:
+  - Minute 0: Trending News (3 blogs)
+  - Minute 5: Topic-Based (6 blogs)
+  - Minute 10: Auto Blogs (12 blogs)
+  - Minute 15: Location-Based (All States)
 - **1-Click Location Blogs generation (up to 12 states)**
 - **1-Click Topic Blogs generation (up to 12 topics)**
 - **Duplicate avoidance - cycles through states without repeating**
 - Location-targeted content
 - **Blog images from Unsplash/Pexels**
 
-#### 5. CRO Features
+#### 5. Order Management (Admin)
+- View all orders with search/filter
+- **Status Management (Mar 31, 2026):**
+  - "Mark Shipped" button - sends shipping email to customer
+  - "Mark Delivered" button - sends delivery confirmation email
+  - Professional HTML email templates with order details
+  - Shows notification type (email or SMS/WhatsApp only)
+
+#### 6. CRO Features
 - **Exit-Intent Popup**: Shows ₹100 extra discount when user tries to leave
 - **Enhanced Sticky Add-to-Cart**: With FLASH SALE badge, countdown timer
 - **Trust Badges Section**: 100% Genuine, Dermatologist Tested, Secure Payment, Free Delivery + Payment logos

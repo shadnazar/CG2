@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Package, ChevronLeft, Search, Filter, Download,
-  Phone, MapPin, Calendar, IndianRupee
+  Phone, MapPin, Calendar, IndianRupee, Truck, CheckCircle, X
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -14,6 +14,7 @@ function AdminOrders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterPayment, setFilterPayment] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [updatingStatus, setUpdatingStatus] = useState(null);
   const navigate = useNavigate();
   const adminToken = localStorage.getItem('adminToken');
 
@@ -38,6 +39,38 @@ function AdminOrders() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    setUpdatingStatus(orderId);
+    try {
+      const res = await axios.put(`${API}/orders/${orderId}/status`, 
+        { status: newStatus },
+        { headers: { 'X-Admin-Token': adminToken } }
+      );
+      
+      if (res.data.success) {
+        // Update local state
+        setOrders(orders.map(order => 
+          order.order_id === orderId 
+            ? { ...order, status: newStatus }
+            : order
+        ));
+        
+        // Update selected order if open
+        if (selectedOrder?.order_id === orderId) {
+          setSelectedOrder({ ...selectedOrder, status: newStatus });
+        }
+        
+        // Show success message
+        const emailMsg = res.data.email_sent ? ' (Email sent to customer)' : '';
+        alert(`Order ${orderId} marked as ${newStatus}${emailMsg}`);
+      }
+    } catch (err) {
+      alert('Failed to update order status');
+    } finally {
+      setUpdatingStatus(null);
     }
   };
 
@@ -244,9 +277,61 @@ function AdminOrders() {
               
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <span className="text-gray-600">Status</span>
-                <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                  {selectedOrder.status}
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                  selectedOrder.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                  selectedOrder.status === 'shipped' ? 'bg-blue-100 text-blue-700' :
+                  selectedOrder.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                  'bg-yellow-100 text-yellow-700'
+                }`}>
+                  {selectedOrder.status?.charAt(0).toUpperCase() + selectedOrder.status?.slice(1) || 'Confirmed'}
                 </span>
+              </div>
+              
+              {/* Status Update Buttons */}
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl">
+                <p className="text-gray-700 font-medium mb-3">Update Status:</p>
+                <div className="flex flex-wrap gap-2">
+                  {selectedOrder.status !== 'shipped' && selectedOrder.status !== 'delivered' && (
+                    <button
+                      onClick={() => updateOrderStatus(selectedOrder.order_id, 'shipped')}
+                      disabled={updatingStatus === selectedOrder.order_id}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition-colors disabled:opacity-50"
+                      data-testid="mark-shipped-btn"
+                    >
+                      <Truck size={18} />
+                      {updatingStatus === selectedOrder.order_id ? 'Updating...' : 'Mark Shipped'}
+                    </button>
+                  )}
+                  
+                  {selectedOrder.status !== 'delivered' && (
+                    <button
+                      onClick={() => updateOrderStatus(selectedOrder.order_id, 'delivered')}
+                      disabled={updatingStatus === selectedOrder.order_id}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg font-medium hover:bg-green-600 transition-colors disabled:opacity-50"
+                      data-testid="mark-delivered-btn"
+                    >
+                      <CheckCircle size={18} />
+                      {updatingStatus === selectedOrder.order_id ? 'Updating...' : 'Mark Delivered'}
+                    </button>
+                  )}
+                  
+                  {selectedOrder.status === 'delivered' && (
+                    <span className="text-green-600 font-medium flex items-center gap-2">
+                      <CheckCircle size={18} />
+                      Order Completed
+                    </span>
+                  )}
+                </div>
+                {selectedOrder.email && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    📧 Customer will receive email notification at: {selectedOrder.email}
+                  </p>
+                )}
+                {!selectedOrder.email && (
+                  <p className="text-xs text-orange-500 mt-2">
+                    ⚠️ No email provided - SMS/WhatsApp notification only
+                  </p>
+                )}
               </div>
               
               <div className="p-4 bg-gray-50 rounded-xl">

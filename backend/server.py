@@ -340,6 +340,187 @@ async def get_all_orders():
     return orders
 
 
+# ==================== ORDER STATUS UPDATE WITH EMAIL ====================
+
+class OrderStatusUpdate(BaseModel):
+    status: str  # "shipped", "delivered", "cancelled"
+
+def send_order_status_email(order: dict, new_status: str):
+    """Send email notification when order status changes"""
+    if not order.get('email'):
+        logging.info(f"No email for order {order['order_id']}, skipping email notification")
+        return
+    
+    smtp_host = os.environ.get('SMTP_HOST', 'smtp.gmail.com')
+    smtp_port = int(os.environ.get('SMTP_PORT', 587))
+    smtp_user = os.environ.get('SMTP_USER')
+    smtp_password = os.environ.get('SMTP_PASSWORD')
+    
+    if not smtp_user or not smtp_password:
+        logging.warning("SMTP credentials not configured, skipping email")
+        return
+    
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f"Celesta Glow - Order {order['order_id']} {new_status.capitalize()}"
+        msg['From'] = smtp_user
+        msg['To'] = order['email']
+        
+        if new_status == "shipped":
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px; }}
+                    .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; padding: 30px; }}
+                    .header {{ text-align: center; margin-bottom: 30px; }}
+                    .logo {{ font-size: 24px; font-weight: bold; color: #22c55e; }}
+                    .status-badge {{ background: #3b82f6; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: bold; }}
+                    .order-box {{ background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; }}
+                    .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 30px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="logo">Celesta Glow</div>
+                        <p style="color: #666;">Your order is on its way!</p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <span class="status-badge">🚚 SHIPPED</span>
+                    </div>
+                    
+                    <p>Hi {order['name']},</p>
+                    <p>Great news! Your order has been shipped and is on its way to you.</p>
+                    
+                    <div class="order-box">
+                        <p><strong>Order ID:</strong> {order['order_id']}</p>
+                        <p><strong>Product:</strong> Super Anti-Aging Serum</p>
+                        <p><strong>Amount:</strong> ₹{order['amount']}</p>
+                        <p><strong>Delivery Address:</strong><br/>
+                        {order['house_number']}, {order['area']}<br/>
+                        {order['state']} - {order['pincode']}</p>
+                    </div>
+                    
+                    <p>Expected delivery: <strong>2-3 business days</strong></p>
+                    
+                    <p>Track your order or contact us on WhatsApp: <a href="https://wa.me/919446125745">+91 9446125745</a></p>
+                    
+                    <div class="footer">
+                        <p>Thank you for choosing Celesta Glow!</p>
+                        <p>© 2024 Celesta Glow. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+        elif new_status == "delivered":
+            html_content = f"""
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <style>
+                    body {{ font-family: Arial, sans-serif; background-color: #f5f5f5; padding: 20px; }}
+                    .container {{ max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; padding: 30px; }}
+                    .header {{ text-align: center; margin-bottom: 30px; }}
+                    .logo {{ font-size: 24px; font-weight: bold; color: #22c55e; }}
+                    .status-badge {{ background: #22c55e; color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: bold; }}
+                    .order-box {{ background: #f8fafc; padding: 20px; border-radius: 12px; margin: 20px 0; }}
+                    .tips-box {{ background: #fef3c7; padding: 20px; border-radius: 12px; margin: 20px 0; border-left: 4px solid #f59e0b; }}
+                    .footer {{ text-align: center; color: #666; font-size: 12px; margin-top: 30px; }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <div class="logo">Celesta Glow</div>
+                        <p style="color: #666;">Your order has been delivered!</p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <span class="status-badge">✅ DELIVERED</span>
+                    </div>
+                    
+                    <p>Hi {order['name']},</p>
+                    <p>Your Celesta Glow Super Anti-Aging Serum has been successfully delivered!</p>
+                    
+                    <div class="order-box">
+                        <p><strong>Order ID:</strong> {order['order_id']}</p>
+                        <p><strong>Product:</strong> Super Anti-Aging Serum</p>
+                        <p><strong>Amount:</strong> ₹{order['amount']}</p>
+                    </div>
+                    
+                    <div class="tips-box">
+                        <p><strong>💡 Pro Tip for Best Results:</strong></p>
+                        <p>Apply the serum on clean skin every night before bed. Gently massage in circular motions and let it absorb for 5 minutes before applying moisturizer.</p>
+                    </div>
+                    
+                    <p>We'd love to hear about your experience! Reply to this email or share your feedback on WhatsApp: <a href="https://wa.me/919446125745">+91 9446125745</a></p>
+                    
+                    <div class="footer">
+                        <p>Thank you for choosing Celesta Glow!</p>
+                        <p>© 2024 Celesta Glow. All rights reserved.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """
+        else:
+            return  # Don't send email for other statuses
+        
+        part = MIMEText(html_content, 'html')
+        msg.attach(part)
+        
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+        
+        logging.info(f"Order status email sent to {order['email']} for order {order['order_id']} - Status: {new_status}")
+    except Exception as e:
+        logging.error(f"Failed to send order status email: {str(e)}")
+
+
+@api_router.put("/orders/{order_id}/status")
+async def update_order_status(order_id: str, status_update: OrderStatusUpdate):
+    """Update order status and send email notification"""
+    # Find the order
+    order = await db.orders.find_one({"order_id": order_id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    new_status = status_update.status.lower()
+    valid_statuses = ["confirmed", "shipped", "delivered", "cancelled"]
+    
+    if new_status not in valid_statuses:
+        raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
+    
+    # Update the order status
+    await db.orders.update_one(
+        {"order_id": order_id},
+        {"$set": {
+            "status": new_status,
+            "status_updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    # Get updated order data
+    updated_order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
+    
+    # Send email notification if shipped or delivered
+    if new_status in ["shipped", "delivered"]:
+        send_order_status_email(updated_order, new_status)
+    
+    return {
+        "success": True,
+        "order_id": order_id,
+        "new_status": new_status,
+        "email_sent": new_status in ["shipped", "delivered"] and bool(updated_order.get('email'))
+    }
+
+
 @api_router.get("/stats/recent-orders")
 async def get_recent_orders_count():
     count = await db.orders.count_documents({})
