@@ -34,6 +34,9 @@ function AdminDashboard() {
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
   const [notificationSoundEnabled, setNotificationSoundEnabled] = useState(true);
+  const [showBroadcastModal, setShowBroadcastModal] = useState(false);
+  const [broadcastData, setBroadcastData] = useState({ title: '', body: '' });
+  const [broadcastSending, setBroadcastSending] = useState(false);
   
   // Date filter state
   const [selectedDays, setSelectedDays] = useState(7);
@@ -143,6 +146,35 @@ function AdminDashboard() {
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     navigate('/admin');
+  };
+
+  // Send broadcast notification to all visitors
+  const handleBroadcastSend = async () => {
+    if (!broadcastData.title || !broadcastData.body) {
+      alert('Please enter both title and message');
+      return;
+    }
+    
+    setBroadcastSending(true);
+    try {
+      const res = await axios.post(`${API}/admin/notifications/send`, {
+        title: broadcastData.title,
+        body: broadcastData.body,
+        url: '/'
+      }, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      
+      if (res.data.success) {
+        alert(`Notification sent to ${res.data.sent_count} subscribers!`);
+        setShowBroadcastModal(false);
+        setBroadcastData({ title: '', body: '' });
+      }
+    } catch (err) {
+      alert('Failed to send notification');
+    } finally {
+      setBroadcastSending(false);
+    }
   };
 
   const handlePasswordChange = async () => {
@@ -274,6 +306,16 @@ function AdminDashboard() {
                 title="Test notification sound"
               >
                 <Bell size={18} />
+              </button>
+              
+              {/* Broadcast Notification Button */}
+              <button
+                onClick={() => setShowBroadcastModal(true)}
+                className="flex items-center gap-2 px-3 py-2 bg-purple-100 text-purple-700 rounded-xl text-sm font-medium hover:bg-purple-200 transition-colors"
+                title="Send notification to all visitors"
+              >
+                <MessageSquare size={16} />
+                Broadcast
               </button>
               
               <button 
@@ -1100,6 +1142,75 @@ function AdminDashboard() {
                 data-testid="change-password-btn"
               >
                 Change Password
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Broadcast Notification Modal */}
+      {showBroadcastModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md" data-testid="broadcast-modal">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
+                <MessageSquare className="w-5 h-5 text-purple-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Broadcast Notification</h3>
+                <p className="text-sm text-gray-500">Send to all website visitors</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                <input
+                  type="text"
+                  value={broadcastData.title}
+                  onChange={(e) => setBroadcastData({...broadcastData, title: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                  placeholder="e.g., Flash Sale Alert!"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                <textarea
+                  value={broadcastData.body}
+                  onChange={(e) => setBroadcastData({...broadcastData, body: e.target.value})}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none resize-none"
+                  rows={3}
+                  placeholder="e.g., Get 50% OFF for the next 2 hours only!"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowBroadcastModal(false);
+                  setBroadcastData({ title: '', body: '' });
+                }}
+                className="flex-1 py-3 border border-gray-200 text-gray-600 rounded-xl font-medium hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBroadcastSend}
+                disabled={broadcastSending}
+                className="flex-1 py-3 bg-purple-500 text-white rounded-xl font-medium hover:bg-purple-600 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {broadcastSending ? (
+                  <>
+                    <RefreshCw size={16} className="animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Bell size={16} />
+                    Send Notification
+                  </>
+                )}
               </button>
             </div>
           </div>

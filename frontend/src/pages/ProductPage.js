@@ -12,6 +12,7 @@ import {
 } from '../utils/metaPixel';
 import { trackPageVisit, trackTimeSpent, trackFormComplete, trackAction, getSessionId, getVisitorId } from '../utils/userTracking';
 import { getSharedStats, updateSharedStats } from '../utils/sharedStats';
+import { initCustomerNotifications, startSocialProofNotifications } from '../utils/customerNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
@@ -101,6 +102,10 @@ function ProductPage() {
     
     // Track with live visitors endpoint
     axios.post(`${API}/track-visit?page=product&session_id=${currentSessionId}`).catch(() => {});
+    
+    // Initialize customer notifications with social proof
+    initCustomerNotifications();
+    startSocialProofNotifications(55000); // Show "Someone just purchased" every 55 seconds
     
     // Meta Pixel - ViewContent (product page) - with direct fallback
     trackViewContent(PREPAID_PRICE);

@@ -74,8 +74,18 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - **Date Picker**: Filter visitors by specific date
 - **Stats Dashboard**: Total visitors, new vs returning, checkout rate, avg time
 - **Individual Journey View**: Expand any visitor to see their complete journey
+- **Date Filtering Fix** (Mar 31, 2026): Uses page_visits collection for accurate date queries
+- **Limit increased to 1000 visitors** (was 100)
 
-#### 4. Legal Pages (Mar 2026)
+#### 4. Customer Notification System (Mar 31, 2026)
+- **Social Proof Notifications**: "Someone from Mumbai just ordered!" with sound
+  - Appears every 50 seconds on Homepage, 55 seconds on Product page
+  - Rotates through 15 Indian cities
+  - Soft notification sound plays with each notification
+- **Push Notification Subscription**: Permission requested when claiming discount
+- **Admin Broadcast**: Send push notifications to all subscribers from dashboard
+
+#### 5. Legal Pages (Mar 2026)
 - **Terms & Conditions** (`/terms`): Covers cookies, tracking, data usage, returns policy
 - **Privacy Policy** (`/privacy`): Detailed cookie types, data collection, third-party services
 

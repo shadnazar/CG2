@@ -39,11 +39,11 @@ function AdminUserJourney() {
     try {
       const headers = { 'X-Admin-Token': adminToken };
       
-      let visitorsUrl = `${API}/admin/user-tracking/visitors?days=${selectedDays}&limit=500`;
+      let visitorsUrl = `${API}/admin/user-tracking/visitors?days=${selectedDays}&limit=1000`;
       let statsUrl = `${API}/admin/user-tracking/stats?days=${selectedDays}`;
       
       if (selectedDate) {
-        visitorsUrl = `${API}/admin/user-tracking/visitors?date=${selectedDate}&limit=500`;
+        visitorsUrl = `${API}/admin/user-tracking/visitors?date=${selectedDate}&limit=1000`;
         statsUrl = `${API}/admin/user-tracking/stats?date=${selectedDate}`;
       }
       

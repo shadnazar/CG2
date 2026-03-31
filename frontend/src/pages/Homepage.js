@@ -14,6 +14,7 @@ import {
 } from '../utils/metaPixel';
 import { trackPageVisit, trackTimeSpent, getSessionId, getVisitorId } from '../utils/userTracking';
 import { getSharedStats, updateSharedStats, getCurrentLocation, rotateLocation } from '../utils/sharedStats';
+import { initCustomerNotifications, startSocialProofNotifications } from '../utils/customerNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -187,6 +188,10 @@ function Homepage() {
       const newLocation = rotateLocation();
       setUserLocation(newLocation);
     }, 4000);
+
+    // Initialize customer notifications with social proof
+    initCustomerNotifications();
+    startSocialProofNotifications(50000); // Show "Someone just purchased" every 50 seconds
 
     // Exit intent detection with pixel tracking
     const handleMouseLeave = (e) => {

@@ -185,16 +185,26 @@ class UserBehaviorTracker:
             "total_pages_visited": len(set(v.get("page") for v in page_visits))
         }
     
-    async def get_all_visitors(self, date: str = None, days: int = 7, limit: int = 100) -> List[dict]:
+    async def get_all_visitors(self, date: str = None, days: int = 7, limit: int = 1000) -> List[dict]:
         """Get all visitors with summary"""
         query = {}
         
         if date:
-            # For specific date, look at visitors active on that day
-            query["$or"] = [
-                {"first_seen": {"$gte": f"{date}T00:00:00", "$lte": f"{date}T23:59:59"}},
-                {"last_seen": {"$gte": f"{date}T00:00:00", "$lte": f"{date}T23:59:59"}}
-            ]
+            # For specific date, look at page visits on that day
+            # This is more reliable as page_visits have explicit date field
+            page_visits_on_date = await self.db.user_page_visits.distinct(
+                "visitor_id", 
+                {"date": date}
+            )
+            
+            if page_visits_on_date:
+                query["visitor_id"] = {"$in": page_visits_on_date}
+            else:
+                # Fallback to timestamp-based query
+                query["$or"] = [
+                    {"first_seen": {"$regex": f"^{date}"}},
+                    {"last_seen": {"$regex": f"^{date}"}}
+                ]
         else:
             cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
             query["last_seen"] = {"$gte": cutoff}
@@ -217,13 +227,20 @@ class UserBehaviorTracker:
     async def get_visitor_stats(self, days: int = 7, date: str = None) -> dict:
         """Get visitor statistics - supports both days range and single date"""
         if date:
-            # Filter for a specific date - look for visitors active on that day
-            date_start = f"{date}T00:00:00"
-            date_end = f"{date}T23:59:59"
-            query = {"$or": [
-                {"first_seen": {"$gte": date_start, "$lte": date_end}},
-                {"last_seen": {"$gte": date_start, "$lte": date_end}}
-            ]}
+            # For specific date - use page_visits date field which is more reliable
+            visitor_ids_on_date = await self.db.user_page_visits.distinct(
+                "visitor_id",
+                {"date": date}
+            )
+            
+            if visitor_ids_on_date:
+                query = {"visitor_id": {"$in": visitor_ids_on_date}}
+            else:
+                # Fallback to regex match
+                query = {"$or": [
+                    {"first_seen": {"$regex": f"^{date}"}},
+                    {"last_seen": {"$regex": f"^{date}"}}
+                ]}
         else:
             # Filter for last N days
             cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
