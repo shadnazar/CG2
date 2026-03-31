@@ -4,7 +4,7 @@ import { ShoppingBag, X, MapPin } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Soft pop sound (Instagram DM style)
+// Messenger-style notification sound
 const NOTIFICATION_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3';
 
 function RecentPurchaseNotification() {
@@ -14,38 +14,29 @@ function RecentPurchaseNotification() {
   const [dismissed, setDismissed] = useState(false);
   const audioRef = useRef(null);
   
-  // Rate limiting
+  // Rate limiting - Updated as per user request
   const notificationCountRef = useRef(0);
-  const sessionStartRef = useRef(Date.now());
-  const MAX_NOTIFICATIONS = 5; // Max 5 notifications per 3-minute session
-  const SESSION_WINDOW = 180000; // 3 minutes
-  const NOTIFICATION_INTERVAL = 60000; // Show every 60 seconds (was 20)
-  const FIRST_NOTIFICATION_DELAY = 45000; // First notification after 45 seconds (was 8)
+  const MAX_NOTIFICATIONS = 5; // Max 4-6 notifications per session (using 5)
+  const FIRST_NOTIFICATION_DELAY = 5500; // First notification after 5-6 seconds
+  const MIN_INTERVAL = 15000; // 15 seconds minimum
+  const MAX_INTERVAL = 20000; // 20 seconds maximum
 
   useEffect(() => {
     // Initialize audio
     audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
-    audioRef.current.volume = 0.15; // Very soft
+    audioRef.current.volume = 0.18; // Soft messenger sound
     
     // Fetch recent purchases
     fetchPurchases();
   }, []);
 
   const canShowNotification = () => {
-    const now = Date.now();
-    
-    // Reset counter if session window expired
-    if (now - sessionStartRef.current > SESSION_WINDOW) {
-      sessionStartRef.current = now;
-      notificationCountRef.current = 0;
-    }
-    
-    // Check if we've exceeded max notifications
-    if (notificationCountRef.current >= MAX_NOTIFICATIONS) {
-      return false;
-    }
-    
-    return true;
+    return notificationCountRef.current < MAX_NOTIFICATIONS;
+  };
+
+  const getRandomInterval = () => {
+    // Random interval between 15-20 seconds
+    return MIN_INTERVAL + Math.random() * (MAX_INTERVAL - MIN_INTERVAL);
   };
 
   const playSound = () => {
@@ -55,60 +46,58 @@ function RecentPurchaseNotification() {
     }
   };
 
+  const showNextNotification = () => {
+    if (!canShowNotification() || dismissed || purchases.length === 0) return;
+    
+    const randomIndex = Math.floor(Math.random() * purchases.length);
+    setNotification(purchases[randomIndex]);
+    setVisible(true);
+    notificationCountRef.current++;
+    playSound();
+
+    // Hide after 4 seconds
+    setTimeout(() => {
+      setVisible(false);
+      
+      // Schedule next notification if we haven't hit the limit
+      if (canShowNotification() && !dismissed) {
+        setTimeout(showNextNotification, getRandomInterval());
+      }
+    }, 4000);
+  };
+
   useEffect(() => {
     if (purchases.length === 0 || dismissed) return;
 
-    // Show notification every 60 seconds (more reasonable)
-    const showInterval = setInterval(() => {
-      if (!canShowNotification() || visible) return;
-      
-      const randomIndex = Math.floor(Math.random() * purchases.length);
-      setNotification(purchases[randomIndex]);
-      setVisible(true);
-      notificationCountRef.current++;
-      playSound();
-
-      // Hide after 5 seconds
-      setTimeout(() => {
-        setVisible(false);
-      }, 5000);
-    }, NOTIFICATION_INTERVAL);
-
-    // Show first notification after 45 seconds
+    // Show first notification after 5-6 seconds
     const initialTimer = setTimeout(() => {
-      if (!canShowNotification() || dismissed) return;
-      
-      const randomIndex = Math.floor(Math.random() * purchases.length);
-      setNotification(purchases[randomIndex]);
-      setVisible(true);
-      notificationCountRef.current++;
-      playSound();
-      setTimeout(() => setVisible(false), 5000);
+      showNextNotification();
     }, FIRST_NOTIFICATION_DELAY);
 
     return () => {
-      clearInterval(showInterval);
       clearTimeout(initialTimer);
     };
-  }, [purchases, dismissed, visible]);
+  }, [purchases, dismissed]);
 
   const fetchPurchases = async () => {
     try {
       const res = await axios.get(`${API}/recent-purchases`);
       setPurchases(res.data.purchases || []);
     } catch (err) {
-      // Use diverse Indian names fallback
+      // Diverse Indian names (shortened for privacy feel)
       setPurchases([
         { name: "Priya S.", location: "Mumbai" },
         { name: "Anita R.", location: "Hyderabad" },
-        { name: "Kavya N.", location: "Kochi" },
+        { name: "Kavya N.", location: "Kerala" },
         { name: "Sneha P.", location: "Ahmedabad" },
         { name: "Meera I.", location: "Chennai" },
         { name: "Deepika S.", location: "Delhi" },
         { name: "Aishwarya R.", location: "Bangalore" },
         { name: "Pooja G.", location: "Lucknow" },
         { name: "Ritu V.", location: "Jaipur" },
-        { name: "Lakshmi M.", location: "Trivandrum" }
+        { name: "Lakshmi M.", location: "Trivandrum" },
+        { name: "Anjali D.", location: "Pune" },
+        { name: "Nandini P.", location: "Coimbatore" }
       ]);
     }
   };

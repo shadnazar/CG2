@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Check, Star, ChevronRight, ChevronDown, ChevronUp, Clock, Users, ShieldCheck, Truck, Flame, MapPin } from 'lucide-react';
 import DiscountPopup from '../components/DiscountPopup';
+import DermatologistSection from '../components/DermatologistSection';
 import { 
   trackViewContent, 
   trackCTAClick, 
@@ -14,7 +15,7 @@ import {
 } from '../utils/metaPixel';
 import { trackPageVisit, trackTimeSpent, getSessionId, getVisitorId } from '../utils/userTracking';
 import { getSharedStats, updateSharedStats, getCurrentLocation, rotateLocation } from '../utils/sharedStats';
-import { initCustomerNotifications, startSocialProofNotifications } from '../utils/customerNotifications';
+import { initCustomerNotifications } from '../utils/customerNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -693,6 +694,9 @@ function Homepage() {
           </div>
         </div>
       </section>
+
+      {/* Dermatologist Recommendations Section */}
+      <DermatologistSection />
 
       {/* FAQ */}
       <section className="px-5 py-8">

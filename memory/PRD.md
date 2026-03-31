@@ -17,23 +17,26 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 
 ## What's Been Implemented
 
-### March 31, 2026
-- **Notification System Overhaul**
-  - Moved notifications to top-right (away from buy buttons)
-  - Max 5 notifications per 3-minute session
-  - First notification after 45 seconds, then every 60 seconds
-  - Soft Instagram/Messenger DM-like sound
-  - Removed duplicate notification system
+### March 31, 2026 - Session 2
+- **Notification System Optimized:**
+  - First notification after 5-6 seconds
+  - Then every 15-20 seconds
+  - Max 5 notifications per session
+  - Messenger-style soft sound
+  - Top-right position
 
-- **User Journey Analytics**
-  - Pagination: 50 users per page, supports 1000+ total
-  - "First Seen" date visible in visitor list
-  - Day-wise filtering working correctly
+- **Dermatologist Section Added:**
+  - 16 expert dermatologists with unique names
+  - Professional credentials and specialties
+  - Expert quotes about ingredients
+  - Futuristic carousel design
+  - Added to Homepage and Product Page
 
-- **UI Polish**
-  - Removed unnecessary hyphens ("Anti Aging", "30 Day Money Back")
-  - Added FREE shipping/tax breakdown in checkout
-  - Broadcast notifications working (admin can send site-wide alerts)
+### March 31, 2026 - Session 1
+- **Notification System Overhaul (Initial)**
+- **User Journey Analytics** - Pagination, First Seen dates
+- **UI Polish** - Removed hyphens, FREE shipping display
+- **Broadcast notifications working**
 
 ### Previous Implementations
 - Meta Pixel `Purchase` event on `/order-success/:orderId` page
@@ -49,29 +52,19 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 ```
 /app
 ├── backend/
-│   ├── models/
-│   ├── routes/
 │   ├── services/
-│   │   ├── ai_content_generator.py
-│   │   ├── auto_blog_generator.py
-│   │   ├── user_behavior_tracker.py
 │   ├── cron_runner.py (Background - 2hr cycle)
 │   └── server.py
 └── frontend/
-    ├── public/sw.js (Service Worker)
     └── src/
         ├── components/
-        │   ├── RecentPurchaseNotification.js (Social proof - rate limited)
-        │   ├── DiscountPopup.js
+        │   ├── DermatologistSection.js (NEW)
+        │   ├── RecentPurchaseNotification.js (Updated timing)
         ├── pages/
-        │   ├── admin/
-        │   ├── Homepage.js
-        │   ├── ProductPage.js
-        │   ├── OrderSuccessPage.js
+        │   ├── Homepage.js (Added Dermatologist Section)
+        │   ├── ProductPage.js (Added Dermatologist Section)
         └── utils/
             ├── customerNotifications.js (Admin broadcasts only)
-            ├── metaPixel.js
-            ├── userTracking.js
 ```
 
 ## Pending/Future Tasks
@@ -88,7 +81,7 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 - Refactor ConsultationPage.js
 
 ## 3rd Party Integrations
-- **OpenAI GPT-4o** - Emergent LLM Key (blog generation)
+- **OpenAI GPT-4o** - Emergent LLM Key
 - **Razorpay** - Live payments configured
 - **Meta Pixel** - ID: 690863659974240
 - **Google Analytics** - ID: G-LSJCVKB8BP
@@ -98,7 +91,3 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 - Admin Password: `celestaglow2024`
 - Production URL: https://celestaglow.com
 - Preview URL: https://serum-ecommerce-ai.preview.emergentagent.com
-
-## Important Notes
-- Background cron (`cron_runner.py`) runs continuously - don't spawn duplicates
-- User sees Production site, agent works on Preview - remind to DEPLOY

@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift, X, CreditCard, BadgeCheck, Verified, Phone } from 'lucide-react';
 import RecentPurchaseNotification from '../components/RecentPurchaseNotification';
+import DermatologistSection from '../components/DermatologistSection';
 import {
   trackViewContent,
   trackInitiateCheckout,
@@ -12,7 +13,7 @@ import {
 } from '../utils/metaPixel';
 import { trackPageVisit, trackTimeSpent, trackFormComplete, trackAction, getSessionId, getVisitorId } from '../utils/userTracking';
 import { getSharedStats, updateSharedStats } from '../utils/sharedStats';
-import { initCustomerNotifications, startSocialProofNotifications } from '../utils/customerNotifications';
+import { initCustomerNotifications } from '../utils/customerNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
@@ -716,8 +717,13 @@ function ProductPage() {
               <span>✓ Made in India</span>
             </div>
           </div>
+        </div>
 
-          {/* Trust Badges Section - NEW */}
+      {/* Dermatologist Recommendations Section */}
+      <DermatologistSection />
+
+      {/* Trust Badges Section */}
+      <div className="px-4 pb-32">
           <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-100 rounded-2xl p-4 mb-20">
             <p className="text-center text-xs font-semibold text-green-700 mb-3">TRUSTED BY 10,000+ CUSTOMERS</p>
             <div className="grid grid-cols-4 gap-2">
