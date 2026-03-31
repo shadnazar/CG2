@@ -319,6 +319,27 @@ function ProductPage() {
             
             // Track Purchase with order_id - CRITICAL for conversion tracking
             trackPurchase(order.data.order_id, finalPrice);
+            
+            // Direct fbq call as BACKUP for Purchase - ensures event fires even if module has issues
+            setTimeout(() => {
+              if (typeof window !== 'undefined' && window.fbq) {
+                try {
+                  window.fbq('track', 'Purchase', {
+                    value: finalPrice,
+                    currency: 'INR',
+                    content_name: 'Super Anti-Aging Serum',
+                    content_category: 'Skincare',
+                    content_ids: ['celestaglow_serum_001'],
+                    content_type: 'product',
+                    num_items: 1,
+                    order_id: order.data.order_id
+                  });
+                  console.log('[Meta Pixel Direct] Purchase fired - order_id:', order.data.order_id, 'value:', finalPrice);
+                } catch(e) {
+                  console.error('[Meta Pixel Direct] Purchase error:', e);
+                }
+              }
+            }, 500);
           } catch (error) {
             alert('Order creation failed. Please contact support.');
           }

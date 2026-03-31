@@ -99,20 +99,23 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 - Admin panel shows all consultations with photos and phone numbers
 
 #### 7. Meta Pixel Integration (ID: 690863659974240)
-- PageView tracking
-- ViewContent on product/homepage
-- AddToCart, InitiateCheckout, Purchase events
-- Lead capture tracking
-- AddToCart tracking
-- InitiateCheckout tracking
-- AddPaymentInfo tracking
-- Purchase tracking
+**Strict Single-Page Checkout Blueprint Implementation** (Mar 31, 2026):
+- **ViewContent**: Fires on product page load via module + direct inline backup + HTML-level auto-fire
+- **InitiateCheckout**: Fires on "Buy Now" button click via module + direct inline backup
+- **Purchase**: Fires in Razorpay `onSuccess` callback via module + direct inline backup with:
+  - `value` (dynamic final price)
+  - `currency` ('INR')
+  - `content_ids` (['celestaglow_serum_001'])
+  - `content_type` ('product')
+  - `num_items` (1)
+  - `order_id` (unique from backend response)
+- **No AddToCart event** (direct Buy Now flow)
 - Lead tracking (discount claimed)
-- **Blog view tracking (NEW)**
-- **Search tracking (NEW)**
-- **CTA click tracking (NEW)**
-- **FAQ interaction tracking (NEW)**
-- **Custom events: TimeOnPage, ExitIntent, PopupShown, etc. (NEW)**
+- Blog view tracking
+- Search tracking  
+- CTA click tracking
+- FAQ interaction tracking
+- Custom events: TimeOnPage, ExitIntent, PopupShown, etc.
 
 #### 6. Online Consultation System (NEW) ✅
 - **Landing page** with language switcher (EN/HI/ML)
