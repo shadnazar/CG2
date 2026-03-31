@@ -170,47 +170,25 @@ function ProductPage() {
     };
   }, [exitPopupShown]);
 
-  // DOM-level Click Listener for InitiateCheckout - CRITICAL FALLBACK
-  // This ensures the event fires even if React's onClick has timing issues
+  // DOM-level Click Listener for InitiateCheckout - EVENT DELEGATION PATTERN
+  // Uses capture phase (true) to ensure event fires before any other handlers
   useEffect(() => {
-    const attachClickListeners = () => {
-      document.querySelectorAll('button').forEach(button => {
-        if (button.innerText.includes('Buy Now') || button.innerText.includes('Order Now')) {
-          // Remove existing listener to prevent duplicates
-          button.removeEventListener('click', handleInitiateCheckoutClick);
-          // Add fresh listener
-          button.addEventListener('click', handleInitiateCheckoutClick);
+    function handleInitiateCheckoutClick(e) {
+      if (e.target && (e.target.innerText.includes('Buy Now') || e.target.innerText.includes('Order Now'))) {
+        if (typeof fbq === 'function') {
+          fbq('track', 'InitiateCheckout', { value: 599, currency: 'INR' });
+          console.log('[Meta Pixel DOM] InitiateCheckout fired on button click');
         }
-      });
-    };
-
-    function handleInitiateCheckoutClick() {
-      if (typeof window !== 'undefined' && typeof window.fbq === 'function') {
-        window.fbq('track', 'InitiateCheckout', {
-          value: 599,
-          currency: 'INR',
-          content_category: 'Skincare',
-          content_ids: ['celestaglow_serum_001'],
-          num_items: 1
-        });
-        console.log('[Meta Pixel DOM] InitiateCheckout fired on button click');
       }
     }
 
-    // Attach listeners after a short delay to ensure buttons are rendered
-    const timeoutId = setTimeout(attachClickListeners, 1000);
-    
-    // Re-attach when step changes (buttons might re-render)
-    attachClickListeners();
+    // Add listener with capture phase (true) for maximum reliability
+    document.addEventListener('click', handleInitiateCheckoutClick, true);
 
     return () => {
-      clearTimeout(timeoutId);
-      // Cleanup listeners
-      document.querySelectorAll('button').forEach(button => {
-        button.removeEventListener('click', handleInitiateCheckoutClick);
-      });
+      document.removeEventListener('click', handleInitiateCheckoutClick, true);
     };
-  }, [step]);
+  }, []);
 
   // Check if user has a discount - Auto apply if claimed
   const checkDiscountStatus = async () => {
