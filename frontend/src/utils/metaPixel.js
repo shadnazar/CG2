@@ -6,9 +6,29 @@
  * No AddToCart event needed (direct Buy Now flow)
  */
 
+const PIXEL_ID = '690863659974240';
+
+// Helper function to ensure fbq is ready before calling
+const waitForFbq = (callback, maxAttempts = 10) => {
+  let attempts = 0;
+  
+  const checkFbq = () => {
+    attempts++;
+    if (typeof window !== 'undefined' && window.fbq) {
+      callback();
+    } else if (attempts < maxAttempts) {
+      setTimeout(checkFbq, 200); // Retry every 200ms
+    } else {
+      console.warn('[Meta Pixel] fbq not available after', maxAttempts, 'attempts');
+    }
+  };
+  
+  checkFbq();
+};
+
 // Initialize Meta Pixel (backup if not loaded in HTML)
 export const initMetaPixel = () => {
-  const PIXEL_ID = '690863659974240';
+  if (typeof window === 'undefined') return;
   
   // Avoid re-initialization
   if (window.fbq) return;
@@ -39,18 +59,17 @@ export const initMetaPixel = () => {
  * @param {number} value - Product price (default 599.00)
  */
 export const trackViewContent = (value = 599.00) => {
-  if (!window.fbq) return;
-  
-  window.fbq('track', 'ViewContent', {
-    content_name: 'Super Anti-Aging Serum',
-    content_category: 'Skincare',
-    content_ids: ['celestaglow_serum_001'],
-    content_type: 'product',
-    value: value,
-    currency: 'INR'
+  waitForFbq(() => {
+    window.fbq('track', 'ViewContent', {
+      content_name: 'Super Anti-Aging Serum',
+      content_category: 'Skincare',
+      content_ids: ['celestaglow_serum_001'],
+      content_type: 'product',
+      value: value,
+      currency: 'INR'
+    });
+    console.log('[Meta Pixel] ViewContent fired - value:', value);
   });
-  
-  console.log('[Meta Pixel] ViewContent fired - value:', value);
 };
 
 /**
@@ -60,17 +79,16 @@ export const trackViewContent = (value = 599.00) => {
  * @param {number} value - Cart value (default 599.00)
  */
 export const trackInitiateCheckout = (value = 599.00) => {
-  if (!window.fbq) return;
-  
-  window.fbq('track', 'InitiateCheckout', {
-    content_category: 'Skincare',
-    content_ids: ['celestaglow_serum_001'],
-    num_items: 1,
-    value: value,
-    currency: 'INR'
+  waitForFbq(() => {
+    window.fbq('track', 'InitiateCheckout', {
+      content_category: 'Skincare',
+      content_ids: ['celestaglow_serum_001'],
+      num_items: 1,
+      value: value,
+      currency: 'INR'
+    });
+    console.log('[Meta Pixel] InitiateCheckout fired - value:', value);
   });
-  
-  console.log('[Meta Pixel] InitiateCheckout fired - value:', value);
 };
 
 /**
@@ -81,25 +99,24 @@ export const trackInitiateCheckout = (value = 599.00) => {
  * @param {number} value - Purchase amount (REQUIRED)
  */
 export const trackPurchase = (orderId, value) => {
-  if (!window.fbq) return;
-  
   if (!orderId) {
     console.error('[Meta Pixel] Purchase event requires order_id');
     return;
   }
   
-  window.fbq('track', 'Purchase', {
-    value: value,
-    currency: 'INR',
-    content_name: 'Super Anti-Aging Serum',
-    content_category: 'Skincare',
-    content_ids: ['celestaglow_serum_001'],
-    content_type: 'product',
-    num_items: 1,
-    order_id: orderId
+  waitForFbq(() => {
+    window.fbq('track', 'Purchase', {
+      value: value,
+      currency: 'INR',
+      content_name: 'Super Anti-Aging Serum',
+      content_category: 'Skincare',
+      content_ids: ['celestaglow_serum_001'],
+      content_type: 'product',
+      num_items: 1,
+      order_id: orderId
+    });
+    console.log('[Meta Pixel] Purchase fired - order_id:', orderId, 'value:', value);
   });
-  
-  console.log('[Meta Pixel] Purchase fired - order_id:', orderId, 'value:', value);
 };
 
 // ==================== ADDITIONAL TRACKING EVENTS ====================
@@ -108,41 +125,39 @@ export const trackPurchase = (orderId, value) => {
  * Lead Event - Fire when user provides contact info (discount popup)
  */
 export const trackLead = (source = 'discount_popup') => {
-  if (!window.fbq) return;
-  
-  window.fbq('track', 'Lead', {
-    content_name: 'Super Anti-Aging Serum',
-    content_category: 'Skincare',
-    lead_source: source
+  waitForFbq(() => {
+    window.fbq('track', 'Lead', {
+      content_name: 'Super Anti-Aging Serum',
+      content_category: 'Skincare',
+      lead_source: source
+    });
+    console.log('[Meta Pixel] Lead fired - source:', source);
   });
-  
-  console.log('[Meta Pixel] Lead fired - source:', source);
 };
 
 /**
  * CompleteRegistration Event - Fire on consultation form submission
  */
 export const trackCompleteRegistration = (source = 'consultation') => {
-  if (!window.fbq) return;
-  
-  window.fbq('track', 'CompleteRegistration', {
-    content_name: 'Skin Consultation',
-    status: 'completed',
-    registration_source: source
+  waitForFbq(() => {
+    window.fbq('track', 'CompleteRegistration', {
+      content_name: 'Skin Consultation',
+      status: 'completed',
+      registration_source: source
+    });
+    console.log('[Meta Pixel] CompleteRegistration fired - source:', source);
   });
-  
-  console.log('[Meta Pixel] CompleteRegistration fired - source:', source);
 };
 
 /**
  * Search Event - Fire when user searches blogs
  */
 export const trackSearch = (searchQuery) => {
-  if (!window.fbq) return;
-  
-  window.fbq('track', 'Search', {
-    search_string: searchQuery,
-    content_category: 'Blog'
+  waitForFbq(() => {
+    window.fbq('track', 'Search', {
+      search_string: searchQuery,
+      content_category: 'Blog'
+    });
   });
 };
 
@@ -150,13 +165,12 @@ export const trackSearch = (searchQuery) => {
  * Contact Event - Fire when user contacts via WhatsApp
  */
 export const trackContact = (method = 'whatsapp') => {
-  if (!window.fbq) return;
-  
-  window.fbq('track', 'Contact', {
-    contact_method: method
+  waitForFbq(() => {
+    window.fbq('track', 'Contact', {
+      contact_method: method
+    });
+    console.log('[Meta Pixel] Contact fired - method:', method);
   });
-  
-  console.log('[Meta Pixel] Contact fired - method:', method);
 };
 
 // ==================== CTA TRACKING ====================
@@ -165,12 +179,12 @@ export const trackContact = (method = 'whatsapp') => {
  * Track CTA button clicks as custom events
  */
 export const trackCTAClick = (ctaName, location) => {
-  if (!window.fbq) return;
-  
-  window.fbq('trackCustom', 'CTAClick', {
-    cta_name: ctaName,
-    page_location: location,
-    content_name: 'Super Anti-Aging Serum'
+  waitForFbq(() => {
+    window.fbq('trackCustom', 'CTAClick', {
+      cta_name: ctaName,
+      page_location: location,
+      content_name: 'Super Anti-Aging Serum'
+    });
   });
 };
 
@@ -178,11 +192,11 @@ export const trackCTAClick = (ctaName, location) => {
  * Track form step completion
  */
 export const trackFormStep = (stepName, stepNumber) => {
-  if (!window.fbq) return;
-  
-  window.fbq('trackCustom', 'FormStep', {
-    step_name: stepName,
-    step_number: stepNumber
+  waitForFbq(() => {
+    window.fbq('trackCustom', 'FormStep', {
+      step_name: stepName,
+      step_number: stepNumber
+    });
   });
 };
 
@@ -190,11 +204,11 @@ export const trackFormStep = (stepName, stepNumber) => {
  * Track exit intent popup shown
  */
 export const trackExitIntent = () => {
-  if (!window.fbq) return;
-  
-  window.fbq('trackCustom', 'ExitIntentShown', {
-    content_name: 'Super Anti-Aging Serum',
-    offer: '₹100 OFF'
+  waitForFbq(() => {
+    window.fbq('trackCustom', 'ExitIntentShown', {
+      content_name: 'Super Anti-Aging Serum',
+      offer: '₹100 OFF'
+    });
   });
 };
 
@@ -204,50 +218,51 @@ export const trackExitIntent = () => {
  * Track specific page views with custom parameters
  */
 export const trackPageView = (pageName, additionalParams = {}) => {
-  if (!window.fbq) return;
-  
-  window.fbq('track', 'PageView', {
-    page_name: pageName,
-    ...additionalParams
+  waitForFbq(() => {
+    window.fbq('track', 'PageView', {
+      page_name: pageName,
+      ...additionalParams
+    });
   });
 };
 
 // ==================== LEGACY EXPORTS (for backward compatibility) ====================
 
-// AddToCart not needed for direct Buy Now flow, but keeping for any edge cases
+// AddToCart not needed for direct Buy Now flow
 export const trackAddToCart = (price = 599, quantity = 1) => {
   // No-op - direct Buy Now flow doesn't need AddToCart
   console.log('[Meta Pixel] AddToCart skipped - using direct Buy Now flow');
 };
 
-// AddPaymentInfo can be useful
+// AddPaymentInfo
 export const trackAddPaymentInfo = (paymentMethod, price) => {
-  if (!window.fbq) return;
-  
-  window.fbq('track', 'AddPaymentInfo', {
-    content_name: 'Super Anti-Aging Serum',
-    content_category: 'Skincare',
-    content_ids: ['celestaglow_serum_001'],
-    value: price,
-    currency: 'INR',
-    payment_method: paymentMethod
+  waitForFbq(() => {
+    window.fbq('track', 'AddPaymentInfo', {
+      content_name: 'Super Anti-Aging Serum',
+      content_category: 'Skincare',
+      content_ids: ['celestaglow_serum_001'],
+      value: price,
+      currency: 'INR',
+      payment_method: paymentMethod
+    });
+    console.log('[Meta Pixel] AddPaymentInfo fired - method:', paymentMethod);
   });
-  
-  console.log('[Meta Pixel] AddPaymentInfo fired - method:', paymentMethod);
 };
 
 // Legacy tracking functions for backward compatibility
 export const trackPopupDismissed = (popupType) => {
-  if (!window.fbq) return;
-  window.fbq('trackCustom', 'PopupDismissed', { popup_type: popupType });
+  waitForFbq(() => {
+    window.fbq('trackCustom', 'PopupDismissed', { popup_type: popupType });
+  });
 };
 
 export const trackBlogViewPixel = (blogTitle, blogCategory) => {
-  if (!window.fbq) return;
-  window.fbq('track', 'ViewContent', {
-    content_name: blogTitle,
-    content_category: blogCategory || 'Blog',
-    content_type: 'article'
+  waitForFbq(() => {
+    window.fbq('track', 'ViewContent', {
+      content_name: blogTitle,
+      content_category: blogCategory || 'Blog',
+      content_type: 'article'
+    });
   });
 };
 
@@ -255,23 +270,27 @@ export const trackBlogViewPixel = (blogTitle, blogCategory) => {
 export const trackBlogView = trackBlogViewPixel;
 
 export const trackPopupShown = (popupType) => {
-  if (!window.fbq) return;
-  window.fbq('trackCustom', 'PopupShown', { popup_type: popupType });
+  waitForFbq(() => {
+    window.fbq('trackCustom', 'PopupShown', { popup_type: popupType });
+  });
 };
 
 export const trackViewTestimonials = () => {
-  if (!window.fbq) return;
-  window.fbq('trackCustom', 'ViewTestimonials', { content_name: 'Customer Testimonials' });
+  waitForFbq(() => {
+    window.fbq('trackCustom', 'ViewTestimonials', { content_name: 'Customer Testimonials' });
+  });
 };
 
 export const trackTimeOnPage = (pageName, seconds) => {
-  if (!window.fbq) return;
-  window.fbq('trackCustom', 'TimeOnPage', { page_name: pageName, time_seconds: seconds });
+  waitForFbq(() => {
+    window.fbq('trackCustom', 'TimeOnPage', { page_name: pageName, time_seconds: seconds });
+  });
 };
 
 export const trackFAQInteraction = (question) => {
-  if (!window.fbq) return;
-  window.fbq('trackCustom', 'FAQInteraction', { question: question });
+  waitForFbq(() => {
+    window.fbq('trackCustom', 'FAQInteraction', { question: question });
+  });
 };
 
 // Export all functions
@@ -292,6 +311,7 @@ export default {
   trackAddPaymentInfo,
   trackPopupDismissed,
   trackBlogViewPixel,
+  trackBlogView,
   trackPopupShown,
   trackViewTestimonials,
   trackTimeOnPage,

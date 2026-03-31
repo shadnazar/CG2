@@ -50,6 +50,26 @@
         'https://connect.facebook.net/en_US/fbevents.js');
         fbq('init', '690863659974240');
         fbq('track', 'PageView');
+        
+        // Auto-track ViewContent on product pages
+        window.addEventListener('load', function() {
+          setTimeout(function() {
+            var path = window.location.pathname;
+            if (path.includes('/product') || path === '/' || path.includes('/anti-aging')) {
+              if (typeof fbq === 'function') {
+                fbq('track', 'ViewContent', {
+                  content_name: 'Super Anti-Aging Serum',
+                  content_category: 'Skincare',
+                  content_ids: ['celestaglow_serum_001'],
+                  content_type: 'product',
+                  value: 599.00,
+                  currency: 'INR'
+                });
+                console.log('[Meta Pixel HTML] ViewContent auto-fired on:', path);
+              }
+            }
+          }, 1000);
+        });
         </script>
         <noscript><img height="1" width="1" style="display:none"
         src="https://www.facebook.com/tr?id=690863659974240&ev=PageView&noscript=1"

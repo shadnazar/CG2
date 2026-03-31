@@ -62,6 +62,24 @@ function ProductPage() {
       trackPageVisit('checkout');
       trackInitiateCheckout(PREPAID_PRICE);
       
+      // Direct fbq call as backup for InitiateCheckout
+      setTimeout(() => {
+        if (typeof window !== 'undefined' && window.fbq) {
+          try {
+            window.fbq('track', 'InitiateCheckout', {
+              content_category: 'Skincare',
+              content_ids: ['celestaglow_serum_001'],
+              num_items: 1,
+              value: 599.00,
+              currency: 'INR'
+            });
+            console.log('[Meta Pixel Direct] InitiateCheckout fired');
+          } catch(e) {
+            console.error('[Meta Pixel Direct] InitiateCheckout error:', e);
+          }
+        }
+      }, 500);
+      
       // Track action for user journey
       trackAction('view_checkout', { step: 'checkout_started' });
     }
@@ -104,8 +122,27 @@ function ProductPage() {
     // Track with live visitors endpoint
     axios.post(`${API}/track-visit?page=product&session_id=${currentSessionId}`).catch(() => {});
     
-    // Meta Pixel - ViewContent (product page)
+    // Meta Pixel - ViewContent (product page) - with direct fallback
     trackViewContent(PREPAID_PRICE);
+    
+    // Direct fbq call as backup (ensures event fires even if module has issues)
+    setTimeout(() => {
+      if (typeof window !== 'undefined' && window.fbq) {
+        try {
+          window.fbq('track', 'ViewContent', {
+            content_name: 'Super Anti-Aging Serum',
+            content_category: 'Skincare',
+            content_ids: ['celestaglow_serum_001'],
+            content_type: 'product',
+            value: 599.00,
+            currency: 'INR'
+          });
+          console.log('[Meta Pixel Direct] ViewContent fired');
+        } catch(e) {
+          console.error('[Meta Pixel Direct] ViewContent error:', e);
+        }
+      }
+    }, 500);
 
     // Check if user has claimed discount
     checkDiscountStatus();
