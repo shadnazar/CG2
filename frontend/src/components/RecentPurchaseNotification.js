@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { ShoppingBag, X, MapPin } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
-// Messenger-style notification sound
-const NOTIFICATION_SOUND_URL = 'https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3';
+// User's custom notification sound
+const NOTIFICATION_SOUND_URL = 'https://customer-assets.emergentagent.com/job_26148967-6968-4918-8b5d-0a2c0e5259b2/artifacts/sa3jziee_universfield-new-notification-057-494255.mp3';
 
 function RecentPurchaseNotification() {
   const [notification, setNotification] = useState(null);
@@ -14,30 +14,22 @@ function RecentPurchaseNotification() {
   const [dismissed, setDismissed] = useState(false);
   const audioRef = useRef(null);
   
-  // Rate limiting - Updated as per user request
+  // Rate limiting
   const notificationCountRef = useRef(0);
-  const MAX_NOTIFICATIONS = 5; // Max 4-6 notifications per session (using 5)
-  const FIRST_NOTIFICATION_DELAY = 5500; // First notification after 5-6 seconds
-  const MIN_INTERVAL = 15000; // 15 seconds minimum
-  const MAX_INTERVAL = 20000; // 20 seconds maximum
+  const MAX_NOTIFICATIONS = 5;
+  const FIRST_NOTIFICATION_DELAY = 5500; // 5-6 seconds
+  const MIN_INTERVAL = 15000; // 15 seconds
+  const MAX_INTERVAL = 20000; // 20 seconds
 
   useEffect(() => {
-    // Initialize audio
     audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
-    audioRef.current.volume = 0.18; // Soft messenger sound
-    
-    // Fetch recent purchases
+    audioRef.current.volume = 0.25;
     fetchPurchases();
   }, []);
 
-  const canShowNotification = () => {
-    return notificationCountRef.current < MAX_NOTIFICATIONS;
-  };
+  const canShowNotification = () => notificationCountRef.current < MAX_NOTIFICATIONS;
 
-  const getRandomInterval = () => {
-    // Random interval between 15-20 seconds
-    return MIN_INTERVAL + Math.random() * (MAX_INTERVAL - MIN_INTERVAL);
-  };
+  const getRandomInterval = () => MIN_INTERVAL + Math.random() * (MAX_INTERVAL - MIN_INTERVAL);
 
   const playSound = () => {
     if (audioRef.current) {
@@ -55,11 +47,8 @@ function RecentPurchaseNotification() {
     notificationCountRef.current++;
     playSound();
 
-    // Hide after 4 seconds
     setTimeout(() => {
       setVisible(false);
-      
-      // Schedule next notification if we haven't hit the limit
       if (canShowNotification() && !dismissed) {
         setTimeout(showNextNotification, getRandomInterval());
       }
@@ -68,15 +57,8 @@ function RecentPurchaseNotification() {
 
   useEffect(() => {
     if (purchases.length === 0 || dismissed) return;
-
-    // Show first notification after 5-6 seconds
-    const initialTimer = setTimeout(() => {
-      showNextNotification();
-    }, FIRST_NOTIFICATION_DELAY);
-
-    return () => {
-      clearTimeout(initialTimer);
-    };
+    const initialTimer = setTimeout(showNextNotification, FIRST_NOTIFICATION_DELAY);
+    return () => clearTimeout(initialTimer);
   }, [purchases, dismissed]);
 
   const fetchPurchases = async () => {
@@ -84,20 +66,26 @@ function RecentPurchaseNotification() {
       const res = await axios.get(`${API}/recent-purchases`);
       setPurchases(res.data.purchases || []);
     } catch (err) {
-      // Diverse Indian names (shortened for privacy feel)
+      // Authentic Indian names - real sounding, varied
       setPurchases([
-        { name: "Priya S.", location: "Mumbai" },
-        { name: "Anita R.", location: "Hyderabad" },
-        { name: "Kavya N.", location: "Kerala" },
-        { name: "Sneha P.", location: "Ahmedabad" },
-        { name: "Meera I.", location: "Chennai" },
-        { name: "Deepika S.", location: "Delhi" },
-        { name: "Aishwarya R.", location: "Bangalore" },
-        { name: "Pooja G.", location: "Lucknow" },
-        { name: "Ritu V.", location: "Jaipur" },
-        { name: "Lakshmi M.", location: "Trivandrum" },
-        { name: "Anjali D.", location: "Pune" },
-        { name: "Nandini P.", location: "Coimbatore" }
+        { name: "Ritika", location: "Mumbai" },
+        { name: "Tanisha", location: "Delhi" },
+        { name: "Neha M.", location: "Bangalore" },
+        { name: "Sanya", location: "Hyderabad" },
+        { name: "Kriti", location: "Chennai" },
+        { name: "Aditi", location: "Pune" },
+        { name: "Nisha", location: "Jaipur" },
+        { name: "Pooja K.", location: "Kerala" },
+        { name: "Megha", location: "Ahmedabad" },
+        { name: "Shruti", location: "Kolkata" },
+        { name: "Divya", location: "Lucknow" },
+        { name: "Anjali", location: "Chandigarh" },
+        { name: "Tanya", location: "Indore" },
+        { name: "Swati", location: "Coimbatore" },
+        { name: "Rashmi", location: "Nagpur" },
+        { name: "Manisha", location: "Surat" },
+        { name: "Snehal", location: "Thane" },
+        { name: "Pallavi", location: "Gurgaon" }
       ]);
     }
   };
@@ -108,7 +96,6 @@ function RecentPurchaseNotification() {
     sessionStorage.setItem('purchaseNotifDismissed', 'true');
   };
 
-  // Check if already dismissed this session
   useEffect(() => {
     if (sessionStorage.getItem('purchaseNotifDismissed')) {
       setDismissed(true);
@@ -119,27 +106,26 @@ function RecentPurchaseNotification() {
 
   return (
     <div 
-      className="fixed top-20 right-4 z-50 animate-slide-in"
+      className="fixed top-24 right-4 z-50"
       data-testid="recent-purchase-notification"
+      onClick={handleDismiss}
     >
-      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-3 max-w-[240px] relative">
-        <button 
-          onClick={handleDismiss}
-          className="absolute top-2 right-2 w-5 h-5 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-100"
-        >
-          <X size={12} />
-        </button>
-        
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
-            <ShoppingBag className="w-4 h-4 text-green-600" />
+      {/* Clean, minimal notification */}
+      <div className="bg-white/95 backdrop-blur-sm rounded-2xl shadow-xl border border-gray-100/50 px-4 py-3 max-w-[220px] cursor-pointer hover:scale-[1.02] transition-transform">
+        <div className="flex items-center gap-3">
+          {/* Green dot indicator */}
+          <div className="relative">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="absolute inset-0 w-2 h-2 bg-green-500 rounded-full animate-ping opacity-75"></div>
           </div>
-          <div className="flex-1 min-w-0 pr-4">
-            <p className="font-medium text-gray-900 text-xs">
-              {notification.name} just ordered
+          
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <p className="text-gray-900 text-sm font-medium truncate">
+              {notification.name} ordered
             </p>
-            <p className="text-gray-500 text-[10px] flex items-center gap-0.5 mt-0.5">
-              <MapPin size={10} />
+            <p className="text-gray-500 text-xs flex items-center gap-1 mt-0.5">
+              <MapPin size={10} className="text-gray-400" />
               {notification.location}
             </p>
           </div>
@@ -147,18 +133,12 @@ function RecentPurchaseNotification() {
       </div>
 
       <style>{`
-        @keyframes slide-in {
-          from {
-            transform: translateX(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateX(100%) scale(0.9); }
+          to { opacity: 1; transform: translateX(0) scale(1); }
         }
-        .animate-slide-in {
-          animation: slide-in 0.25s ease-out;
+        [data-testid="recent-purchase-notification"] > div {
+          animation: slideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
         }
       `}</style>
     </div>
