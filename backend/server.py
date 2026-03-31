@@ -528,6 +528,133 @@ async def get_recent_orders_count():
     return {"count": base_count + count}
 
 
+# ==================== PUSH NOTIFICATIONS ====================
+
+class PushSubscription(BaseModel):
+    visitor_id: str
+    subscription: dict
+
+class PushNotificationRequest(BaseModel):
+    title: str
+    body: str
+    url: Optional[str] = "/"
+    visitor_ids: Optional[List[str]] = None  # None = send to all
+
+@api_router.post("/notifications/subscribe")
+async def subscribe_to_notifications(data: PushSubscription):
+    """Store push notification subscription for a visitor"""
+    try:
+        await db.push_subscriptions.update_one(
+            {"visitor_id": data.visitor_id},
+            {
+                "$set": {
+                    "subscription": data.subscription,
+                    "subscribed_at": datetime.now(timezone.utc).isoformat(),
+                    "active": True
+                }
+            },
+            upsert=True
+        )
+        return {"success": True, "message": "Subscribed to notifications"}
+    except Exception as e:
+        logging.error(f"Push subscription error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.post("/admin/notifications/send")
+async def send_push_notification(
+    data: PushNotificationRequest,
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    """Send push notification to all or specific visitors"""
+    if x_admin_token != "celestaglow2024":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    # Get subscriptions
+    query = {"active": True}
+    if data.visitor_ids:
+        query["visitor_id"] = {"$in": data.visitor_ids}
+    
+    subscriptions = await db.push_subscriptions.find(query, {"_id": 0}).to_list(1000)
+    
+    sent_count = 0
+    failed_count = 0
+    
+    # Note: In production, you'd use a push service like Firebase or web-push library
+    # For now, we store the notification for display when user returns
+    notification_id = f"notif_{uuid.uuid4().hex[:8]}"
+    
+    for sub in subscriptions:
+        try:
+            await db.pending_notifications.insert_one({
+                "notification_id": notification_id,
+                "visitor_id": sub["visitor_id"],
+                "title": data.title,
+                "body": data.body,
+                "url": data.url,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+                "read": False
+            })
+            sent_count += 1
+        except Exception as e:
+            failed_count += 1
+            logging.error(f"Failed to queue notification: {e}")
+    
+    # Log the notification broadcast
+    await db.notification_logs.insert_one({
+        "notification_id": notification_id,
+        "title": data.title,
+        "body": data.body,
+        "url": data.url,
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+        "total_recipients": sent_count,
+        "failed": failed_count
+    })
+    
+    return {
+        "success": True,
+        "notification_id": notification_id,
+        "sent_count": sent_count,
+        "failed_count": failed_count
+    }
+
+@api_router.get("/notifications/pending/{visitor_id}")
+async def get_pending_notifications(visitor_id: str):
+    """Get unread notifications for a visitor"""
+    notifications = await db.pending_notifications.find(
+        {"visitor_id": visitor_id, "read": False},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(10)
+    
+    return {"notifications": notifications}
+
+@api_router.post("/notifications/mark-read/{visitor_id}")
+async def mark_notifications_read(visitor_id: str):
+    """Mark all notifications as read for a visitor"""
+    await db.pending_notifications.update_many(
+        {"visitor_id": visitor_id},
+        {"$set": {"read": True}}
+    )
+    return {"success": True}
+
+@api_router.get("/admin/notifications/subscribers")
+async def get_notification_subscribers(
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    """Get list of push notification subscribers"""
+    if x_admin_token != "celestaglow2024":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    subscribers = await db.push_subscriptions.find(
+        {"active": True},
+        {"_id": 0, "visitor_id": 1, "subscribed_at": 1}
+    ).to_list(500)
+    
+    return {
+        "total": len(subscribers),
+        "subscribers": subscribers
+    }
+
+
 @api_router.post("/track")
 async def track_page_visit(page: str, session_id: str = None):
     await analytics_tracker.track_visit(page, session_id)

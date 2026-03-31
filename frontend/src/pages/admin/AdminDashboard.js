@@ -6,8 +6,9 @@ import {
   TrendingUp, Package, Eye, IndianRupee, ChevronRight, Plus,
   Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope,
   Home, ShoppingCart, Lock, Settings, Calendar, Filter, ChevronDown,
-  MousePointer, Route, MessageSquare
+  MousePointer, Route, MessageSquare, Bell, Volume2
 } from 'lucide-react';
+import { useOrderNotifications } from '../../utils/orderNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -32,6 +33,7 @@ function AdminDashboard() {
   const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' });
   const [passwordError, setPasswordError] = useState('');
   const [passwordSuccess, setPasswordSuccess] = useState('');
+  const [notificationSoundEnabled, setNotificationSoundEnabled] = useState(true);
   
   // Date filter state
   const [selectedDays, setSelectedDays] = useState(7);
@@ -44,6 +46,12 @@ function AdminDashboard() {
   
   const navigate = useNavigate();
   const adminToken = localStorage.getItem('adminToken');
+  
+  // Order notification hook
+  const { newOrders, clearNewOrders, testSound } = useOrderNotifications(
+    adminToken, 
+    notificationSoundEnabled
+  );
 
   const fetchAllData = useCallback(async () => {
     if (!adminToken) {
@@ -238,19 +246,76 @@ function AdminDashboard() {
       {/* Main Content */}
       <main className="lg:ml-64 pt-16 lg:pt-0 min-h-screen">
         <div className="p-6 lg:p-8">
-          {/* Page Header with Refresh */}
+          {/* Page Header with Refresh & Notifications */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
               <p className="text-gray-500 mt-1">Real-time analytics & insights</p>
             </div>
-            <button 
-              onClick={fetchAllData}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50"
-            >
-              <RefreshCw size={16} /> Refresh
-            </button>
+            <div className="flex items-center gap-3">
+              {/* Notification Sound Toggle */}
+              <button
+                onClick={() => setNotificationSoundEnabled(!notificationSoundEnabled)}
+                className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  notificationSoundEnabled 
+                    ? 'bg-green-100 text-green-700 border border-green-200' 
+                    : 'bg-gray-100 text-gray-500 border border-gray-200'
+                }`}
+                title={notificationSoundEnabled ? 'Sound notifications ON' : 'Sound notifications OFF'}
+              >
+                <Volume2 size={16} />
+                {notificationSoundEnabled ? 'Sound ON' : 'Sound OFF'}
+              </button>
+              
+              {/* Test Sound Button */}
+              <button
+                onClick={testSound}
+                className="p-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition-colors"
+                title="Test notification sound"
+              >
+                <Bell size={18} />
+              </button>
+              
+              <button 
+                onClick={fetchAllData}
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl text-gray-600 hover:bg-gray-50"
+              >
+                <RefreshCw size={16} /> Refresh
+              </button>
+            </div>
           </div>
+          
+          {/* New Order Alert Banner */}
+          {newOrders.length > 0 && (
+            <div className="mb-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-2xl p-4 flex items-center justify-between animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                  <Package size={24} />
+                </div>
+                <div>
+                  <p className="font-bold text-lg">🎉 {newOrders.length} New Order{newOrders.length > 1 ? 's' : ''}!</p>
+                  <p className="text-sm opacity-90">
+                    {newOrders[0]?.name || 'Customer'} - ₹{newOrders[0]?.amount || '599'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Link 
+                  to="/admin/orders"
+                  className="px-4 py-2 bg-white text-green-600 rounded-xl font-medium hover:bg-green-50"
+                >
+                  View Orders
+                </Link>
+                <button
+                  onClick={clearNewOrders}
+                  className="p-2 hover:bg-white/20 rounded-lg"
+                  title="Dismiss"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Tab Navigation */}
           <div className="flex gap-2 mb-6 overflow-x-auto pb-2">

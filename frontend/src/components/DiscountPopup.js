@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { X, Gift, Phone, Check, Loader2, MapPin } from 'lucide-react';
+import { X, Gift, Phone, Check, Loader2, MapPin, Bell } from 'lucide-react';
 import { trackLead, trackPopupDismissed } from '../utils/metaPixel';
 import { trackAction, getVisitorId, requestLocationPermission } from '../utils/userTracking';
+import { requestNotificationPermission, isPushSupported, isSubscribed } from '../utils/pushNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -15,6 +16,7 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
   const [discountCode, setDiscountCode] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(true); // Auto-ticked by default
   const [locationRequested, setLocationRequested] = useState(false);
+  const [notificationRequested, setNotificationRequested] = useState(false);
 
   const handleClose = () => {
     if (!success) {
@@ -45,6 +47,20 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
           longitude: location.longitude 
         });
       }
+    }
+    
+    // Request push notification permission after a short delay
+    if (!notificationRequested && isPushSupported() && !isSubscribed()) {
+      setNotificationRequested(true);
+      setTimeout(async () => {
+        const result = await requestNotificationPermission();
+        if (result.success) {
+          await trackAction('push_notification_subscribed', { 
+            permission: result.permission 
+          });
+          console.log('[Push] User subscribed to notifications');
+        }
+      }, 1500); // Slight delay after discount claim
     }
   };
 

@@ -238,6 +238,45 @@ function Homepage() {
     { name: 'Simran Singh', location: 'Chandigarh, India', text: "Perfect for sensitive skin! No irritation and visible results in just 2 weeks. Absolutely love it!" },
   ];
 
+  // 24 High-Converting Headline Variations - Randomized for each visitor
+  const headlineVariations = [
+    { main: "Reverse", highlight: "10 Years", rest: "of Aging in Just 4 Weeks" },
+    { main: "Erase", highlight: "Wrinkles", rest: "& Look Years Younger Naturally" },
+    { main: "Turn Back", highlight: "Time", rest: "on Your Skin in 28 Days" },
+    { main: "Unlock Your", highlight: "Youthful Glow", rest: "Starting Tonight" },
+    { main: "Say Goodbye to", highlight: "Fine Lines", rest: "Forever" },
+    { main: "Wake Up", highlight: "10 Years Younger", rest: "Every Morning" },
+    { main: "The Secret to", highlight: "Ageless Skin", rest: "Finally Revealed" },
+    { main: "Transform Your Skin", highlight: "Overnight", rest: "— Guaranteed" },
+    { main: "Reclaim Your", highlight: "20s Skin", rest: "at Any Age" },
+    { main: "Defy", highlight: "Aging", rest: "Like Bollywood Stars Do" },
+    { main: "Your", highlight: "Wrinkles", rest: "Don't Stand a Chance" },
+    { main: "Look", highlight: "5-10 Years Younger", rest: "in Just Weeks" },
+    { main: "The", highlight: "Anti-Aging Secret", rest: "50,000+ Indians Swear By" },
+    { main: "Finally:", highlight: "Firm, Tight Skin", rest: "Without Surgery" },
+    { main: "Stop Aging", highlight: "in Its Tracks", rest: "Starting Today" },
+    { main: "Discover Your", highlight: "Fountain of Youth", rest: "in a Bottle" },
+    { main: "Age is Just a Number —", highlight: "Prove It", rest: "with Your Skin" },
+    { main: "From Tired to", highlight: "Radiant", rest: "in 14 Days" },
+    { main: "Your Best Skin", highlight: "at 50", rest: "Starts Here" },
+    { main: "Clinically Proven to", highlight: "Reduce Wrinkles 87%", rest: "" },
+    { main: "The", highlight: "One Serum", rest: "That Actually Works" },
+    { main: "Younger-Looking Skin", highlight: "Guaranteed", rest: "or Money Back" },
+    { main: "Why Look", highlight: "Your Age", rest: "When You Don't Have To?" },
+    { main: "India's #1", highlight: "Anti-Aging", rest: "Solution is Here" },
+  ];
+
+  // Get random headline (stays same for session)
+  const [selectedHeadline] = useState(() => {
+    const stored = sessionStorage.getItem('selectedHeadlineIndex');
+    if (stored) {
+      return headlineVariations[parseInt(stored) % headlineVariations.length];
+    }
+    const randomIndex = Math.floor(Math.random() * headlineVariations.length);
+    sessionStorage.setItem('selectedHeadlineIndex', randomIndex.toString());
+    return headlineVariations[randomIndex];
+  });
+
   const faqs = [
     { q: 'Can I use this serum daily?', a: 'Yes, our anti-aging serum is formulated for daily use. Apply it morning and evening after cleansing for best results. Consistent use helps maintain skin health and supports visible improvements over time.' },
     { q: 'Is this suitable for sensitive skin?', a: 'Our serum is dermatologically tested and formulated to be gentle. However, if you have very sensitive skin or specific concerns, we recommend doing a patch test first or consulting with a dermatologist before regular use.' },
@@ -296,9 +335,9 @@ function Homepage() {
           TIRED OF LOOKING OLDER THAN YOU FEEL?
         </div>
         
-        {/* Main Headline - Addresses Aging Problem Directly */}
+        {/* Main Headline - Dynamic Random Variation */}
         <h1 className="text-3xl font-bold text-gray-900 mb-3 leading-tight" data-testid="hero-title">
-          Reverse <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">10 Years</span> of Aging<br/>in Just 4 Weeks
+          {selectedHeadline.main} <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-emerald-500">{selectedHeadline.highlight}</span>{selectedHeadline.rest ? <><br/>{selectedHeadline.rest}</> : null}
         </h1>
         
         {/* Sub-headline - Solution Focused, Inclusive */}
