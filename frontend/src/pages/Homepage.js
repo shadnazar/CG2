@@ -252,23 +252,23 @@ function Homepage() {
     { main: "Say Goodbye to", highlight: "Fine Lines", rest: "Forever" },
     { main: "Wake Up", highlight: "10 Years Younger", rest: "Every Morning" },
     { main: "The Secret to", highlight: "Ageless Skin", rest: "Finally Revealed" },
-    { main: "Transform Your Skin", highlight: "Overnight", rest: "— Guaranteed" },
+    { main: "Transform Your Skin", highlight: "Overnight", rest: "Guaranteed Results" },
     { main: "Reclaim Your", highlight: "20s Skin", rest: "at Any Age" },
     { main: "Defy", highlight: "Aging", rest: "Like Bollywood Stars Do" },
     { main: "Your", highlight: "Wrinkles", rest: "Don't Stand a Chance" },
-    { main: "Look", highlight: "5-10 Years Younger", rest: "in Just Weeks" },
-    { main: "The", highlight: "Anti-Aging Secret", rest: "50,000+ Indians Swear By" },
+    { main: "Look", highlight: "5 to 10 Years Younger", rest: "in Just Weeks" },
+    { main: "The", highlight: "Anti Aging Secret", rest: "50,000+ Indians Swear By" },
     { main: "Finally:", highlight: "Firm, Tight Skin", rest: "Without Surgery" },
     { main: "Stop Aging", highlight: "in Its Tracks", rest: "Starting Today" },
     { main: "Discover Your", highlight: "Fountain of Youth", rest: "in a Bottle" },
-    { main: "Age is Just a Number —", highlight: "Prove It", rest: "with Your Skin" },
+    { main: "Age is Just a Number", highlight: "Prove It", rest: "with Your Skin" },
     { main: "From Tired to", highlight: "Radiant", rest: "in 14 Days" },
     { main: "Your Best Skin", highlight: "at 50", rest: "Starts Here" },
     { main: "Clinically Proven to", highlight: "Reduce Wrinkles 87%", rest: "" },
     { main: "The", highlight: "One Serum", rest: "That Actually Works" },
-    { main: "Younger-Looking Skin", highlight: "Guaranteed", rest: "or Money Back" },
+    { main: "Younger Looking Skin", highlight: "Guaranteed", rest: "or Money Back" },
     { main: "Why Look", highlight: "Your Age", rest: "When You Don't Have To?" },
-    { main: "India's #1", highlight: "Anti-Aging", rest: "Solution is Here" },
+    { main: "India's #1", highlight: "Anti Aging", rest: "Solution is Here" },
   ];
 
   // Get random headline (stays same for session)
@@ -318,7 +318,7 @@ function Homepage() {
 
       {/* Announcement Bar */}
       <div className="announcement-bar">
-        🧬 Clinically Proven Anti-Aging Formula | Trusted by 50,000+ Women Across India ✨
+        🧬 Clinically Proven Anti Aging Formula | Trusted by 50,000+ Women Across India ✨
       </div>
 
       {/* Urgency Banner */}
@@ -347,7 +347,7 @@ function Homepage() {
         
         {/* Sub-headline - Solution Focused, Inclusive */}
         <p className="text-gray-600 mb-4 text-lg" data-testid="hero-description">
-          India's #1 Premium Anti-Aging Serum for <strong>Wrinkles, Fine Lines & Dull Skin</strong>
+          India's #1 Premium Anti Aging Serum for <strong>Wrinkles, Fine Lines & Dull Skin</strong>
         </p>
 
         {/* Key Benefits - Quick Trust Builders */}
@@ -381,13 +381,13 @@ function Homepage() {
           className="btn-cg-primary"
           data-testid="hero-cta"
         >
-          Start My Anti-Aging Journey — ₹{PREPAID_PRICE}
+          Start My Anti Aging Journey  ₹{PREPAID_PRICE}
           <ChevronRight size={20} />
         </button>
 
         {/* Trust Elements */}
         <p className="text-xs text-gray-500 mt-3">
-          ✓ Free Delivery &nbsp; ✓ COD Available &nbsp; ✓ 30-Day Money Back Guarantee
+          ✓ Free Delivery &nbsp; ✓ COD Available &nbsp; ✓ 30 Day Money Back Guarantee
         </p>
 
         {/* Age-Specific Social Proof */}
@@ -644,7 +644,7 @@ function Homepage() {
           className="btn-cg-primary w-full mt-6"
           data-testid="order-now-cta"
         >
-          Order Now — ₹{PREPAID_PRICE}
+          Order Now  ₹{PREPAID_PRICE}
           <ChevronRight size={20} />
         </button>
       </section>
@@ -731,7 +731,7 @@ function Homepage() {
           className="btn-cg-primary"
           data-testid="final-cta"
         >
-          Order Now — ₹{PREPAID_PRICE}
+          Order Now  ₹{PREPAID_PRICE}
           <ChevronRight size={20} />
         </button>
       </section>

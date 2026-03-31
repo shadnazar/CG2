@@ -589,7 +589,7 @@ function ProductPage() {
             className="btn-cg-primary w-full py-4"
             data-testid="buy-now-button"
           >
-            Order Now — ₹{PREPAID_PRICE}
+            Order Now  ₹{PREPAID_PRICE}
             <ChevronRight size={20} />
           </button>
 
@@ -1095,6 +1095,31 @@ function ProductPage() {
           <div className="mt-6">
             <p className="font-semibold text-gray-900 mb-3">Payment Method</p>
             
+            {/* Price Breakdown - Shows FREE charges for conversion */}
+            <div className="mb-4 p-3 bg-gray-50 rounded-xl text-sm space-y-1.5">
+              <div className="flex justify-between text-gray-600">
+                <span>Product Price</span>
+                <span className="line-through text-gray-400">₹1,499</span>
+              </div>
+              <div className="flex justify-between text-green-600">
+                <span>Discount ({discountApplied ? '65%' : '60%'} OFF)</span>
+                <span>- ₹{discountApplied ? 1499 - getFinalPrepaidPrice() : 1499 - PREPAID_PRICE}</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Shipping</span>
+                <span className="text-green-600 font-medium">FREE ₹0</span>
+              </div>
+              <div className="flex justify-between text-gray-600">
+                <span>Tax/GST</span>
+                <span className="text-green-600 font-medium">Included ₹0</span>
+              </div>
+              <div className="h-px bg-gray-200 my-2"></div>
+              <div className="flex justify-between font-bold text-gray-900 text-base">
+                <span>Total</span>
+                <span className="text-green-600">₹{paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice()}</span>
+              </div>
+            </div>
+            
             <div className="space-y-2">
               <label 
                 className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'prepaid' ? 'border-green-500 bg-green-50' : 'border-gray-200 bg-white'}`}
@@ -1112,7 +1137,7 @@ function ProductPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900 text-sm">
-                    Pay Online — {discountApplied && <span className="line-through text-gray-400">₹{PREPAID_PRICE}</span>} ₹{getFinalPrepaidPrice()}
+                    Pay Online  {discountApplied && <span className="line-through text-gray-400">₹{PREPAID_PRICE}</span>} ₹{getFinalPrepaidPrice()}
                   </p>
                   <p className="text-green-600 text-xs">💰 {discountApplied ? 'Extra ₹50 discount applied!' : `Save ₹${COD_PRICE - PREPAID_PRICE} + Fast Delivery`}</p>
                 </div>
@@ -1135,7 +1160,7 @@ function ProductPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900 text-sm">
-                    Cash on Delivery — {discountApplied && <span className="line-through text-gray-400">₹{COD_PRICE}</span>} ₹{getFinalCodPrice()}
+                    Cash on Delivery  {discountApplied && <span className="line-through text-gray-400">₹{COD_PRICE}</span>} ₹{getFinalCodPrice()}
                   </p>
                   <p className="text-gray-500 text-xs">Pay ₹{Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} now + ₹{getFinalCodPrice() - Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} on delivery</p>
                 </div>

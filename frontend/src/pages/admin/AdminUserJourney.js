@@ -27,7 +27,7 @@ function AdminUserJourney() {
   const [loadingJourney, setLoadingJourney] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [activeTab, setActiveTab] = useState('overview'); // overview, visitors, insights
-  const itemsPerPage = 20;
+  const itemsPerPage = 50; // Increased from 20 to 50 per page
 
   const fetchData = useCallback(async () => {
     if (!adminToken) {
@@ -501,6 +501,13 @@ function AdminUserJourney() {
                                   {visitor.profile?.name || visitor.name || visitorId?.substring(0, 16) + '...'}
                                 </p>
                                 <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
+                                  {/* First Seen */}
+                                  {(visitor.first_seen || visitor.profile?.first_seen) && (
+                                    <span className="flex items-center gap-1 text-blue-600">
+                                      <Calendar className="w-3 h-3" />
+                                      {new Date(visitor.first_seen || visitor.profile?.first_seen).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                                    </span>
+                                  )}
                                   {/* Device Type */}
                                   <span className="flex items-center gap-1">
                                     <DeviceIcon className="w-3 h-3" />

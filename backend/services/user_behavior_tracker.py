@@ -214,13 +214,16 @@ class UserBehaviorTracker:
             {"_id": 0}
         ).sort("last_seen", -1).limit(limit).to_list(limit)
         
-        # Enrich with page count
+        # Enrich with page count and normalize first_seen access
         for visitor in visitors:
             vid = visitor.get("visitor_id")
             page_count = await self.db.user_page_visits.count_documents({"visitor_id": vid})
             action_count = await self.db.user_actions.count_documents({"visitor_id": vid})
             visitor["pages_visited"] = page_count
             visitor["actions_count"] = action_count
+            # Ensure first_seen is accessible at top level
+            if not visitor.get("first_seen"):
+                visitor["first_seen"] = visitor.get("profile", {}).get("first_seen")
         
         return visitors
     
@@ -277,36 +280,28 @@ class UserBehaviorTracker:
             "selected_date": date
         }
     
-    async def get_visitors_by_date(self, date: str) -> List[dict]:
-        """Get all visitors for a specific date"""
-        start = f"{date}T00:00:00"
-        end = f"{date}T23:59:59"
-        
-        # Get visitors who had activity on this date
+    async def get_visitors_by_date(self, date: str, limit: int = 1000) -> List[dict]:
+        """Get all visitors for a specific date with proper pagination support"""
+        # Use the explicit date field for reliable queries
         page_visits = await self.db.user_page_visits.find(
-            {"timestamp": {"$gte": start, "$lte": end}},
+            {"date": date},
             {"_id": 0, "visitor_id": 1}
-        ).to_list(10000)
+        ).to_list(50000)
         
         visitor_ids = list(set(v.get("visitor_id") for v in page_visits if v.get("visitor_id")))
         
-        visitors = []
-        for vid in visitor_ids[:100]:  # Limit to 100
-            journey = await self.get_visitor_journey(vid)
-            
-            # Filter to only this date's activity
-            date_visits = [v for v in journey["page_visits"] if v.get("date") == date]
-            date_actions = [a for a in journey["actions"] if a.get("date") == date]
-            
-            visitors.append({
-                "visitor_id": vid,
-                "profile": journey["profile"],
-                "visits_today": len(date_visits),
-                "actions_today": len(date_actions),
-                "pages_visited": list(set(v.get("page") for v in date_visits)),
-                "first_visit_time": date_visits[0].get("timestamp") if date_visits else None,
-                "last_visit_time": date_visits[-1].get("timestamp") if date_visits else None,
-                "time_by_page": journey["time_by_page"]
-            })
+        # Get profiles for all these visitors - no internal limit
+        visitors = await self.db.visitor_profiles.find(
+            {"visitor_id": {"$in": visitor_ids}},
+            {"_id": 0}
+        ).sort("last_seen", -1).limit(limit).to_list(limit)
+        
+        # Enrich with page/action counts
+        for visitor in visitors:
+            vid = visitor.get("visitor_id")
+            page_count = await self.db.user_page_visits.count_documents({"visitor_id": vid, "date": date})
+            action_count = await self.db.user_actions.count_documents({"visitor_id": vid, "date": date})
+            visitor["pages_visited"] = page_count
+            visitor["actions_count"] = action_count
         
         return visitors

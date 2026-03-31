@@ -565,23 +565,33 @@ async def send_push_notification(
     data: PushNotificationRequest,
     x_admin_token: str = Header(None, alias="X-Admin-Token")
 ):
-    """Send push notification to all or specific visitors"""
+    """Send in-site notification to all visitors (visible when browsing)"""
     if x_admin_token != "celestaglow2024":
         raise HTTPException(status_code=401, detail="Unauthorized")
     
-    # Get subscriptions
+    notification_id = f"notif_{uuid.uuid4().hex[:8]}"
+    now = datetime.now(timezone.utc)
+    
+    # Store as a GLOBAL broadcast notification (for in-site display)
+    broadcast_doc = {
+        "notification_id": notification_id,
+        "title": data.title,
+        "body": data.body,
+        "url": data.url or "/",
+        "created_at": now.isoformat(),
+        "expires_at": (now + timedelta(hours=24)).isoformat(),  # Expires in 24 hours
+        "active": True
+    }
+    
+    await db.broadcast_notifications.insert_one(broadcast_doc)
+    
+    # Also send to push subscribers if any
+    push_sent = 0
     query = {"active": True}
     if data.visitor_ids:
         query["visitor_id"] = {"$in": data.visitor_ids}
     
     subscriptions = await db.push_subscriptions.find(query, {"_id": 0}).to_list(1000)
-    
-    sent_count = 0
-    failed_count = 0
-    
-    # Note: In production, you'd use a push service like Firebase or web-push library
-    # For now, we store the notification for display when user returns
-    notification_id = f"notif_{uuid.uuid4().hex[:8]}"
     
     for sub in subscriptions:
         try:
@@ -591,13 +601,12 @@ async def send_push_notification(
                 "title": data.title,
                 "body": data.body,
                 "url": data.url,
-                "created_at": datetime.now(timezone.utc).isoformat(),
+                "created_at": now.isoformat(),
                 "read": False
             })
-            sent_count += 1
+            push_sent += 1
         except Exception as e:
-            failed_count += 1
-            logging.error(f"Failed to queue notification: {e}")
+            logging.error(f"Failed to queue push notification: {e}")
     
     # Log the notification broadcast
     await db.notification_logs.insert_one({
@@ -605,16 +614,16 @@ async def send_push_notification(
         "title": data.title,
         "body": data.body,
         "url": data.url,
-        "sent_at": datetime.now(timezone.utc).isoformat(),
-        "total_recipients": sent_count,
-        "failed": failed_count
+        "sent_at": now.isoformat(),
+        "push_recipients": push_sent,
+        "type": "broadcast"
     })
     
     return {
         "success": True,
         "notification_id": notification_id,
-        "sent_count": sent_count,
-        "failed_count": failed_count
+        "message": "Broadcast sent! All visitors will see this notification.",
+        "push_subscribers_notified": push_sent
     }
 
 @api_router.get("/notifications/pending/{visitor_id}")
@@ -626,6 +635,38 @@ async def get_pending_notifications(visitor_id: str):
     ).sort("created_at", -1).to_list(10)
     
     return {"notifications": notifications}
+
+
+@api_router.get("/notifications/broadcast")
+async def get_active_broadcasts():
+    """Get active broadcast notifications for in-site display"""
+    now = datetime.now(timezone.utc).isoformat()
+    
+    broadcasts = await db.broadcast_notifications.find(
+        {
+            "active": True,
+            "expires_at": {"$gte": now}
+        },
+        {"_id": 0}
+    ).sort("created_at", -1).limit(5).to_list(5)
+    
+    return {"broadcasts": broadcasts}
+
+
+@api_router.post("/notifications/dismiss-broadcast")
+async def dismiss_broadcast(data: dict):
+    """Track which broadcast a visitor has dismissed"""
+    visitor_id = data.get("visitor_id")
+    notification_id = data.get("notification_id")
+    
+    if visitor_id and notification_id:
+        await db.dismissed_broadcasts.update_one(
+            {"visitor_id": visitor_id, "notification_id": notification_id},
+            {"$set": {"dismissed_at": datetime.now(timezone.utc).isoformat()}},
+            upsert=True
+        )
+    
+    return {"success": True}
 
 @api_router.post("/notifications/mark-read/{visitor_id}")
 async def mark_notifications_read(visitor_id: str):

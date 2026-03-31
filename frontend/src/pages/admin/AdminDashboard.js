@@ -166,12 +166,12 @@ function AdminDashboard() {
       });
       
       if (res.data.success) {
-        alert(`Notification sent to ${res.data.sent_count} subscribers!`);
+        alert(res.data.message || 'Broadcast notification sent successfully! All website visitors will see this.');
         setShowBroadcastModal(false);
         setBroadcastData({ title: '', body: '' });
       }
     } catch (err) {
-      alert('Failed to send notification');
+      alert('Failed to send notification: ' + (err.response?.data?.detail || err.message));
     } finally {
       setBroadcastSending(false);
     }
