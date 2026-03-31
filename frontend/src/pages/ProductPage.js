@@ -7,7 +7,6 @@ import {
   trackViewContent,
   trackInitiateCheckout,
   trackAddPaymentInfo,
-  trackPurchase,
   trackCTAClick,
   trackExitIntent
 } from '../utils/metaPixel';
@@ -54,31 +53,12 @@ function ProductPage() {
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [exitPopupShown, setExitPopupShown] = useState(false);
 
-  // Track checkout visits when step changes
+  // Track checkout visits when step changes (for internal analytics only - InitiateCheckout is fired on button click)
   useEffect(() => {
     if (step === 'checkout' && sessionId) {
-      // Track checkout page visit
+      // Track checkout page visit for internal analytics
       axios.post(`${API}/track-visit?page=checkout&session_id=${sessionId}`).catch(() => {});
       trackPageVisit('checkout');
-      trackInitiateCheckout(PREPAID_PRICE);
-      
-      // Direct fbq call as backup for InitiateCheckout
-      setTimeout(() => {
-        if (typeof window !== 'undefined' && window.fbq) {
-          try {
-            window.fbq('track', 'InitiateCheckout', {
-              content_category: 'Skincare',
-              content_ids: ['celestaglow_serum_001'],
-              num_items: 1,
-              value: 599.00,
-              currency: 'INR'
-            });
-            console.log('[Meta Pixel Direct] InitiateCheckout fired');
-          } catch(e) {
-            console.error('[Meta Pixel Direct] InitiateCheckout error:', e);
-          }
-        }
-      }, 500);
       
       // Track action for user journey
       trackAction('view_checkout', { step: 'checkout_started' });
@@ -314,32 +294,9 @@ function ProductPage() {
               discount_applied: discountApplied ? discountAmount : 0
             });
             
-            setOrderConfirmed(order.data);
-            setStep('confirmation');
-            
-            // Track Purchase with order_id - CRITICAL for conversion tracking
-            trackPurchase(order.data.order_id, finalPrice);
-            
-            // Direct fbq call as BACKUP for Purchase - ensures event fires even if module has issues
-            setTimeout(() => {
-              if (typeof window !== 'undefined' && window.fbq) {
-                try {
-                  window.fbq('track', 'Purchase', {
-                    value: finalPrice,
-                    currency: 'INR',
-                    content_name: 'Super Anti-Aging Serum',
-                    content_category: 'Skincare',
-                    content_ids: ['celestaglow_serum_001'],
-                    content_type: 'product',
-                    num_items: 1,
-                    order_id: order.data.order_id
-                  });
-                  console.log('[Meta Pixel Direct] Purchase fired - order_id:', order.data.order_id, 'value:', finalPrice);
-                } catch(e) {
-                  console.error('[Meta Pixel Direct] Purchase error:', e);
-                }
-              }
-            }, 500);
+            // REDIRECT to Order Success Page - Meta Pixel will fire Purchase there
+            // This creates a real URL change that Meta can track properly
+            navigate(`/order-success/${order.data.order_id}`);
           } catch (error) {
             alert('Order creation failed. Please contact support.');
           }
@@ -586,6 +543,22 @@ function ProductPage() {
           <button
             onClick={() => {
               trackCTAClick('buy_now_main', 'product_page');
+              
+              // CRITICAL: Fire InitiateCheckout on BUTTON CLICK (not page render)
+              trackInitiateCheckout(PREPAID_PRICE);
+              
+              // Direct fbq call for InitiateCheckout - fires immediately on click
+              if (typeof window !== 'undefined' && window.fbq) {
+                window.fbq('track', 'InitiateCheckout', {
+                  content_category: 'Skincare',
+                  content_ids: ['celestaglow_serum_001'],
+                  num_items: 1,
+                  value: PREPAID_PRICE,
+                  currency: 'INR'
+                });
+                console.log('[Meta Pixel] InitiateCheckout fired on Buy Now click');
+              }
+              
               setStep('checkout');
             }}
             className="btn-cg-primary w-full py-4"
@@ -767,6 +740,22 @@ function ProductPage() {
             <button
               onClick={() => {
                 trackCTAClick('buy_now_sticky', 'product_page_sticky');
+                
+                // CRITICAL: Fire InitiateCheckout on BUTTON CLICK (not page render)
+                trackInitiateCheckout(PREPAID_PRICE);
+                
+                // Direct fbq call for InitiateCheckout - fires immediately on click
+                if (typeof window !== 'undefined' && window.fbq) {
+                  window.fbq('track', 'InitiateCheckout', {
+                    content_category: 'Skincare',
+                    content_ids: ['celestaglow_serum_001'],
+                    num_items: 1,
+                    value: PREPAID_PRICE,
+                    currency: 'INR'
+                  });
+                  console.log('[Meta Pixel] InitiateCheckout fired on Sticky Buy click');
+                }
+                
                 setStep('checkout');
               }}
               className="bg-gradient-to-r from-green-500 to-green-600 text-white font-bold py-3.5 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
@@ -825,6 +814,22 @@ function ProductPage() {
                     trackCTAClick('exit_popup_buy', 'exit_popup');
                     // Track the discount claim
                     trackAction('exit_discount_claimed', { amount: EXIT_DISCOUNT_AMOUNT });
+                    
+                    // CRITICAL: Fire InitiateCheckout on BUTTON CLICK (not page render)
+                    const discountedPrice = PREPAID_PRICE - EXIT_DISCOUNT_AMOUNT;
+                    trackInitiateCheckout(discountedPrice);
+                    
+                    // Direct fbq call for InitiateCheckout - fires immediately on click
+                    if (typeof window !== 'undefined' && window.fbq) {
+                      window.fbq('track', 'InitiateCheckout', {
+                        content_category: 'Skincare',
+                        content_ids: ['celestaglow_serum_001'],
+                        num_items: 1,
+                        value: discountedPrice,
+                        currency: 'INR'
+                      });
+                      console.log('[Meta Pixel] InitiateCheckout fired on Exit Popup Buy click');
+                    }
                     
                     // Also track to backend
                     try {
@@ -1138,70 +1143,6 @@ function ProductPage() {
             ← Back to Product
           </button>
         </div>
-      </div>
-    );
-  }
-
-  // Order Confirmation
-  if (step === 'confirmation' && orderConfirmed) {
-    return (
-      <div className="px-5 py-8 min-h-screen">
-        <div className="text-center mb-6">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Check size={32} className="text-green-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-1" data-testid="confirmation-title">
-            Order Confirmed! 🎉
-          </h1>
-          <p className="text-gray-500">Thank you for choosing Celesta Glow</p>
-        </div>
-
-        <div className="card-cg text-center mb-5" data-testid="order-id-card">
-          <p className="text-gray-500 text-sm mb-1">Order ID</p>
-          <p className="text-2xl font-bold text-green-500 tracking-wider">{orderConfirmed.order_id}</p>
-        </div>
-
-        <div className="space-y-4">
-          <div className="card-cg">
-            <p className="font-semibold text-gray-900 mb-3">Order Details</p>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-gray-500">Product</span>
-                <span className="text-gray-900 font-medium">Super Anti-Aging Serum</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Amount</span>
-                <span className="text-green-500 font-bold">₹{orderConfirmed.amount}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Payment</span>
-                <span className="text-gray-900">{orderConfirmed.payment_method}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-500">Delivery</span>
-                <span className="text-gray-900">{orderConfirmed.delivery_timeline}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="card-cg">
-            <p className="font-semibold text-gray-900 mb-3">Delivery Address</p>
-            <p className="text-gray-600 text-sm">
-              {orderConfirmed.name}<br />
-              +91 {orderConfirmed.phone}<br />
-              {orderConfirmed.house_number}, {orderConfirmed.area}<br />
-              {orderConfirmed.state} - {orderConfirmed.pincode}
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={() => navigate('/')}
-          className="btn-cg-dark w-full mt-6"
-          data-testid="continue-shopping-button"
-        >
-          Continue Shopping
-        </button>
       </div>
     );
   }

@@ -5,6 +5,7 @@ import ScrollToTop from './components/ScrollToTop';
 import WhatsAppButton from './components/WhatsAppButton';
 import Homepage from './pages/Homepage';
 import ProductPage from './pages/ProductPage';
+import OrderSuccessPage from './pages/OrderSuccessPage';
 import BlogList from './pages/BlogList';
 import BlogPost from './pages/BlogPost';
 import LocationPage from './pages/LocationPage';
@@ -67,6 +68,7 @@ function App() {
         {/* Public Routes (with navigation) */}
         <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />
         <Route path="/product/:slug" element={<PublicLayout><ProductPage /></PublicLayout>} />
+        <Route path="/order-success/:orderId" element={<PublicLayout><OrderSuccessPage /></PublicLayout>} />
         <Route path="/blog" element={<PublicLayout><BlogList /></PublicLayout>} />
         <Route path="/blog/:slug" element={<PublicLayout><BlogPost /></PublicLayout>} />
         <Route path="/search" element={<PublicLayout><SearchResults /></PublicLayout>} />

@@ -101,9 +101,12 @@ Build an AI-driven e-commerce website for Celesta Glow anti-aging serum with:
 #### 7. Meta Pixel Integration (ID: 690863659974240)
 **Strict Single-Page Checkout Blueprint Implementation** (Mar 31, 2026):
 - **ViewContent**: Fires on product page load via module + direct inline backup + HTML-level auto-fire
-- **InitiateCheckout**: Fires on "Buy Now" button click via module + direct inline backup
-- **Purchase**: Fires in Razorpay `onSuccess` callback via module + direct inline backup with:
-  - `value` (dynamic final price)
+- **InitiateCheckout**: Fires on **BUTTON CLICK** (all 3 Buy Now buttons) via module + direct fbq call
+  - Main "Order Now" button
+  - Sticky bottom "Buy Now" button
+  - Exit-intent popup "Claim ₹100 OFF & Buy Now" button
+- **Purchase**: Fires on **SEPARATE ORDER SUCCESS PAGE** (`/order-success/:orderId`) via module + direct fbq call with:
+  - `value` (dynamic final price from order)
   - `currency` ('INR')
   - `content_ids` (['celestaglow_serum_001'])
   - `content_type` ('product')
