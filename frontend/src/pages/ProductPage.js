@@ -550,6 +550,9 @@ function ProductPage() {
             </div>
           </div>
 
+          {/* Dermatologist Recommendations - After Active Ingredients */}
+          <DermatologistSection />
+
           {/* Trust Badges - ENHANCED */}
           <div className="grid grid-cols-3 gap-2 py-5 border-y border-gray-100 mb-5">
             {[
@@ -718,9 +721,6 @@ function ProductPage() {
             </div>
           </div>
         </div>
-
-      {/* Dermatologist Recommendations Section */}
-      <DermatologistSection />
 
       {/* Trust Badges Section */}
       <div className="px-4 pb-32">

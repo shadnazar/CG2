@@ -466,6 +466,9 @@ function Homepage() {
         </div>
       </section>
 
+      {/* Dermatologist Recommendations - After "Do You Relate" */}
+      <DermatologistSection />
+
       {/* Trust Badges */}
       <section className="px-5 py-4">
         <div className="flex justify-around">
@@ -694,9 +697,6 @@ function Homepage() {
           </div>
         </div>
       </section>
-
-      {/* Dermatologist Recommendations Section */}
-      <DermatologistSection />
 
       {/* FAQ */}
       <section className="px-5 py-8">
