@@ -69,35 +69,151 @@ function BlogList() {
     }
   };
 
-  // Detect user location
+  // Detect user location from stored data or browser geolocation
   const detectUserLocation = async () => {
-    // Try to get rough location from timezone/IP
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    // First check if we have stored location from previous permission
+    const storedLocation = localStorage.getItem('userLocation');
+    if (storedLocation) {
+      try {
+        const location = JSON.parse(storedLocation);
+        // Try to get the place info if stored
+        const storedPlace = localStorage.getItem('userLocationPlace');
+        if (storedPlace) {
+          const place = JSON.parse(storedPlace);
+          if (place.state) {
+            setUserLocation(place.state);
+            return;
+          }
+          if (place.city) {
+            setUserLocation(place.city);
+            return;
+          }
+        }
+        
+        // If we have lat/long but no place, try to reverse geocode
+        if (location.latitude && location.longitude) {
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${location.latitude}&lon=${location.longitude}&zoom=10`,
+              { headers: { 'User-Agent': 'CelestaGlow/1.0' } }
+            );
+            if (response.ok) {
+              const data = await response.json();
+              const address = data.address || {};
+              const state = address.state || '';
+              const city = address.city || address.town || address.village || '';
+              
+              // Store place info for future use
+              localStorage.setItem('userLocationPlace', JSON.stringify({
+                city, state, country: address.country || 'India'
+              }));
+              
+              setUserLocation(state || city);
+              return;
+            }
+          } catch (e) {
+            console.log('Reverse geocode error:', e);
+          }
+        }
+      } catch (e) {
+        console.log('Location parse error:', e);
+      }
+    }
     
-    // Default to a random Indian city for demo
-    const randomCity = INDIAN_CITIES[Math.floor(Math.random() * INDIAN_CITIES.length)];
-    setUserLocation(randomCity);
+    // Fallback: Check if user granted permission recently
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const { latitude, longitude } = position.coords;
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=10`,
+              { headers: { 'User-Agent': 'CelestaGlow/1.0' } }
+            );
+            if (response.ok) {
+              const data = await response.json();
+              const address = data.address || {};
+              const state = address.state || '';
+              const city = address.city || address.town || address.village || '';
+              
+              // Store for future use
+              localStorage.setItem('userLocation', JSON.stringify({ latitude, longitude }));
+              localStorage.setItem('userLocationPlace', JSON.stringify({
+                city, state, country: address.country || 'India'
+              }));
+              
+              setUserLocation(state || city);
+            }
+          } catch (e) {
+            console.log('Geocode error:', e);
+          }
+        },
+        () => {
+          // Permission denied or error - use default
+          console.log('Location permission not granted');
+        },
+        { timeout: 5000, maximumAge: 300000 }
+      );
+    }
   };
 
-  // Filter blogs by location
+  // Nearby states mapping for fallback
+  const NEARBY_STATES = {
+    'Maharashtra': ['Gujarat', 'Goa', 'Karnataka', 'Madhya Pradesh'],
+    'Delhi': ['Haryana', 'Uttar Pradesh', 'Rajasthan', 'Punjab'],
+    'Karnataka': ['Maharashtra', 'Goa', 'Tamil Nadu', 'Kerala', 'Andhra Pradesh'],
+    'Tamil Nadu': ['Kerala', 'Karnataka', 'Andhra Pradesh', 'Puducherry'],
+    'Gujarat': ['Maharashtra', 'Rajasthan', 'Madhya Pradesh'],
+    'Uttar Pradesh': ['Delhi', 'Bihar', 'Madhya Pradesh', 'Rajasthan', 'Haryana'],
+    'West Bengal': ['Bihar', 'Jharkhand', 'Odisha', 'Assam'],
+    'Rajasthan': ['Gujarat', 'Madhya Pradesh', 'Haryana', 'Punjab', 'Delhi'],
+    'Kerala': ['Tamil Nadu', 'Karnataka'],
+    'Andhra Pradesh': ['Tamil Nadu', 'Karnataka', 'Telangana', 'Odisha'],
+    'Telangana': ['Andhra Pradesh', 'Maharashtra', 'Karnataka', 'Odisha'],
+    'Punjab': ['Haryana', 'Himachal Pradesh', 'Rajasthan', 'Delhi'],
+    'Haryana': ['Delhi', 'Punjab', 'Rajasthan', 'Uttar Pradesh'],
+    'Bihar': ['Uttar Pradesh', 'Jharkhand', 'West Bengal'],
+    'Odisha': ['West Bengal', 'Jharkhand', 'Andhra Pradesh', 'Chhattisgarh'],
+  };
+
+  // Filter blogs by location - with nearby states fallback
   useEffect(() => {
     if (userLocation && blogs.length > 0) {
-      const locationBlogs = blogs.filter(blog => {
+      const userLoc = userLocation.toLowerCase();
+      
+      // First try exact match
+      let locationBlogs = blogs.filter(blog => {
         const title = (blog.title || '').toLowerCase();
         const content = (blog.content || '').toLowerCase();
-        const location = (blog.target_location || '').toLowerCase();
-        const userLoc = userLocation.toLowerCase();
+        const location = (blog.location_target || blog.target_location || '').toLowerCase();
         
         return title.includes(userLoc) || content.includes(userLoc) || location.includes(userLoc);
       });
-      setLocalBlogs(locationBlogs);
+      
+      // If no exact match, try nearby states
+      if (locationBlogs.length === 0) {
+        const nearbyStates = NEARBY_STATES[userLocation] || [];
+        if (nearbyStates.length > 0) {
+          locationBlogs = blogs.filter(blog => {
+            const title = (blog.title || '').toLowerCase();
+            const location = (blog.location_target || blog.target_location || '').toLowerCase();
+            
+            return nearbyStates.some(nearby => 
+              title.includes(nearby.toLowerCase()) || location.includes(nearby.toLowerCase())
+            );
+          });
+        }
+      }
+      
+      // Limit to top 4 for display
+      setLocalBlogs(locationBlogs.slice(0, 4));
     }
   }, [userLocation, blogs]);
 
   const filteredBlogs = blogs.filter(blog => {
     try {
       // Safe search with null checks
-      const searchLower = (searchQuery || '').toLowerCase().trim();
+      let searchLower = (searchQuery || '').toLowerCase().trim();
       
       if (!searchLower) {
         // No search query - just filter by category
@@ -106,23 +222,34 @@ function BlogList() {
         return matchesCategory && blog.status === 'published';
       }
       
+      // Normalize search - replace spaces with hyphens and vice versa for flexible matching
+      const searchVariants = [
+        searchLower,
+        searchLower.replace(/\s+/g, '-'),  // "anti aging" -> "anti-aging"
+        searchLower.replace(/-/g, ' '),    // "anti-aging" -> "anti aging"
+      ];
+      
       // Search in all fields with null safety
       const title = (blog.title || '').toLowerCase();
       const meta = (blog.meta_description || '').toLowerCase();
       const content = (blog.content || '').toLowerCase();
-      const keywords = (blog.keywords || '').toLowerCase();
+      // keywords might be array or string - handle both
+      const keywordsArr = Array.isArray(blog.keywords) ? blog.keywords : [];
+      const keywordsStr = typeof blog.keywords === 'string' ? blog.keywords.toLowerCase() : keywordsArr.join(' ').toLowerCase();
       const category = (blog.category || '').toLowerCase();
       const location = (blog.location_target || '').toLowerCase();
-      const tags = (blog.tags || []);
+      const tags = Array.isArray(blog.tags) ? blog.tags : [];
       
-      const matchesSearch = 
-        title.includes(searchLower) ||
-        meta.includes(searchLower) ||
-        content.includes(searchLower) ||
-        keywords.includes(searchLower) ||
-        category.includes(searchLower) ||
-        location.includes(searchLower) ||
-        tags.some(tag => (tag || '').toLowerCase().includes(searchLower));
+      // Check if any search variant matches
+      const matchesSearch = searchVariants.some(variant => 
+        title.includes(variant) ||
+        meta.includes(variant) ||
+        content.includes(variant) ||
+        keywordsStr.includes(variant) ||
+        category.includes(variant) ||
+        location.includes(variant) ||
+        tags.some(tag => (tag || '').toLowerCase().includes(variant))
+      );
       
       const matchesCategory = selectedCategory === 'all' || 
         category === selectedCategory.toLowerCase();

@@ -583,15 +583,35 @@ async def claim_visitor_discount(lead: VisitorLeadCreate):
 
 # ==================== ADMIN ANALYTICS ENDPOINTS ====================
 
+ADMIN_PASSWORD = "celestaglow2024"
+
 def verify_admin_token(x_admin_token: str = Header(None)):
-    """Verify admin token"""
-    import hashlib
-    ADMIN_PASSWORD_HASH = hashlib.sha256("celestaglow2024".encode()).hexdigest()
+    """Verify admin token - accepts both plain password and hashed token"""
     if not x_admin_token:
         raise HTTPException(status_code=401, detail="Admin token required")
+    
+    # Accept plain password for simplicity
+    if x_admin_token == ADMIN_PASSWORD:
+        return True
+    
+    # Also check if it matches the token (for backward compatibility)
+    import hashlib
+    ADMIN_PASSWORD_HASH = hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest()
     if hashlib.sha256(x_admin_token.encode()).hexdigest() != ADMIN_PASSWORD_HASH:
         raise HTTPException(status_code=403, detail="Invalid admin token")
     return True
+
+
+class AdminLoginRequest(BaseModel):
+    password: str
+
+
+@api_router.post("/admin/login")
+async def admin_login(request: AdminLoginRequest):
+    """Admin login endpoint"""
+    if request.password == ADMIN_PASSWORD:
+        return {"success": True, "token": ADMIN_PASSWORD}
+    raise HTTPException(status_code=401, detail="Invalid password")
 
 
 @api_router.get("/admin/analytics/live")

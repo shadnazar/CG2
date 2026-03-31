@@ -107,7 +107,7 @@ function ProductPage() {
     axios.post(`${API}/track-visit?page=product&session_id=${currentSessionId}`).catch(() => {});
     
     // Meta Pixel - ViewContent (product page)
-    trackViewContent('Celesta Glow Advanced Face Serum', PREPAID_PRICE);
+    trackViewContent(PREPAID_PRICE);
 
     // Check if user has claimed discount
     checkDiscountStatus();
@@ -244,11 +244,7 @@ function ProductPage() {
     const amount = discountApplied ? Math.max(baseAmount - discountAmount, 0) : baseAmount;
     
     // Track InitiateCheckout
-    trackInitiateCheckout(
-      paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice(),
-      paymentMethod,
-      discountApplied
-    );
+    trackInitiateCheckout(paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice());
     
     try {
       const loaded = await loadRazorpay();
@@ -285,13 +281,8 @@ function ProductPage() {
             setOrderConfirmed(order.data);
             setStep('confirmation');
             
-            // Track Purchase with granular data
-            trackPurchase(
-              order.data.order_id,
-              finalPrice,
-              paymentMethod,
-              discountApplied
-            );
+            // Track Purchase with order_id - CRITICAL for conversion tracking
+            trackPurchase(order.data.order_id, finalPrice, paymentMethod);
           } catch (error) {
             alert('Order creation failed. Please contact support.');
           }
@@ -537,7 +528,7 @@ function ProductPage() {
           {/* Buy Button */}
           <button
             onClick={() => {
-              trackAddToCart('Celesta Glow Advanced Face Serum', PREPAID_PRICE);
+              trackAddToCart(PREPAID_PRICE);
               trackCTAClick('buy_now_main', 'product_page');
               setStep('checkout');
             }}
@@ -719,7 +710,7 @@ function ProductPage() {
             </div>
             <button
               onClick={() => {
-                trackAddToCart('Celesta Glow Advanced Face Serum', PREPAID_PRICE);
+                trackAddToCart(PREPAID_PRICE);
                 trackCTAClick('buy_now_sticky', 'product_page_sticky');
                 setStep('checkout');
               }}

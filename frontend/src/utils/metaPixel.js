@@ -39,47 +39,47 @@ export const trackPageView = (pageName, additionalParams = {}) => {
 
 // ==================== CONVERSION EVENTS ====================
 
+// Standard product data for all events
+const PRODUCT_DATA = {
+  content_name: 'Super Anti-Aging Serum',
+  content_category: 'Skincare',
+  content_ids: ['celestaglow_serum_001'],
+  content_type: 'product'
+};
+
 // When user views product details
-export const trackViewContent = (product, price) => {
+export const trackViewContent = (price = 599) => {
   if (!window.fbq) return;
   
   window.fbq('track', 'ViewContent', {
-    content_name: product || 'Celesta Glow Advanced Face Serum',
-    content_category: 'Anti-Aging Skincare',
-    content_type: 'product',
-    content_ids: ['celesta-glow-serum'],
-    value: price || 599,
+    ...PRODUCT_DATA,
+    value: price,
     currency: 'INR'
   });
 };
 
 // When user adds product to cart / clicks buy button
-export const trackAddToCart = (product, price, quantity = 1) => {
+export const trackAddToCart = (price = 599, quantity = 1) => {
   if (!window.fbq) return;
   
   window.fbq('track', 'AddToCart', {
-    content_name: product || 'Celesta Glow Advanced Face Serum',
-    content_type: 'product',
-    content_ids: ['celesta-glow-serum'],
-    value: price || 599,
+    ...PRODUCT_DATA,
+    value: price,
     currency: 'INR',
     num_items: quantity
   });
 };
 
-// When user starts checkout process
-export const trackInitiateCheckout = (price, paymentMethod, discountApplied = false) => {
+// When user starts checkout process (clicks Buy Now and lands on checkout)
+export const trackInitiateCheckout = (price = 599) => {
   if (!window.fbq) return;
   
   window.fbq('track', 'InitiateCheckout', {
-    content_name: 'Celesta Glow Advanced Face Serum',
-    content_type: 'product',
-    content_ids: ['celesta-glow-serum'],
-    value: price,
-    currency: 'INR',
+    content_category: 'Skincare',
+    content_ids: ['celestaglow_serum_001'],
     num_items: 1,
-    payment_method: paymentMethod,
-    discount_applied: discountApplied
+    value: price,
+    currency: 'INR'
   });
 };
 
@@ -88,29 +88,26 @@ export const trackAddPaymentInfo = (paymentMethod, price) => {
   if (!window.fbq) return;
   
   window.fbq('track', 'AddPaymentInfo', {
-    content_name: 'Celesta Glow Advanced Face Serum',
-    content_type: 'product',
-    content_ids: ['celesta-glow-serum'],
+    ...PRODUCT_DATA,
     value: price,
     currency: 'INR',
     payment_method: paymentMethod
   });
 };
 
-// When purchase is completed
-export const trackPurchase = (orderId, amount, paymentMethod, discountApplied = false) => {
+// When purchase is completed - CRITICAL EVENT
+export const trackPurchase = (orderId, amount, paymentMethod) => {
   if (!window.fbq) return;
   
   window.fbq('track', 'Purchase', {
-    content_name: 'Celesta Glow Advanced Face Serum',
-    content_type: 'product',
-    content_ids: ['celesta-glow-serum'],
     value: amount,
     currency: 'INR',
+    content_name: 'Super Anti-Aging Serum',
+    content_category: 'Skincare',
+    content_ids: ['celestaglow_serum_001'],
+    content_type: 'product',
     num_items: 1,
-    order_id: orderId,
-    payment_method: paymentMethod,
-    discount_applied: discountApplied
+    order_id: orderId
   });
 };
 
