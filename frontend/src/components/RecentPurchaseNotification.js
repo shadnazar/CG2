@@ -231,19 +231,18 @@ function RecentPurchaseNotification() {
         {/* Close button */}
         <button 
           onClick={handleDismiss}
-          className="absolute top-3 right-3 w-7 h-7 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all hover:scale-110 z-10"
+          className="absolute top-2.5 right-3 w-6 h-6 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all hover:scale-110 z-10"
           data-testid="close-notification-btn"
         >
-          <X size={16} className="text-gray-500" />
+          <X size={14} className="text-white" />
         </button>
         
-        {/* Header with gradient */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2.5 flex items-center gap-2">
-          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center">
+        {/* Header with gradient - added pr-10 for close button space */}
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2.5 pr-10 flex items-center gap-2">
+          <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
             <CheckCircle className="w-4 h-4 text-white" />
           </div>
           <span className="text-white text-sm font-semibold">New Order Placed</span>
-          <span className="ml-auto text-white/80 text-xs">Just now</span>
         </div>
         
         {/* Content */}
@@ -275,17 +274,19 @@ function RecentPurchaseNotification() {
             </div>
           </div>
           
-          {/* Footer with rating */}
+          {/* Footer with rating and timestamp */}
           <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} size={12} className="fill-yellow-400 text-yellow-400" />
-              ))}
-              <span className="text-xs text-gray-500 ml-1">4.8</span>
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-0.5">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} size={11} className="fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <span className="text-[10px] text-gray-400">Just now</span>
             </div>
-            <span className="text-xs text-green-600 font-medium flex items-center gap-1.5 bg-green-50 px-2 py-1 rounded-full">
-              <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              Verified Purchase
+            <span className="text-[10px] text-green-600 font-medium flex items-center gap-1 bg-green-50 px-2 py-1 rounded-full">
+              <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>
+              Verified
             </span>
           </div>
         </div>
