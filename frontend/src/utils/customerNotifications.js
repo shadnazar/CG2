@@ -33,6 +33,11 @@ let isShowingNotification = false;
 export const initCustomerNotifications = () => {
   if (isInitialized || typeof window === 'undefined') return;
   
+  // Record page load time - used to filter out old broadcasts
+  if (!window._celestaPageLoadTime) {
+    window._celestaPageLoadTime = Date.now();
+  }
+  
   audioElement = new Audio(NOTIFICATION_SOUND_URL);
   audioElement.volume = 0.15; // Very soft
   audioElement.preload = 'auto';
@@ -243,15 +248,27 @@ export const showBroadcastNotification = (broadcast) => {
 // Check for new broadcast notifications from admin
 export const checkBroadcastNotifications = async () => {
   try {
+    // Get page load time - only show broadcasts created AFTER page load
+    const pageLoadTime = window._celestaPageLoadTime || Date.now();
+    
     const res = await axios.get(`${API}/api/notifications/broadcast`);
     const broadcasts = res.data?.broadcasts || [];
     
-    // Only show the most recent one that hasn't been dismissed
+    // Only show broadcasts that:
+    // 1. Haven't been dismissed
+    // 2. Were created AFTER the user loaded the page (to avoid showing old broadcasts to new visitors)
     for (const broadcast of broadcasts.slice(0, 1)) {
-      if (!dismissedBroadcasts.has(broadcast.notification_id)) {
-        showBroadcastNotification(broadcast);
-        break; // Only show one
+      if (dismissedBroadcasts.has(broadcast.notification_id)) continue;
+      
+      // Check if broadcast was created after page load
+      const broadcastTime = new Date(broadcast.created_at).getTime();
+      if (broadcastTime < pageLoadTime) {
+        // This broadcast was created before user loaded the page - skip it
+        continue;
       }
+      
+      showBroadcastNotification(broadcast);
+      break; // Only show one
     }
   } catch (e) {
     // Silent fail

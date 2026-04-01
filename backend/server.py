@@ -565,21 +565,21 @@ async def send_push_notification(
     data: PushNotificationRequest,
     x_admin_token: str = Header(None, alias="X-Admin-Token")
 ):
-    """Send in-site notification to all visitors (visible when browsing)"""
+    """Send in-site notification to CURRENT visitors only (expires in 5 minutes)"""
     if x_admin_token != "celestaglow2024":
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     notification_id = f"notif_{uuid.uuid4().hex[:8]}"
     now = datetime.now(timezone.utc)
     
-    # Store as a GLOBAL broadcast notification (for in-site display)
+    # Store as a GLOBAL broadcast notification - EXPIRES IN 5 MINUTES (only for current visitors)
     broadcast_doc = {
         "notification_id": notification_id,
         "title": data.title,
         "body": data.body,
         "url": data.url or "/",
         "created_at": now.isoformat(),
-        "expires_at": (now + timedelta(hours=24)).isoformat(),  # Expires in 24 hours
+        "expires_at": (now + timedelta(minutes=5)).isoformat(),  # Expires in 5 minutes - only current visitors
         "active": True
     }
     
@@ -622,7 +622,7 @@ async def send_push_notification(
     return {
         "success": True,
         "notification_id": notification_id,
-        "message": "Broadcast sent! All visitors will see this notification.",
+        "message": "Broadcast sent! Current visitors will see this notification for 5 minutes.",
         "push_subscribers_notified": push_sent
     }
 
