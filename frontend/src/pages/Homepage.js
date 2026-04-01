@@ -145,6 +145,14 @@ function Homepage() {
     const currentSessionId = getSessionId();
     setSessionId(currentSessionId);
     
+    // Check for referral code in URL and store it for product page
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      sessionStorage.setItem('referralCode', refCode);
+      console.log('[Referral] Code detected on homepage:', refCode);
+    }
+    
     // Track page visit with enhanced analytics (uses visitor ID for proper deduplication)
     trackPageVisit('homepage');
     

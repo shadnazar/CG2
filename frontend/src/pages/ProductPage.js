@@ -61,10 +61,10 @@ function ProductPage() {
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [exitPopupShown, setExitPopupShown] = useState(false);
 
-  // Check for referral code in URL on mount
+  // Check for referral code in URL or sessionStorage on mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const refCode = urlParams.get('ref');
+    const refCode = urlParams.get('ref') || sessionStorage.getItem('referralCode');
     if (refCode) {
       validateReferralCode(refCode);
     }
@@ -77,11 +77,17 @@ function ProductPage() {
         setReferralCode(code);
         setReferralDiscount(REFERRAL_DISCOUNT); // Fixed ₹50 discount for referred customer
         setReferralData(res.data.referral);
+        // Store in sessionStorage so it persists across page navigation
+        sessionStorage.setItem('referralCode', code);
+        sessionStorage.setItem('referralValidated', 'true');
+        console.log('[Referral] Code validated and discount applied:', code);
         // Also track the click
         axios.post(`${API}/referral/track-click?referral_code=${code}&visitor_id=${getVisitorId()}`).catch(() => {});
       }
     } catch (err) {
       console.log('Invalid referral code');
+      sessionStorage.removeItem('referralCode');
+      sessionStorage.removeItem('referralValidated');
     }
   };
 
@@ -444,6 +450,19 @@ function ProductPage() {
             <span>Only <strong>{stockLeft}</strong> left!</span>
           </div>
         </div>
+        
+        {/* Referral Discount Banner - Shows when referral code is applied */}
+        {referralDiscount > 0 && (
+          <div className="mx-4 mt-3 p-3 bg-gradient-to-r from-purple-500 to-indigo-500 text-white rounded-xl shadow-lg" data-testid="referral-discount-banner">
+            <div className="flex items-center gap-2">
+              <Gift size={20} />
+              <div>
+                <p className="font-bold text-sm">🎉 Friend's Referral Applied!</p>
+                <p className="text-xs opacity-90">You're saving extra ₹{REFERRAL_DISCOUNT} on this order</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Product Info */}
         <div className="px-5 py-5">

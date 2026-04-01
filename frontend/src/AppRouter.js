@@ -44,6 +44,14 @@ function App() {
   // Initialize all tracking (Google Analytics + DOM click tracking)
   useEffect(() => {
     initAllTracking();
+    
+    // Detect referral code from URL on any page load and store in sessionStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      sessionStorage.setItem('referralCode', refCode);
+      console.log('[Referral] Code detected in URL:', refCode);
+    }
   }, []);
 
   return (
