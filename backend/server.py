@@ -1351,6 +1351,88 @@ class TrackingData(BaseModel):
     time_spent: Optional[int] = None
 
 
+# ==================== CENTRALIZED TRACKING ENDPOINTS (TrackingProvider.js) ====================
+
+class TrackActionRequest(BaseModel):
+    visitor_id: str
+    session_id: str
+    action: Optional[str] = None
+    data: Optional[Dict[str, Any]] = None
+    timestamp: Optional[str] = None
+
+
+class TrackBatchRequest(BaseModel):
+    visitor_id: str
+    session_id: str
+    events: List[Dict[str, Any]]
+
+
+@api_router.post("/track-action")
+async def track_action_centralized(data: TrackActionRequest):
+    """Centralized tracking endpoint for individual actions (from TrackingProvider.js)"""
+    try:
+        action_doc = {
+            "visitor_id": data.visitor_id,
+            "session_id": data.session_id,
+            "action": data.action,
+            "data": data.data or {},
+            "timestamp": data.timestamp or datetime.now(timezone.utc).isoformat()
+        }
+        await db.tracking_events.insert_one(action_doc)
+        
+        # Also update visitor profile with action
+        await db.visitor_profiles.update_one(
+            {"visitor_id": data.visitor_id},
+            {
+                "$set": {"last_session": data.session_id, "last_active": datetime.now(timezone.utc).isoformat()},
+                "$push": {"recent_actions": {"$each": [{"action": data.action, "timestamp": action_doc["timestamp"]}], "$slice": -50}}
+            },
+            upsert=True
+        )
+        return {"success": True, "tracked": True}
+    except Exception as e:
+        logging.error(f"Track action error: {e}")
+        return {"success": False, "error": str(e)}
+
+
+@api_router.post("/track-batch")
+async def track_batch_centralized(data: TrackBatchRequest):
+    """Centralized batch tracking endpoint (from TrackingProvider.js)"""
+    try:
+        if not data.events:
+            return {"success": True, "tracked": 0}
+        
+        # Process batch events
+        docs = []
+        for event in data.events:
+            doc = {
+                "visitor_id": data.visitor_id,
+                "session_id": data.session_id,
+                "action": event.get("action"),
+                "data": event.get("data", {}),
+                "timestamp": event.get("timestamp") or datetime.now(timezone.utc).isoformat()
+            }
+            docs.append(doc)
+        
+        if docs:
+            await db.tracking_events.insert_many(docs)
+        
+        # Update visitor profile
+        await db.visitor_profiles.update_one(
+            {"visitor_id": data.visitor_id},
+            {
+                "$set": {"last_session": data.session_id, "last_active": datetime.now(timezone.utc).isoformat()},
+                "$inc": {"total_events": len(docs)}
+            },
+            upsert=True
+        )
+        
+        return {"success": True, "tracked": len(docs)}
+    except Exception as e:
+        logging.error(f"Track batch error: {e}")
+        return {"success": False, "error": str(e)}
+
+
 @api_router.post("/tracking/page-visit")
 async def track_user_page_visit(data: TrackingData):
     """Track user page visit with behavior data"""
