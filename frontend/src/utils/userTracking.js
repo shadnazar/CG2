@@ -86,7 +86,7 @@ export const initClickTracking = () => {
         button_text: buttonText,
         page: window.location.pathname
       });
-      trackGAEvent('begin_checkout', { currency: 'INR', value: 599 });
+      trackGAEvent('begin_checkout', { currency: 'INR', value: 699 });
       console.log('[User Tracking] Buy Now clicked');
     }
     
@@ -97,7 +97,7 @@ export const initClickTracking = () => {
         button_text: buttonText,
         page: window.location.pathname
       });
-      trackGAEvent('add_to_cart', { currency: 'INR', value: 599 });
+      trackGAEvent('add_to_cart', { currency: 'INR', value: 699 });
       console.log('[User Tracking] Claim/Add clicked');
     }
     
@@ -108,7 +108,7 @@ export const initClickTracking = () => {
         button_text: buttonText,
         page: window.location.pathname
       });
-      trackGAEvent('add_payment_info', { currency: 'INR', value: 599 });
+      trackGAEvent('add_payment_info', { currency: 'INR', value: 699 });
       console.log('[User Tracking] Place Order clicked');
     }
     

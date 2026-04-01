@@ -66,7 +66,7 @@ function OrderSuccessPage() {
 
   const shareOnWhatsApp = () => {
     const message = encodeURIComponent(
-      `Hey! I just ordered from Celesta Glow and got amazing results! 🌟\n\nUse my link to get ₹100 OFF on India's #1 Anti-Aging Serum:\n${referralLink}\n\nTrust me, your skin will thank you! ✨`
+      `Hey! I just ordered from Celesta Glow and got amazing results! 🌟\n\nUse my link to get ₹50 OFF on India's #1 Anti-Aging Serum:\n${referralLink}\n\nTrust me, your skin will thank you! ✨`
     );
     window.open(`https://wa.me/?text=${message}`, '_blank');
   };
@@ -127,10 +127,10 @@ function OrderSuccessPage() {
         <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl shadow-lg p-5 mb-5 text-white">
           <div className="flex items-center gap-2 mb-3">
             <Gift size={24} />
-            <h3 className="font-bold text-lg">Earn ₹200 - Share & Earn!</h3>
+            <h3 className="font-bold text-lg">Earn ₹100 - Share & Earn!</h3>
           </div>
           <p className="text-sm opacity-95 mb-4">
-            Give your friends ₹100 off and earn ₹200 for each purchase they make!
+            Give your friends ₹50 off and get ₹100 cashback after their delivery!
           </p>
           
           {/* Referral Link Box */}

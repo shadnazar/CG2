@@ -1465,7 +1465,7 @@ function ConsultationPage() {
             </div>
             <div className="text-center">
               <p className="text-green-200 text-sm mb-2">Celesta Glow Advanced Anti-Aging Serum</p>
-              <p className="text-2xl font-bold">₹599 <span className="text-sm font-normal text-green-200 line-through">₹1,499</span></p>
+              <p className="text-2xl font-bold">₹699 <span className="text-sm font-normal text-green-200 line-through">₹1,499</span></p>
             </div>
           </div>
         </div>
@@ -1477,7 +1477,7 @@ function ConsultationPage() {
             className="w-full py-4 bg-green-500 text-white rounded-full font-semibold flex items-center justify-center gap-2"
             data-testid="buy-now-btn"
           >
-            {t.buyNow} — ₹599 <ChevronRight size={20} />
+            {t.buyNow} — ₹699 <ChevronRight size={20} />
           </button>
           <button
             onClick={handleDownloadPDF}

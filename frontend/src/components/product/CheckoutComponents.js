@@ -107,7 +107,7 @@ export const OrderSummary = ({ prepaidPrice, getFinalPrice, discountApplied }) =
       <span className="line-through text-gray-400">₹1,499</span>
     </div>
     <div className="flex justify-between text-green-600">
-      <span>Discount ({discountApplied ? '65%' : '60%'} OFF)</span>
+      <span>Discount ({discountApplied ? '56%' : '53%'} OFF)</span>
       <span>- ₹{discountApplied ? 1499 - getFinalPrice() : 1499 - prepaidPrice}</span>
     </div>
     <div className="flex justify-between text-gray-600">

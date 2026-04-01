@@ -93,8 +93,8 @@ class ReferralService:
         if not referral:
             return {"success": False, "error": "Invalid referral code"}
         
-        # Earnings: ₹200 for each successful referral
-        earnings_per_referral = 200
+        # Earnings: ₹100 for each successful referral (paid after delivery)
+        earnings_per_referral = 100
         
         referred_order = {
             "order_id": order_data.get("order_id"),
@@ -102,7 +102,9 @@ class ReferralService:
             "buyer_name": order_data.get("name"),
             "order_amount": order_data.get("amount"),
             "purchased_at": datetime.now(timezone.utc).isoformat(),
-            "referral_discount_applied": 100  # ₹100 discount for referred user
+            "referral_discount_applied": 50,  # ₹50 discount for referred user
+            "delivery_status": "pending",  # Track delivery for cashback
+            "cashback_status": "pending"  # Cashback given after delivery
         }
         
         await self.db.referrals.update_one(

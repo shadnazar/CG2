@@ -56,9 +56,9 @@ export const initMetaPixel = () => {
  * ViewContent Event - Fire on Product Page
  * Trigger: When user views the product details page
  * 
- * @param {number} value - Product price (default 599.00)
+ * @param {number} value - Product price (default 699.00)
  */
-export const trackViewContent = (value = 599.00) => {
+export const trackViewContent = (value = 699.00) => {
   waitForFbq(() => {
     window.fbq('track', 'ViewContent', {
       content_name: 'Super Anti-Aging Serum',
@@ -76,9 +76,9 @@ export const trackViewContent = (value = 599.00) => {
  * InitiateCheckout Event - Fire on Checkout Page
  * Trigger: When user clicks "Buy Now" and lands on checkout/shipping details
  * 
- * @param {number} value - Cart value (default 599.00)
+ * @param {number} value - Cart value (default 699.00)
  */
-export const trackInitiateCheckout = (value = 599.00) => {
+export const trackInitiateCheckout = (value = 699.00) => {
   waitForFbq(() => {
     window.fbq('track', 'InitiateCheckout', {
       content_category: 'Skincare',
@@ -229,7 +229,7 @@ export const trackPageView = (pageName, additionalParams = {}) => {
 // ==================== LEGACY EXPORTS (for backward compatibility) ====================
 
 // AddToCart not needed for direct Buy Now flow
-export const trackAddToCart = (price = 599, quantity = 1) => {
+export const trackAddToCart = (price = 699, quantity = 1) => {
   // No-op - direct Buy Now flow doesn't need AddToCart
   console.log('[Meta Pixel] AddToCart skipped - using direct Buy Now flow');
 };

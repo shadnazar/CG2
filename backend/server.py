@@ -119,8 +119,8 @@ def send_order_confirmation_email(order: Order, referral_data: dict = None):
             referral_link = referral_data.get('referral_link', f"https://celestaglow.com?ref={referral_data['referral_code']}")
             referral_section = f"""
                     <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; margin-top: 25px; border-radius: 10px; text-align: center;">
-                      <h3 style="margin: 0 0 10px;">🎁 Share & Earn ₹200!</h3>
-                      <p style="margin: 0 0 15px; font-size: 14px;">Give your friends ₹100 off and earn ₹200 when they buy!</p>
+                      <h3 style="margin: 0 0 10px;">🎁 Share & Earn ₹100!</h3>
+                      <p style="margin: 0 0 15px; font-size: 14px;">Give your friends ₹50 off and get ₹100 cashback after their delivery!</p>
                       <div style="background: white; color: #059669; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; word-break: break-all;">
                         {referral_link}
                       </div>

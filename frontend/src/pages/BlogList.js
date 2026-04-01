@@ -526,7 +526,7 @@ function BlogList() {
               data-testid="blog-cta"
               onClick={() => trackCTAClick('shop_now_blog', 'blog_page_cta')}
             >
-              Shop Now — ₹599 <ChevronRight size={20} />
+              Shop Now — ₹699 <ChevronRight size={20} />
             </Link>
             <div className="flex items-center gap-1 text-green-200">
               <Star size={16} fill="currentColor" />

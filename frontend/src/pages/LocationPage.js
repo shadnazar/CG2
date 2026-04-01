@@ -81,14 +81,14 @@ function LocationPage() {
           Order Now in {locationTitle}
         </h3>
         <p className="text-green-100 text-sm mb-4">
-          Limited time offer - Save 60% today!
+          Limited time offer - Save 53% today!
         </p>
         <Link 
           to="/product/anti-aging-serum"
           className="inline-flex items-center gap-2 bg-white text-green-600 font-semibold py-3 px-6 rounded-full"
           data-testid="location-cta"
         >
-          Order Now — ₹599 <ChevronRight size={18} />
+          Order Now — ₹699 <ChevronRight size={18} />
         </Link>
       </div>
     </div>

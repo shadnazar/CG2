@@ -264,8 +264,8 @@ function AdminReferrals() {
           <h4 className="font-semibold text-gray-900 mb-2">How Referral Program Works</h4>
           <ul className="text-sm text-gray-600 space-y-1">
             <li>• Customer buys → Gets unique referral link via email</li>
-            <li>• Friend uses link → Gets ₹100 discount at checkout</li>
-            <li>• Friend completes purchase → Original customer earns ₹200</li>
+            <li>• Friend uses link → Gets ₹50 discount at checkout</li>
+            <li>• Friend's order delivered → Original customer earns ₹100 cashback</li>
             <li>• Earnings tracked here → Pay manually or integrate UPI</li>
           </ul>
         </div>

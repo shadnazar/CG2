@@ -20,7 +20,7 @@ import { initCustomerNotifications } from '../utils/customerNotifications';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Pricing constants
-const PREPAID_PRICE = 599;
+const PREPAID_PRICE = 699;
 const MRP = 1499;
 
 // Age Regression Score Image for Homepage - Using the uploaded product image
@@ -746,7 +746,7 @@ function Homepage() {
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <p className="text-xs text-gray-500">Limited Time Offer</p>
-            <p className="font-bold text-gray-900">₹{PREPAID_PRICE} <span className="text-sm text-gray-400 line-through">₹{MRP}</span> <span className="text-xs text-green-600 font-medium">60% OFF</span></p>
+            <p className="font-bold text-gray-900">₹{PREPAID_PRICE} <span className="text-sm text-gray-400 line-through">₹{MRP}</span> <span className="text-xs text-green-600 font-medium">53% OFF</span></p>
           </div>
           <button
             onClick={() => navigate('/product/anti-aging-serum')}

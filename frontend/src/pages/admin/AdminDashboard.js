@@ -340,7 +340,7 @@ function AdminDashboard() {
                 <div>
                   <p className="font-bold text-lg">🎉 {newOrders.length} New Order{newOrders.length > 1 ? 's' : ''}!</p>
                   <p className="text-sm opacity-90">
-                    {newOrders[0]?.name || 'Customer'} - ₹{newOrders[0]?.amount || '599'}
+                    {newOrders[0]?.name || 'Customer'} - ₹{newOrders[0]?.amount || '699'}
                   </p>
                 </div>
               </div>

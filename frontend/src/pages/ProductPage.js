@@ -18,12 +18,13 @@ import { initCustomerNotifications } from '../utils/customerNotifications';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 
-const PREPAID_PRICE = 599;
-const COD_PRICE = 699;
+const PREPAID_PRICE = 699;
+const COD_PRICE = 799;
 const COD_ADVANCE = 99;
 const MRP = 1499;
 const DISCOUNT_AMOUNT = 50;
 const EXIT_DISCOUNT_AMOUNT = 100;
+const REFERRAL_DISCOUNT = 50; // Referred customer gets ₹50 off
 
 // User uploaded bottle product image - with packaging
 const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_050b785b-bdfe-40d2-9088-b4c5bddc18c5/artifacts/f3fkk4tr_IMG_9115.png';
@@ -74,7 +75,7 @@ function ProductPage() {
       const res = await axios.post(`${API}/referral/validate?referral_code=${code}`);
       if (res.data.valid) {
         setReferralCode(code);
-        setReferralDiscount(res.data.discount || 100);
+        setReferralDiscount(REFERRAL_DISCOUNT); // Fixed ₹50 discount for referred customer
         setReferralData(res.data.referral);
         // Also track the click
         axios.post(`${API}/referral/track-click?referral_code=${code}&visitor_id=${getVisitorId()}`).catch(() => {});
@@ -151,7 +152,7 @@ function ProductPage() {
             content_category: 'Skincare',
             content_ids: ['celestaglow_serum_001'],
             content_type: 'product',
-            value: 599.00,
+            value: 699.00,
             currency: 'INR'
           });
           console.log('[Meta Pixel Direct] ViewContent fired');
@@ -213,7 +214,7 @@ function ProductPage() {
     function handleInitiateCheckoutClick(e) {
       if (e.target && (e.target.innerText.includes('Buy Now') || e.target.innerText.includes('Order Now'))) {
         if (typeof fbq === 'function') {
-          fbq('track', 'InitiateCheckout', { value: 599, currency: 'INR' });
+          fbq('track', 'InitiateCheckout', { value: 699, currency: 'INR' });
           console.log('[Meta Pixel DOM] InitiateCheckout fired on button click');
         }
       }
@@ -424,7 +425,7 @@ function ProductPage() {
             data-testid="product-image"
           />
           <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-            60% OFF
+            53% OFF
           </div>
         </div>
 
@@ -1011,7 +1012,7 @@ function ProductPage() {
                 <span className="text-gray-400 line-through">₹{MRP}</span>
               </div>
               <div className="flex justify-between text-green-600">
-                <span>Festive Discount (60%)</span>
+                <span>Festive Discount (53%)</span>
                 <span>-₹{MRP - PREPAID_PRICE}</span>
               </div>
               {hasDiscount && (
@@ -1159,7 +1160,7 @@ function ProductPage() {
                   <Gift size={18} />
                   <span className="font-semibold">Referral Discount Applied!</span>
                 </div>
-                <p className="text-sm text-purple-600 mt-1">You're saving extra ₹{referralDiscount} from your friend's referral</p>
+                <p className="text-sm text-purple-600 mt-1">You're saving extra ₹{REFERRAL_DISCOUNT} from your friend's referral</p>
               </div>
             )}
             
@@ -1199,14 +1200,31 @@ function ProductPage() {
               )}
             </div>
             
+            {/* Referral Earnings Social Proof */}
+            <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                  <span className="text-white text-lg">💰</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-purple-800 font-semibold text-sm">Customers earning cashback!</p>
+                  <p className="text-purple-600 text-xs">₹3,200+ withdrawn this week via referrals</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-purple-700 font-bold text-lg">32+</p>
+                  <p className="text-purple-500 text-[10px]">Referrers</p>
+                </div>
+              </div>
+            </div>
+            
             {/* Referral Offer Banner - Show to ALL checkout users */}
             <div className="mb-4 p-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl text-white">
               <div className="flex items-center gap-2 mb-2">
                 <Gift size={20} />
-                <span className="font-bold">Share & Earn ₹200!</span>
+                <span className="font-bold">Share & Earn ₹100!</span>
               </div>
               <p className="text-sm opacity-95 mb-2">
-                Give your friends ₹100 off → Earn ₹200 when they buy
+                Give your friends ₹50 off → Get ₹100 cashback after their delivery
               </p>
               <p className="text-xs opacity-80">
                 After your order, you'll receive your unique referral link via email
@@ -1257,7 +1275,7 @@ function ProductPage() {
                   </p>
                   <p className="text-gray-500 text-xs">Pay ₹{Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} now + ₹{getFinalCodPrice() - Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} on delivery</p>
                 </div>
-                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">53% OFF</span>
+                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">47% OFF</span>
               </label>
             </div>
           </div>
