@@ -1200,22 +1200,42 @@ function ProductPage() {
               )}
             </div>
             
-            {/* Referral Earnings Social Proof */}
-            <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-white text-lg">💰</span>
+            {/* Referral Earnings Social Proof - Dynamic based on days */}
+            {(() => {
+              // Base date: April 1, 2025 (launch date)
+              const launchDate = new Date('2025-04-01');
+              const today = new Date();
+              const daysSinceLaunch = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
+              
+              // Start with base of 28 referrers, add 3-4 per day (average 3.5)
+              const baseReferrers = 28;
+              const dailyReferrerGrowth = 3.5;
+              const totalReferrers = Math.floor(baseReferrers + (daysSinceLaunch * dailyReferrerGrowth));
+              
+              // Each referrer earns ₹100, so total amount = referrers * 100
+              const totalEarnings = totalReferrers * 100;
+              
+              // Format earnings for display (e.g., 3,200)
+              const formattedEarnings = totalEarnings.toLocaleString('en-IN');
+              
+              return (
+                <div className="mb-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-100 rounded-xl">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-white text-lg">💰</span>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-purple-800 font-semibold text-sm">Customers earning cashback!</p>
+                      <p className="text-purple-600 text-xs">₹{formattedEarnings}+ withdrawn this week via referrals</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-purple-700 font-bold text-lg">{totalReferrers}+</p>
+                      <p className="text-purple-500 text-[10px]">Referrers</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-purple-800 font-semibold text-sm">Customers earning cashback!</p>
-                  <p className="text-purple-600 text-xs">₹3,200+ withdrawn this week via referrals</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-purple-700 font-bold text-lg">32+</p>
-                  <p className="text-purple-500 text-[10px]">Referrers</p>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
             
             {/* Referral Offer Banner - Show to ALL checkout users */}
             <div className="mb-4 p-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl text-white">

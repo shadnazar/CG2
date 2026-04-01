@@ -15,7 +15,41 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 - **Marketing**: Meta Pixel tracking, Google Analytics, social proof notifications
 - **Content**: AI-generated location and topic-based SEO blogs
 
+## Current Pricing (Updated April 1, 2026)
+- **Prepaid Price**: ₹699 (was ₹599)
+- **COD Price**: ₹799 (was ₹699)
+- **MRP**: ₹1,499
+- **Discount**: 53% OFF (was 60%)
+
+## Referral Program (Updated April 1, 2026)
+- **Referred Customer Gets**: ₹50 discount (was ₹100)
+- **Referrer Gets**: ₹100 cashback after delivery (was ₹200 immediately)
+- **Social Proof**: Dynamic counter showing referrers and earnings (updates daily +3-4 referrers)
+
 ## What's Been Implemented
+
+### April 1, 2026 - Pricing & Referral Update
+- **Price Changes:**
+  - Prepaid: ₹599 → ₹699
+  - COD: ₹699 → ₹799
+  - Discount badge: 60% → 53% OFF
+  
+- **Referral System Updates:**
+  - Customer discount: ₹100 → ₹50
+  - Referrer cashback: ₹200 → ₹100 (paid after delivery)
+  - Added dynamic social proof on checkout: "₹X,XXX+ withdrawn this week"
+  - Referrer count increases by 3-4 per day automatically
+
+- **Updated Across All Pages:**
+  - ProductPage.js
+  - Homepage.js
+  - ConsultationPage.js
+  - LocationPage.js
+  - BlogList.js, BlogPost.js
+  - OrderSuccessPage.js
+  - AdminReferrals.js
+  - Meta Pixel tracking values
+  - Email templates
 
 ### March 31, 2026 - Session 2
 - **Notification System Optimized:**
