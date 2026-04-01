@@ -13,27 +13,22 @@ const EmptyFallback = () => null;
 
 function PublicLayout({ children }) {
   const [showDiscountPopup, setShowDiscountPopup] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(true); // Show immediately
   const { trackAction } = useTracking();
   
   useEffect(() => {
-    // Show discount popup after 5 seconds if not already claimed
+    // Show discount popup after 8 seconds (after welcome notification finishes)
+    // This gives time for: welcome notification (4s delay + 6s display) = 10s
     const discountTimer = setTimeout(() => {
       if (!localStorage.getItem('discountClaimed') && !sessionStorage.getItem('discountPopupShown')) {
         setShowDiscountPopup(true);
         sessionStorage.setItem('discountPopupShown', 'true');
         trackAction('popup_shown', { popup_type: 'discount_popup' });
       }
-    }, 5000);
-    
-    // Enable notifications after 2 seconds (gives page time to load)
-    const notifTimer = setTimeout(() => {
-      setShowNotifications(true);
-    }, 2000);
+    }, 12000); // 12 seconds - after welcome notification
     
     return () => {
       clearTimeout(discountTimer);
-      clearTimeout(notifTimer);
     };
   }, [trackAction]);
   

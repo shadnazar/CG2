@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapPin, ShoppingBag, CheckCircle, Sparkles, X, Star } from 'lucide-react';
 
 // User's custom notification sound
@@ -26,156 +26,131 @@ const ALL_LOCATIONS = [
   "Visakhapatnam", "Patna", "Ludhiana", "Agra", "Nashik", "Rajkot", "Varanasi"
 ];
 
-// Configuration
-const MAX_NOTIFICATIONS = 5;
-const FIRST_DELAY = 5000;
-const MIN_INTERVAL = 15000;
-const MAX_INTERVAL = 20000;
-const DISPLAY_DURATION = 6000;
-
 function RecentPurchaseNotification() {
-  const [notification, setNotification] = useState(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [currentNotif, setCurrentNotif] = useState(null);
   const usedNamesRef = useRef([]);
   const audioRef = useRef(null);
-  const notificationCountRef = useRef(0);
-  const timeoutRef = useRef(null);
-  const dismissedRef = useRef(false);
-  const isNewUserRef = useRef(false);
+  const countRef = useRef(0);
+  const timerRef = useRef(null);
   
-  // Initialize audio
-  useEffect(() => {
-    audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
-    audioRef.current.volume = 0.3;
-    
-    // Check if new user
-    if (!localStorage.getItem('celestaVisitor')) {
-      isNewUserRef.current = true;
-      localStorage.setItem('celestaVisitor', 'true');
-    }
-    
-    // Check if dismissed this session
-    if (sessionStorage.getItem('notifDismissed')) {
-      dismissedRef.current = true;
-    }
-    
-    return () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    };
-  }, []);
+  const MAX_NOTIFS = 5;
+  const DISPLAY_TIME = 6000;
 
-  const playSound = useCallback(() => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+  // Play notification sound
+  const playSound = () => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
+      audioRef.current.volume = 0.3;
     }
-  }, []);
+    audioRef.current.currentTime = 0;
+    audioRef.current.play().catch(() => {});
+  };
 
-  const getUniqueName = useCallback(() => {
-    const availableNames = ALL_NAMES.filter(name => !usedNamesRef.current.includes(name));
-    if (availableNames.length === 0) {
+  // Get unique name
+  const getUniqueName = () => {
+    const available = ALL_NAMES.filter(n => !usedNamesRef.current.includes(n));
+    if (available.length === 0) {
       usedNamesRef.current = [];
       return ALL_NAMES[Math.floor(Math.random() * ALL_NAMES.length)];
     }
-    const selectedName = availableNames[Math.floor(Math.random() * availableNames.length)];
-    usedNamesRef.current.push(selectedName);
-    return selectedName;
-  }, []);
+    const name = available[Math.floor(Math.random() * available.length)];
+    usedNamesRef.current.push(name);
+    return name;
+  };
 
-  const getRandomLocation = useCallback(() => {
-    return ALL_LOCATIONS[Math.floor(Math.random() * ALL_LOCATIONS.length)];
-  }, []);
+  // Get random location
+  const getLocation = () => ALL_LOCATIONS[Math.floor(Math.random() * ALL_LOCATIONS.length)];
 
   // Show order notification
-  const showOrder = useCallback(() => {
-    if (dismissedRef.current || notificationCountRef.current >= MAX_NOTIFICATIONS) return;
+  const showOrderNotif = () => {
+    if (sessionStorage.getItem('notifDismissed') || countRef.current >= MAX_NOTIFS) return;
     
-    const newNotif = {
+    setCurrentNotif({
       type: 'order',
       name: getUniqueName(),
-      location: getRandomLocation(),
+      location: getLocation(),
       id: Date.now()
-    };
-    
-    setNotification(newNotif);
-    setIsVisible(true);
-    notificationCountRef.current++;
+    });
+    countRef.current++;
     playSound();
     
-    // Schedule hide and next
-    timeoutRef.current = setTimeout(() => {
-      setIsVisible(false);
-      setNotification(null);
+    // Hide after display time, then schedule next
+    timerRef.current = setTimeout(() => {
+      setCurrentNotif(null);
       
-      // Schedule next if not max
-      if (!dismissedRef.current && notificationCountRef.current < MAX_NOTIFICATIONS) {
-        const nextDelay = MIN_INTERVAL + Math.random() * (MAX_INTERVAL - MIN_INTERVAL);
-        timeoutRef.current = setTimeout(showOrder, nextDelay);
+      // Schedule next notification
+      if (!sessionStorage.getItem('notifDismissed') && countRef.current < MAX_NOTIFS) {
+        const nextDelay = 15000 + Math.random() * 5000; // 15-20 seconds
+        timerRef.current = setTimeout(showOrderNotif, nextDelay);
       }
-    }, DISPLAY_DURATION);
-  }, [getUniqueName, getRandomLocation, playSound]);
+    }, DISPLAY_TIME);
+  };
 
   // Show welcome notification
-  const showWelcome = useCallback(() => {
-    if (dismissedRef.current) return;
+  const showWelcomeNotif = () => {
+    if (sessionStorage.getItem('notifDismissed')) return;
     
-    setNotification({ type: 'welcome', id: Date.now() });
-    setIsVisible(true);
-    notificationCountRef.current++;
+    setCurrentNotif({ type: 'welcome', id: Date.now() });
+    countRef.current++;
     playSound();
     sessionStorage.setItem('welcomeShown', 'true');
+    localStorage.setItem('celestaVisitor', 'true');
     
-    // Hide welcome, then show orders
-    timeoutRef.current = setTimeout(() => {
-      setIsVisible(false);
-      setNotification(null);
+    // Hide after display time, then show order notifications
+    timerRef.current = setTimeout(() => {
+      setCurrentNotif(null);
       
       // Start order notifications after 3 seconds
-      if (!dismissedRef.current) {
-        timeoutRef.current = setTimeout(showOrder, 3000);
+      if (!sessionStorage.getItem('notifDismissed')) {
+        timerRef.current = setTimeout(showOrderNotif, 3000);
       }
-    }, DISPLAY_DURATION);
-  }, [playSound, showOrder]);
+    }, DISPLAY_TIME);
+  };
 
-  // Start notification sequence
-  useEffect(() => {
-    if (dismissedRef.current) return;
-    
-    const startTimer = setTimeout(() => {
-      if (isNewUserRef.current && !sessionStorage.getItem('welcomeShown')) {
-        showWelcome();
-      } else {
-        showOrder();
-      }
-    }, FIRST_DELAY);
-    
-    return () => clearTimeout(startTimer);
-  }, [showWelcome, showOrder]);
-
-  const handleDismiss = useCallback(() => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-    setIsVisible(false);
-    setNotification(null);
-    dismissedRef.current = true;
+  // Dismiss handler
+  const handleDismiss = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    setCurrentNotif(null);
     sessionStorage.setItem('notifDismissed', 'true');
-  }, []);
+    localStorage.setItem('celestaVisitor', 'true');
+  };
 
-  // Don't render if not visible
-  if (!isVisible || !notification) {
-    return null;
-  }
+  // Start notification sequence on mount
+  useEffect(() => {
+    // Check if already dismissed
+    if (sessionStorage.getItem('notifDismissed')) return;
+    
+    // Determine if new user (before any state changes)
+    const isNewUser = !localStorage.getItem('celestaVisitor');
+    const welcomeShown = sessionStorage.getItem('welcomeShown');
+    
+    // Start after 4 seconds
+    timerRef.current = setTimeout(() => {
+      if (isNewUser && !welcomeShown) {
+        showWelcomeNotif();
+      } else {
+        showOrderNotif();
+      }
+    }, 4000);
+    
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Don't render if no notification
+  if (!currentNotif) return null;
 
   // Welcome Notification
-  if (notification.type === 'welcome') {
+  if (currentNotif.type === 'welcome') {
     return (
       <div 
-        key={notification.id}
-        className="fixed top-20 right-4 z-[9999] animate-slide-in"
+        key={currentNotif.id}
+        className="fixed top-20 right-4 z-[9999]"
+        style={{ animation: 'slideIn 0.5s ease-out forwards' }}
         data-testid="welcome-notification"
       >
         <div className="bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 rounded-2xl shadow-2xl overflow-hidden w-[300px] text-white relative border border-green-400/30">
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer"></div>
-          
           <button 
             onClick={handleDismiss}
             className="absolute top-3 right-3 w-7 h-7 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all hover:scale-110 z-10"
@@ -207,14 +182,9 @@ function RecentPurchaseNotification() {
         
         <style>{`
           @keyframes slideIn {
-            from { opacity: 0; transform: translateX(100px) scale(0.9); }
-            to { opacity: 1; transform: translateX(0) scale(1); }
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
           }
-          @keyframes shimmer {
-            to { transform: translateX(200%); }
-          }
-          .animate-slide-in { animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-          .animate-shimmer { animation: shimmer 2s infinite; }
         `}</style>
       </div>
     );
@@ -223,8 +193,9 @@ function RecentPurchaseNotification() {
   // Order Notification
   return (
     <div 
-      key={notification.id}
-      className="fixed top-20 right-4 z-[9999] animate-slide-in"
+      key={currentNotif.id}
+      className="fixed top-20 right-4 z-[9999]"
+      style={{ animation: 'slideIn 0.5s ease-out forwards' }}
       data-testid="recent-purchase-notification"
     >
       <div className="bg-white rounded-2xl shadow-2xl overflow-hidden w-[300px] relative border border-gray-200">
@@ -255,12 +226,10 @@ function RecentPurchaseNotification() {
             </div>
             
             <div className="flex-1 min-w-0">
-              <p className="text-gray-900 font-bold text-base truncate">
-                {notification.name}
-              </p>
+              <p className="text-gray-900 font-bold text-base truncate">{currentNotif.name}</p>
               <p className="text-gray-500 text-sm flex items-center gap-1.5 mt-1">
                 <MapPin size={14} className="text-green-500 flex-shrink-0" />
-                <span className="truncate">{notification.location}</span>
+                <span className="truncate">{currentNotif.location}</span>
               </p>
               <p className="text-green-600 text-sm font-medium mt-2 flex items-center gap-1.5">
                 <ShoppingBag size={14} />
@@ -288,10 +257,9 @@ function RecentPurchaseNotification() {
       
       <style>{`
         @keyframes slideIn {
-          from { opacity: 0; transform: translateX(100px) scale(0.9); }
-          to { opacity: 1; transform: translateX(0) scale(1); }
+          from { opacity: 0; transform: translateX(100px); }
+          to { opacity: 1; transform: translateX(0); }
         }
-        .animate-slide-in { animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
       `}</style>
     </div>
   );
