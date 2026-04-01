@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { MapPin, ShoppingBag, CheckCircle, Sparkles } from 'lucide-react';
+import { MapPin, ShoppingBag, CheckCircle, Sparkles, X } from 'lucide-react';
 
 // User's custom notification sound
 const NOTIFICATION_SOUND_URL = 'https://customer-assets.emergentagent.com/job_26148967-6968-4918-8b5d-0a2c0e5259b2/artifacts/sa3jziee_universfield-new-notification-057-494255.mp3';
@@ -141,10 +141,17 @@ function RecentPurchaseNotification() {
       <div 
         className="fixed top-20 right-3 z-50"
         data-testid="welcome-notification"
-        onClick={handleDismiss}
       >
-        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-2xl overflow-hidden max-w-[280px] cursor-pointer hover:scale-[1.02] transition-all duration-300 text-white">
-          <div className="p-4">
+        <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl shadow-2xl overflow-hidden max-w-[280px] text-white relative">
+          {/* Close button */}
+          <button 
+            onClick={handleDismiss}
+            className="absolute top-2 right-2 w-6 h-6 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-colors"
+            data-testid="close-notification-btn"
+          >
+            <X size={14} className="text-white" />
+          </button>
+          <div className="p-4 pr-10">
             <div className="flex items-center gap-2 mb-3">
               <Sparkles className="w-5 h-5" />
               <span className="font-bold text-sm">Welcome to Celesta Glow!</span>
@@ -172,11 +179,19 @@ function RecentPurchaseNotification() {
       data-testid="recent-purchase-notification"
     >
       <div 
-        className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden max-w-[280px] cursor-pointer hover:scale-[1.02] transition-all duration-300"
-        onClick={handleDismiss}
+        className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden max-w-[280px] relative"
       >
+        {/* Close button */}
+        <button 
+          onClick={handleDismiss}
+          className="absolute top-2 right-2 w-6 h-6 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors z-10"
+          data-testid="close-notification-btn"
+        >
+          <X size={14} className="text-gray-500" />
+        </button>
+        
         {/* Simple green header */}
-        <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 flex items-center gap-2">
+        <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2 flex items-center gap-2 pr-10">
           <CheckCircle className="w-4 h-4 text-white" />
           <span className="text-white text-xs font-semibold">New Order Placed</span>
         </div>

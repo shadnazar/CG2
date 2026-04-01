@@ -91,6 +91,9 @@ class Order(BaseModel):
     delivery_timeline: str = ""
     status: str = "confirmed"
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    referral_code: Optional[str] = None
+    referral_link: Optional[str] = None
+    referral_code_used: Optional[str] = None
 
 
 class RazorpayOrderCreate(BaseModel):
@@ -351,6 +354,15 @@ async def create_order(order_input: OrderCreate):
         "name": doc.get('name'),
         "order_id": doc['order_id']
     })
+    
+    # Store referral info in the order document
+    await db.orders.update_one(
+        {"order_id": doc['order_id']},
+        {"$set": {
+            "referral_code": referral_data['referral_code'],
+            "referral_link": referral_data['referral_link']
+        }}
+    )
     
     # Add referral info to response
     order_obj_dict = order_obj.model_dump()
@@ -1864,7 +1876,7 @@ async def validate_referral(referral_code: str = Query(...)):
     """Validate a referral code and return referrer info"""
     referral = await referral_service.validate_referral_code(referral_code)
     if referral:
-        return {"valid": True, "referral": referral, "discount": 100}
+        return {"valid": True, "referral": referral, "discount": 50}  # ₹50 discount for referred customer
     return {"valid": False, "discount": 0}
 
 

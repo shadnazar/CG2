@@ -1207,9 +1207,9 @@ function ProductPage() {
               const today = new Date();
               const daysSinceLaunch = Math.max(0, Math.floor((today - launchDate) / (1000 * 60 * 60 * 24)));
               
-              // Start with base of 12 referrers, add 1-2 per day (average 1.5)
+              // Start with base of 12 referrers, add 2-3 per day (average 2.5)
               const baseReferrers = 12;
-              const dailyReferrerGrowth = 1.5;
+              const dailyReferrerGrowth = 2.5;
               const totalReferrers = Math.floor(baseReferrers + (daysSinceLaunch * dailyReferrerGrowth));
               
               // Each referrer earns ₹100, so total amount = referrers * 100
