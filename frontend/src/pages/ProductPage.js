@@ -1202,20 +1202,20 @@ function ProductPage() {
             
             {/* Referral Earnings Social Proof - Dynamic based on days */}
             {(() => {
-              // Base date: April 1, 2025 (launch date)
-              const launchDate = new Date('2025-04-01');
+              // Base date: March 25, 2026 (recent launch for realistic numbers)
+              const launchDate = new Date('2026-03-25');
               const today = new Date();
-              const daysSinceLaunch = Math.floor((today - launchDate) / (1000 * 60 * 60 * 24));
+              const daysSinceLaunch = Math.max(0, Math.floor((today - launchDate) / (1000 * 60 * 60 * 24)));
               
-              // Start with base of 28 referrers, add 3-4 per day (average 3.5)
-              const baseReferrers = 28;
-              const dailyReferrerGrowth = 3.5;
+              // Start with base of 12 referrers, add 1-2 per day (average 1.5)
+              const baseReferrers = 12;
+              const dailyReferrerGrowth = 1.5;
               const totalReferrers = Math.floor(baseReferrers + (daysSinceLaunch * dailyReferrerGrowth));
               
               // Each referrer earns ₹100, so total amount = referrers * 100
               const totalEarnings = totalReferrers * 100;
               
-              // Format earnings for display (e.g., 3,200)
+              // Format earnings for display (e.g., 2,300)
               const formattedEarnings = totalEarnings.toLocaleString('en-IN');
               
               return (
@@ -1226,7 +1226,7 @@ function ProductPage() {
                     </div>
                     <div className="flex-1">
                       <p className="text-purple-800 font-semibold text-sm">Customers earning cashback!</p>
-                      <p className="text-purple-600 text-xs">₹{formattedEarnings}+ withdrawn this week via referrals</p>
+                      <p className="text-purple-600 text-xs">₹{formattedEarnings}+ earned via referrals</p>
                     </div>
                     <div className="text-right">
                       <p className="text-purple-700 font-bold text-lg">{totalReferrers}+</p>
