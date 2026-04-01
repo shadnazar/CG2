@@ -5,7 +5,6 @@ import {
   Clock, Eye, ChevronRight, Search, TrendingUp, Sparkles,
   Star, Filter, ArrowRight, MapPin, Globe
 } from 'lucide-react';
-import { trackSearch, trackCTAClick } from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -524,7 +523,6 @@ function BlogList() {
               to="/product/anti-aging-serum"
               className="inline-flex items-center gap-2 bg-white text-green-600 px-8 py-4 rounded-full font-bold hover:bg-green-50 transition-colors"
               data-testid="blog-cta"
-              onClick={() => trackCTAClick('shop_now_blog', 'blog_page_cta')}
             >
               Shop Now — ₹699 <ChevronRight size={20} />
             </Link>

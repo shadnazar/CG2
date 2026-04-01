@@ -1,50 +1,56 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Navigation from './components/Navigation';
 import ScrollToTop from './components/ScrollToTop';
-import WhatsAppButton from './components/WhatsAppButton';
+import { TrackingProvider } from './providers/TrackingProvider';
+import PublicLayout from './layouts/PublicLayout';
+
+// Eagerly loaded pages (critical for first paint)
 import Homepage from './pages/Homepage';
 import ProductPage from './pages/ProductPage';
-import OrderSuccessPage from './pages/OrderSuccessPage';
-import BlogList from './pages/BlogList';
-import BlogPost from './pages/BlogPost';
-import LocationPage from './pages/LocationPage';
-import SearchResults from './pages/SearchResults';
-import ConsultationPage from './pages/ConsultationPage';
-import TermsPage from './pages/TermsPage';
-import PrivacyPage from './pages/PrivacyPage';
-import { initAllTracking } from './utils/userTracking';
 
-// Admin Pages
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminBlogs from './pages/admin/AdminBlogs';
-import AdminBlogEditor from './pages/admin/AdminBlogEditor';
-import AdminLocations from './pages/admin/AdminLocations';
-import AdminLocationEditor from './pages/admin/AdminLocationEditor';
-import AdminOrders from './pages/admin/AdminOrders';
-import AdminAIStudio from './pages/admin/AdminAIStudio';
-import AdminConsultations from './pages/admin/AdminConsultations';
-import AdminUserJourney from './pages/admin/AdminUserJourney';
-import AdminWhatsApp from './pages/admin/AdminWhatsApp';
-import AdminReferrals from './pages/admin/AdminReferrals';
+// Lazy loaded public pages (loaded on demand)
+const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'));
+const BlogList = lazy(() => import('./pages/BlogList'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
+const LocationPage = lazy(() => import('./pages/LocationPage'));
+const SearchResults = lazy(() => import('./pages/SearchResults'));
+const ConsultationPage = lazy(() => import('./pages/ConsultationPage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 
-// Layout component for public pages with navigation
-function PublicLayout({ children }) {
-  return (
-    <div className="app-container">
-      <Navigation />
-      {children}
-      <WhatsAppButton phoneNumber="919446125745" />
+// Lazy loaded admin pages (separate chunk, only loaded when visiting admin)
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminBlogs = lazy(() => import('./pages/admin/AdminBlogs'));
+const AdminBlogEditor = lazy(() => import('./pages/admin/AdminBlogEditor'));
+const AdminLocations = lazy(() => import('./pages/admin/AdminLocations'));
+const AdminLocationEditor = lazy(() => import('./pages/admin/AdminLocationEditor'));
+const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
+const AdminAIStudio = lazy(() => import('./pages/admin/AdminAIStudio'));
+const AdminConsultations = lazy(() => import('./pages/admin/AdminConsultations'));
+const AdminUserJourney = lazy(() => import('./pages/admin/AdminUserJourney'));
+const AdminWhatsApp = lazy(() => import('./pages/admin/AdminWhatsApp'));
+const AdminReferrals = lazy(() => import('./pages/admin/AdminReferrals'));
+
+// Loading spinner for lazy loaded pages
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <div className="w-12 h-12 border-4 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+      <p className="text-gray-500 text-sm">Loading...</p>
     </div>
-  );
-}
+  </div>
+);
+
+// Admin layout wrapper (no tracking, minimal overhead)
+const AdminLayout = ({ children }) => (
+  <Suspense fallback={<PageLoader />}>
+    {children}
+  </Suspense>
+);
 
 function App() {
-  // Initialize all tracking (Google Analytics + DOM click tracking)
   useEffect(() => {
-    initAllTracking();
-    
     // Detect referral code from URL on any page load and store in sessionStorage
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
@@ -58,37 +64,76 @@ function App() {
     <Router>
       <ScrollToTop />
       <Routes>
-        {/* Admin Routes (no navigation) */}
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/blogs" element={<AdminBlogs />} />
-        <Route path="/admin/blogs/new" element={<AdminBlogEditor />} />
-        <Route path="/admin/blogs/edit/:id" element={<AdminBlogEditor />} />
-        <Route path="/admin/locations" element={<AdminLocations />} />
-        <Route path="/admin/locations/new" element={<AdminLocationEditor />} />
-        <Route path="/admin/locations/edit/:id" element={<AdminLocationEditor />} />
-        <Route path="/admin/orders" element={<AdminOrders />} />
-        <Route path="/admin/ai-studio" element={<AdminAIStudio />} />
-        <Route path="/admin/consultations" element={<AdminConsultations />} />
-        <Route path="/admin/user-journey" element={<AdminUserJourney />} />
-        <Route path="/admin/whatsapp" element={<AdminWhatsApp />} />
-        <Route path="/admin/referrals" element={<AdminReferrals />} />
+        {/* Admin Routes - No tracking provider, lazy loaded */}
+        <Route path="/admin" element={<AdminLayout><AdminLogin /></AdminLayout>} />
+        <Route path="/admin/dashboard" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
+        <Route path="/admin/blogs" element={<AdminLayout><AdminBlogs /></AdminLayout>} />
+        <Route path="/admin/blogs/new" element={<AdminLayout><AdminBlogEditor /></AdminLayout>} />
+        <Route path="/admin/blogs/edit/:id" element={<AdminLayout><AdminBlogEditor /></AdminLayout>} />
+        <Route path="/admin/locations" element={<AdminLayout><AdminLocations /></AdminLayout>} />
+        <Route path="/admin/locations/new" element={<AdminLayout><AdminLocationEditor /></AdminLayout>} />
+        <Route path="/admin/locations/edit/:id" element={<AdminLayout><AdminLocationEditor /></AdminLayout>} />
+        <Route path="/admin/orders" element={<AdminLayout><AdminOrders /></AdminLayout>} />
+        <Route path="/admin/ai-studio" element={<AdminLayout><AdminAIStudio /></AdminLayout>} />
+        <Route path="/admin/consultations" element={<AdminLayout><AdminConsultations /></AdminLayout>} />
+        <Route path="/admin/user-journey" element={<AdminLayout><AdminUserJourney /></AdminLayout>} />
+        <Route path="/admin/whatsapp" element={<AdminLayout><AdminWhatsApp /></AdminLayout>} />
+        <Route path="/admin/referrals" element={<AdminLayout><AdminReferrals /></AdminLayout>} />
         
-        {/* Consultation Route (no navigation - full screen experience) */}
-        <Route path="/consultation" element={<ConsultationPage />} />
-        
-        {/* Legal Pages */}
-        <Route path="/terms" element={<PublicLayout><TermsPage /></PublicLayout>} />
-        <Route path="/privacy" element={<PublicLayout><PrivacyPage /></PublicLayout>} />
-        
-        {/* Public Routes (with navigation) */}
-        <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />
-        <Route path="/product/:slug" element={<PublicLayout><ProductPage /></PublicLayout>} />
-        <Route path="/order-success/:orderId" element={<PublicLayout><OrderSuccessPage /></PublicLayout>} />
-        <Route path="/blog" element={<PublicLayout><BlogList /></PublicLayout>} />
-        <Route path="/blog/:slug" element={<PublicLayout><BlogPost /></PublicLayout>} />
-        <Route path="/search" element={<PublicLayout><SearchResults /></PublicLayout>} />
-        <Route path="/:state/:city?" element={<PublicLayout><LocationPage /></PublicLayout>} />
+        {/* Public Routes - With tracking provider */}
+        <Route path="/*" element={
+          <TrackingProvider>
+            <Routes>
+              {/* Consultation Route (full screen, no navigation) */}
+              <Route path="/consultation" element={
+                <Suspense fallback={<PageLoader />}>
+                  <ConsultationPage />
+                </Suspense>
+              } />
+              
+              {/* Legal Pages */}
+              <Route path="/terms" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><TermsPage /></Suspense>
+                </PublicLayout>
+              } />
+              <Route path="/privacy" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense>
+                </PublicLayout>
+              } />
+              
+              {/* Main Public Routes */}
+              <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />
+              <Route path="/product/:slug" element={<PublicLayout><ProductPage /></PublicLayout>} />
+              <Route path="/order-success/:orderId" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><OrderSuccessPage /></Suspense>
+                </PublicLayout>
+              } />
+              <Route path="/blog" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><BlogList /></Suspense>
+                </PublicLayout>
+              } />
+              <Route path="/blog/:slug" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><BlogPost /></Suspense>
+                </PublicLayout>
+              } />
+              <Route path="/search" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><SearchResults /></Suspense>
+                </PublicLayout>
+              } />
+              <Route path="/:state/:city?" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><LocationPage /></Suspense>
+                </PublicLayout>
+              } />
+            </Routes>
+          </TrackingProvider>
+        } />
       </Routes>
     </Router>
   );

@@ -8,7 +8,6 @@ import {
   Download, Sun, Droplets, Sparkles, Heart, Dumbbell,
   AlertCircle, Shield, Star, Clock, Home
 } from 'lucide-react';
-import { trackViewContent, trackCTAClick } from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -312,9 +311,6 @@ function ConsultationPage() {
   };
 
   useEffect(() => {
-    // Track page view
-    trackViewContent('Consultation Page', 0);
-    
     // Track visit
     axios.post(`${API}/track-visit?page=consultation&session_id=${sessionId}`).catch(() => {});
   }, [sessionId]);
@@ -508,7 +504,6 @@ function ConsultationPage() {
       
       setResult(res.data);
       setStep('result');
-      trackCTAClick('consultation_completed', 'consultation_page');
     } catch (err) {
       clearInterval(progressInterval);
       setPhoneError(err.response?.data?.detail || 'Something went wrong. Please try again.');

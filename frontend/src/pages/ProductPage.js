@@ -2,18 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift, X, CreditCard, BadgeCheck, Verified, Phone } from 'lucide-react';
-import RecentPurchaseNotification from '../components/RecentPurchaseNotification';
 import DermatologistSection from '../components/DermatologistSection';
-import {
-  trackViewContent,
-  trackInitiateCheckout,
-  trackAddPaymentInfo,
-  trackCTAClick,
-  trackExitIntent
-} from '../utils/metaPixel';
-import { trackPageVisit, trackTimeSpent, trackFormComplete, trackAction, getSessionId, getVisitorId } from '../utils/userTracking';
+import { useTracking } from '../providers/TrackingProvider';
 import { getSharedStats, updateSharedStats } from '../utils/sharedStats';
-import { initCustomerNotifications } from '../utils/customerNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
@@ -31,6 +22,7 @@ const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_050b785b-bd
 
 function ProductPage() {
   const navigate = useNavigate();
+  const { trackPageVisit, trackViewContent, trackInitiateCheckout, trackPurchase, trackAction, getVisitorId, getSessionId } = useTracking();
   const [step, setStep] = useState('product');
   const [expandedSection, setExpandedSection] = useState(null);
   const [formData, setFormData] = useState({
@@ -44,7 +36,6 @@ function ProductPage() {
   const [viewingNow, setViewingNow] = useState(() => getSharedStats().viewingNow);
   const [soldToday, setSoldToday] = useState(() => getSharedStats().soldToday);
   const [stockLeft, setStockLeft] = useState(7);
-  const [sessionId, setSessionId] = useState('');
   const pageStartTime = useRef(Date.now());
   
   // Discount state
@@ -93,15 +84,17 @@ function ProductPage() {
 
   // Track checkout visits when step changes
   useEffect(() => {
-    if (step === 'checkout' && sessionId) {
-      // Track checkout page visit for internal analytics
-      axios.post(`${API}/track-visit?page=checkout&session_id=${sessionId}`).catch(() => {});
+    if (step === 'checkout') {
+      // Track checkout page visit
       trackPageVisit('checkout');
       
       // Track action for user journey
       trackAction('view_checkout', { step: 'checkout_started' });
+      
+      // Track with InitiateCheckout pixel
+      trackInitiateCheckout(PREPAID_PRICE);
     }
-  }, [step, sessionId]);
+  }, [step, trackPageVisit, trackAction, trackInitiateCheckout]);
 
   // Track address entry when user starts filling address fields
   const handleAddressFieldChange = (field, value, setter) => {
@@ -120,7 +113,6 @@ function ProductPage() {
     // Track when address is substantially filled
     if (field === 'pincode' && value.length === 6) {
       trackAction('address_complete', { has_address: true, address_entered: true });
-      trackFormComplete('address_form');
       
       // Meta Pixel custom event
       if (window.fbq) {
@@ -130,43 +122,11 @@ function ProductPage() {
   };
 
   useEffect(() => {
-    // Use consistent session ID from sessionStorage
-    const currentSessionId = getSessionId();
-    setSessionId(currentSessionId);
-    
-    // Track page visit with user behavior tracking
+    // Track page visit (deduplicated in provider)
     trackPageVisit('product');
     
-    // Track with live visitors endpoint
-    axios.post(`${API}/track-visit?page=product&session_id=${currentSessionId}`).catch(() => {});
-    
-    // Initialize customer notifications with social proof
-    // Initialize customer notifications (for admin broadcasts only)
-    // Social proof is handled by RecentPurchaseNotification component
-    initCustomerNotifications();
-    // DISABLED: startSocialProofNotifications - using RecentPurchaseNotification instead
-    
-    // Meta Pixel - ViewContent (product page) - with direct fallback
-    trackViewContent(PREPAID_PRICE);
-    
-    // Direct fbq call as backup (ensures event fires even if module has issues)
-    setTimeout(() => {
-      if (typeof window !== 'undefined' && window.fbq) {
-        try {
-          window.fbq('track', 'ViewContent', {
-            content_name: 'Super Anti-Aging Serum',
-            content_category: 'Skincare',
-            content_ids: ['celestaglow_serum_001'],
-            content_type: 'product',
-            value: 699.00,
-            currency: 'INR'
-          });
-          console.log('[Meta Pixel Direct] ViewContent fired');
-        } catch(e) {
-          console.error('[Meta Pixel Direct] ViewContent error:', e);
-        }
-      }
-    }, 500);
+    // Meta Pixel - ViewContent
+    trackViewContent('Super Anti-Aging Serum', PREPAID_PRICE);
 
     // Check if user has claimed discount
     checkDiscountStatus();
@@ -197,7 +157,7 @@ function ProductPage() {
         setShowExitPopup(true);
         setExitPopupShown(true);
         localStorage.setItem('exitPopupShown', 'true');
-        trackExitIntent(); // Track exit intent shown
+        trackAction('exit_intent', { page: 'product' });
       }
     };
 
@@ -207,12 +167,12 @@ function ProductPage() {
     // Track time on page when leaving
     return () => { 
       const timeOnPage = Math.round((Date.now() - pageStartTime.current) / 1000);
-      trackTimeSpent('product', timeOnPage);
+      trackAction('time_on_page', { page: 'product', seconds: timeOnPage });
       clearInterval(timer); 
       clearInterval(viewerInterval);
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [exitPopupShown]);
+  }, [exitPopupShown, trackPageVisit, trackViewContent, trackAction]);
 
   // DOM-level Click Listener for InitiateCheckout - EVENT DELEGATION PATTERN
   // Uses capture phase (true) to ensure event fires before any other handlers
@@ -351,7 +311,7 @@ function ProductPage() {
       const orderResponse = await axios.post(`${API}/create-razorpay-order`, { amount: amount > 0 ? amount : 1 });
       
       // Track AddPaymentInfo
-      trackAddPaymentInfo(paymentMethod, amount);
+      trackAction('add_payment_info', { payment_method: paymentMethod, amount: amount });
       
       const options = {
         key: RAZORPAY_KEY,
@@ -642,7 +602,7 @@ function ProductPage() {
           {/* Buy Button */}
           <button
             onClick={() => {
-              trackCTAClick('buy_now_main', 'product_page');
+              trackAction('cta_click', { button: 'buy_now_main', page: 'product_page' });
               
               // CRITICAL: Fire InitiateCheckout on BUTTON CLICK (not page render)
               trackInitiateCheckout(PREPAID_PRICE);
@@ -748,7 +708,7 @@ function ProductPage() {
                 <button
                   onClick={() => {
                     setExpandedSection(expandedSection === i ? null : i);
-                    trackFAQInteraction(section.title);
+                    trackAction('faq_interaction', { section: section.title });
                   }}
                   className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
                   data-testid={`accordion-${i}`}
@@ -841,7 +801,7 @@ function ProductPage() {
             </div>
             <button
               onClick={() => {
-                trackCTAClick('buy_now_sticky', 'product_page_sticky');
+                trackAction('cta_click', { button: 'buy_now_sticky', page: 'product_page_sticky' });
                 
                 // CRITICAL: Fire InitiateCheckout on BUTTON CLICK (not page render)
                 trackInitiateCheckout(PREPAID_PRICE);
@@ -913,7 +873,7 @@ function ProductPage() {
                     setHasDiscount(true);
                     setDiscountApplied(true);
                     setDiscountAmount(EXIT_DISCOUNT_AMOUNT);
-                    trackCTAClick('exit_popup_buy', 'exit_popup');
+                    trackAction('cta_click', { button: 'exit_popup_buy', page: 'exit_popup' });
                     // Track the discount claim
                     trackAction('exit_discount_claimed', { amount: EXIT_DISCOUNT_AMOUNT });
                     
@@ -963,9 +923,6 @@ function ProductPage() {
             </div>
           </div>
         )}
-
-        {/* Recent Purchase Notification */}
-        <RecentPurchaseNotification />
       </div>
     );
   }

@@ -26,36 +26,37 @@ const ALL_LOCATIONS = [
   "Visakhapatnam", "Patna", "Ludhiana", "Agra", "Nashik", "Rajkot", "Varanasi"
 ];
 
+// Configuration
+const MAX_NOTIFICATIONS = 5;
+const FIRST_DELAY = 5000;
+const MIN_INTERVAL = 15000;
+const MAX_INTERVAL = 20000;
+const DISPLAY_DURATION = 6000;
+
 function RecentPurchaseNotification() {
   const [notification, setNotification] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [isDismissed, setIsDismissed] = useState(false);
-  const [isNewUser, setIsNewUser] = useState(false);
   const usedNamesRef = useRef([]);
   const audioRef = useRef(null);
   const notificationCountRef = useRef(0);
   const timeoutRef = useRef(null);
+  const dismissedRef = useRef(false);
+  const isNewUserRef = useRef(false);
   
-  const MAX_NOTIFICATIONS = 5;
-  const FIRST_DELAY = 5000;
-  const MIN_INTERVAL = 15000;
-  const MAX_INTERVAL = 20000;
-  const DISPLAY_DURATION = 6000;
-
-  // Initialize audio and check user status
+  // Initialize audio
   useEffect(() => {
     audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
     audioRef.current.volume = 0.3;
     
-    const hasVisitedBefore = localStorage.getItem('celestaVisitor');
-    if (!hasVisitedBefore) {
-      setIsNewUser(true);
+    // Check if new user
+    if (!localStorage.getItem('celestaVisitor')) {
+      isNewUserRef.current = true;
       localStorage.setItem('celestaVisitor', 'true');
     }
     
-    // Check if already dismissed this session
+    // Check if dismissed this session
     if (sessionStorage.getItem('notifDismissed')) {
-      setIsDismissed(true);
+      dismissedRef.current = true;
     }
     
     return () => {
@@ -66,7 +67,7 @@ function RecentPurchaseNotification() {
   const playSound = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(err => console.log('Audio play failed:', err));
+      audioRef.current.play().catch(() => {});
     }
   }, []);
 
@@ -85,43 +86,38 @@ function RecentPurchaseNotification() {
     return ALL_LOCATIONS[Math.floor(Math.random() * ALL_LOCATIONS.length)];
   }, []);
 
-  const getRandomInterval = useCallback(() => {
-    return MIN_INTERVAL + Math.random() * (MAX_INTERVAL - MIN_INTERVAL);
-  }, []);
-
-  const hideNotification = useCallback(() => {
-    setIsVisible(false);
-    setNotification(null);
-  }, []);
-
-  const showOrderNotification = useCallback(() => {
-    if (notificationCountRef.current >= MAX_NOTIFICATIONS || isDismissed) return;
+  // Show order notification
+  const showOrder = useCallback(() => {
+    if (dismissedRef.current || notificationCountRef.current >= MAX_NOTIFICATIONS) return;
     
-    const newNotification = {
+    const newNotif = {
       type: 'order',
       name: getUniqueName(),
       location: getRandomLocation(),
       id: Date.now()
     };
     
-    setNotification(newNotification);
+    setNotification(newNotif);
     setIsVisible(true);
     notificationCountRef.current++;
     playSound();
     
-    // Auto-hide after duration
+    // Schedule hide and next
     timeoutRef.current = setTimeout(() => {
-      hideNotification();
+      setIsVisible(false);
+      setNotification(null);
       
-      // Schedule next notification
-      if (notificationCountRef.current < MAX_NOTIFICATIONS && !isDismissed) {
-        timeoutRef.current = setTimeout(showOrderNotification, getRandomInterval());
+      // Schedule next if not max
+      if (!dismissedRef.current && notificationCountRef.current < MAX_NOTIFICATIONS) {
+        const nextDelay = MIN_INTERVAL + Math.random() * (MAX_INTERVAL - MIN_INTERVAL);
+        timeoutRef.current = setTimeout(showOrder, nextDelay);
       }
     }, DISPLAY_DURATION);
-  }, [isDismissed, getUniqueName, getRandomLocation, getRandomInterval, playSound, hideNotification]);
+  }, [getUniqueName, getRandomLocation, playSound]);
 
-  const showWelcomeNotification = useCallback(() => {
-    if (isDismissed) return;
+  // Show welcome notification
+  const showWelcome = useCallback(() => {
+    if (dismissedRef.current) return;
     
     setNotification({ type: 'welcome', id: Date.now() });
     setIsVisible(true);
@@ -129,37 +125,43 @@ function RecentPurchaseNotification() {
     playSound();
     sessionStorage.setItem('welcomeShown', 'true');
     
-    // Auto-hide welcome after duration, then show order notifications
+    // Hide welcome, then show orders
     timeoutRef.current = setTimeout(() => {
-      hideNotification();
-      timeoutRef.current = setTimeout(showOrderNotification, 3000);
+      setIsVisible(false);
+      setNotification(null);
+      
+      // Start order notifications after 3 seconds
+      if (!dismissedRef.current) {
+        timeoutRef.current = setTimeout(showOrder, 3000);
+      }
     }, DISPLAY_DURATION);
-  }, [isDismissed, playSound, hideNotification, showOrderNotification]);
+  }, [playSound, showOrder]);
 
   // Start notification sequence
   useEffect(() => {
-    if (isDismissed) return;
+    if (dismissedRef.current) return;
     
     const startTimer = setTimeout(() => {
-      if (isNewUser && !sessionStorage.getItem('welcomeShown')) {
-        showWelcomeNotification();
+      if (isNewUserRef.current && !sessionStorage.getItem('welcomeShown')) {
+        showWelcome();
       } else {
-        showOrderNotification();
+        showOrder();
       }
     }, FIRST_DELAY);
     
     return () => clearTimeout(startTimer);
-  }, [isDismissed, isNewUser, showWelcomeNotification, showOrderNotification]);
+  }, [showWelcome, showOrder]);
 
   const handleDismiss = useCallback(() => {
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     setIsVisible(false);
-    setIsDismissed(true);
+    setNotification(null);
+    dismissedRef.current = true;
     sessionStorage.setItem('notifDismissed', 'true');
   }, []);
 
-  // Don't render if not visible or dismissed
-  if (!isVisible || !notification || isDismissed) {
+  // Don't render if not visible
+  if (!isVisible || !notification) {
     return null;
   }
 
@@ -172,10 +174,8 @@ function RecentPurchaseNotification() {
         data-testid="welcome-notification"
       >
         <div className="bg-gradient-to-br from-green-500 via-emerald-500 to-teal-500 rounded-2xl shadow-2xl overflow-hidden w-[300px] text-white relative border border-green-400/30">
-          {/* Shimmer effect */}
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-shimmer"></div>
           
-          {/* Close button */}
           <button 
             onClick={handleDismiss}
             className="absolute top-3 right-3 w-7 h-7 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all hover:scale-110 z-10"
@@ -220,7 +220,7 @@ function RecentPurchaseNotification() {
     );
   }
 
-  // Order Notification - Modern, clean design
+  // Order Notification
   return (
     <div 
       key={notification.id}
@@ -228,7 +228,6 @@ function RecentPurchaseNotification() {
       data-testid="recent-purchase-notification"
     >
       <div className="bg-white rounded-2xl shadow-2xl overflow-hidden w-[300px] relative border border-gray-200">
-        {/* Close button */}
         <button 
           onClick={handleDismiss}
           className="absolute top-2.5 right-3 w-6 h-6 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition-all hover:scale-110 z-10"
@@ -237,7 +236,6 @@ function RecentPurchaseNotification() {
           <X size={14} className="text-white" />
         </button>
         
-        {/* Header with gradient - added pr-10 for close button space */}
         <div className="bg-gradient-to-r from-green-500 to-emerald-500 px-4 py-2.5 pr-10 flex items-center gap-2">
           <div className="w-6 h-6 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
             <CheckCircle className="w-4 h-4 text-white" />
@@ -245,10 +243,8 @@ function RecentPurchaseNotification() {
           <span className="text-white text-sm font-semibold">New Order Placed</span>
         </div>
         
-        {/* Content */}
         <div className="p-4">
           <div className="flex gap-4">
-            {/* Product Image with border */}
             <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-100 p-1">
               <img 
                 src={PRODUCT_IMAGE} 
@@ -258,7 +254,6 @@ function RecentPurchaseNotification() {
               />
             </div>
             
-            {/* Details */}
             <div className="flex-1 min-w-0">
               <p className="text-gray-900 font-bold text-base truncate">
                 {notification.name}
@@ -274,7 +269,6 @@ function RecentPurchaseNotification() {
             </div>
           </div>
           
-          {/* Footer with rating and timestamp */}
           <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-0.5">

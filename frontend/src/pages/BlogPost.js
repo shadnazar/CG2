@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Clock, ChevronRight } from 'lucide-react';
-import { trackBlogView as trackBlogViewPixel, trackCTAClick } from '../utils/metaPixel';
-import { trackBlogView } from '../utils/userTracking';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -17,10 +15,6 @@ function BlogPost() {
       .then(res => { 
         setBlog(res.data); 
         setLoading(false);
-        // Track blog view - Meta Pixel
-        trackBlogViewPixel(res.data.title, res.data.category);
-        // Track blog view - Internal tracking
-        trackBlogView(slug, res.data.title);
       })
       .catch(() => setLoading(false));
   }, [slug]);
@@ -119,7 +113,6 @@ function BlogPost() {
           to="/product/anti-aging-serum"
           className="btn-cg-primary inline-flex"
           data-testid="blog-cta"
-          onClick={() => trackCTAClick('shop_now_blog_post', 'blog_post_cta')}
         >
           Shop Now — ₹699 <ChevronRight size={18} />
         </Link>

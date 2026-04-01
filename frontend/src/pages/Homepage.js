@@ -2,18 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Check, Star, ChevronRight, ChevronDown, ChevronUp, Clock, Users, ShieldCheck, Truck, Flame, MapPin } from 'lucide-react';
-import DiscountPopup from '../components/DiscountPopup';
 import DermatologistSection from '../components/DermatologistSection';
-import { 
-  trackViewContent, 
-  trackCTAClick, 
-  trackViewTestimonials, 
-  trackFAQInteraction,
-  trackExitIntent,
-  trackTimeOnPage,
-  trackPopupShown
-} from '../utils/metaPixel';
-import { trackPageVisit, trackTimeSpent, getSessionId, getVisitorId } from '../utils/userTracking';
+import { useTracking } from '../providers/TrackingProvider';
 import { getSharedStats, updateSharedStats, getCurrentLocation, rotateLocation } from '../utils/sharedStats';
 import { initCustomerNotifications } from '../utils/customerNotifications';
 
@@ -129,47 +119,21 @@ function TransformationShowcase() {
 
 function Homepage() {
   const navigate = useNavigate();
+  const { trackPageVisit, trackViewContent, trackAction } = useTracking();
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 47, seconds: 33 });
   const [viewingNow, setViewingNow] = useState(() => getSharedStats().viewingNow);
   const [soldToday, setSoldToday] = useState(() => getSharedStats().soldToday);
   const [showExitPopup, setShowExitPopup] = useState(false);
-  const [showDiscountPopup, setShowDiscountPopup] = useState(false);
   const [userLocation, setUserLocation] = useState(() => getCurrentLocation());
-  const [sessionId, setSessionId] = useState('');
   const pageStartTime = useRef(Date.now());
-  const testimonialsTracked = useRef(false);
 
   useEffect(() => {
-    // Use consistent session ID from sessionStorage
-    const currentSessionId = getSessionId();
-    setSessionId(currentSessionId);
-    
-    // Check for referral code in URL and store it for product page
-    const urlParams = new URLSearchParams(window.location.search);
-    const refCode = urlParams.get('ref');
-    if (refCode) {
-      sessionStorage.setItem('referralCode', refCode);
-      console.log('[Referral] Code detected on homepage:', refCode);
-    }
-    
-    // Track page visit with enhanced analytics (uses visitor ID for proper deduplication)
+    // Track page visit (deduplicated in provider)
     trackPageVisit('homepage');
     
-    // Also track with old endpoint for backward compatibility (live visitors)
-    axios.post(`${API}/track-visit?page=homepage&session_id=${currentSessionId}`).catch(() => {});
-    
-    // Meta Pixel tracking - ViewContent for homepage
+    // Meta Pixel tracking
     trackViewContent('Celesta Glow Homepage', PREPAID_PRICE);
-
-    // Show discount popup after 5 seconds if not already claimed
-    const discountTimer = setTimeout(() => {
-      if (!localStorage.getItem('discountClaimed') && !sessionStorage.getItem('discountPopupShown')) {
-        setShowDiscountPopup(true);
-        sessionStorage.setItem('discountPopupShown', 'true');
-        trackPopupShown('discount_popup');
-      }
-    }, 5000);
 
     // Countdown timer
     const timer = setInterval(() => {
@@ -192,23 +156,21 @@ function Homepage() {
       setViewingNow(newValue);
     }, 5000);
 
-    // Auto-rotate location every 4 seconds (faster)
+    // Auto-rotate location every 4 seconds
     const locationInterval = setInterval(() => {
       const newLocation = rotateLocation();
       setUserLocation(newLocation);
     }, 4000);
 
     // Initialize customer notifications (for admin broadcasts only)
-    // Social proof is handled by RecentPurchaseNotification component
     initCustomerNotifications();
-    // DISABLED: startSocialProofNotifications - using RecentPurchaseNotification instead
 
-    // Exit intent detection with pixel tracking
+    // Exit intent detection
     const handleMouseLeave = (e) => {
       if (e.clientY < 10 && !sessionStorage.getItem('exitPopupShown')) {
         setShowExitPopup(true);
         sessionStorage.setItem('exitPopupShown', 'true');
-        trackExitIntent('homepage');
+        trackAction('exit_intent', { page: 'homepage' });
       }
     };
     document.addEventListener('mouseleave', handleMouseLeave);
@@ -216,28 +178,26 @@ function Homepage() {
     // Track testimonials section view
     const handleScroll = () => {
       const testimonialsSection = document.querySelector('.testimonial-scroll-container');
-      if (testimonialsSection && !testimonialsTracked.current) {
+      if (testimonialsSection) {
         const rect = testimonialsSection.getBoundingClientRect();
         if (rect.top < window.innerHeight && rect.bottom > 0) {
-          trackViewTestimonials();
-          testimonialsTracked.current = true;
+          trackAction('view_testimonials', { page: 'homepage' });
         }
       }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
 
     // Track time on page when leaving
     return () => {
       const timeOnPage = Math.round((Date.now() - pageStartTime.current) / 1000);
-      trackTimeOnPage('homepage', timeOnPage);
-      clearTimeout(discountTimer);
+      trackAction('time_on_page', { page: 'homepage', seconds: timeOnPage });
       clearInterval(timer);
       clearInterval(viewerInterval);
       clearInterval(locationInterval);
       document.removeEventListener('mouseleave', handleMouseLeave);
       window.removeEventListener('scroll', handleScroll);
     };
-  }, []);
+  }, [trackPageVisit, trackViewContent, trackAction]);
 
   // All 10 real testimonials from celestaglow.com - Inclusive of Men & Women
   const testimonials = [
@@ -420,7 +380,7 @@ function Homepage() {
         <div className="mt-6 mx-auto max-w-sm">
           <button
             onClick={() => {
-              trackCTAClick('consultation_hero', 'homepage');
+              trackAction('cta_click', { button: 'consultation_hero', page: 'homepage' });
               navigate('/consultation');
             }}
             className="w-full py-3 px-4 bg-gradient-to-r from-purple-500 to-indigo-600 text-white rounded-xl font-semibold flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transition-all"
@@ -718,7 +678,7 @@ function Homepage() {
                 onClick={() => {
                   setExpandedFaq(expandedFaq === i ? null : i);
                   if (expandedFaq !== i) {
-                    trackFAQInteraction(faq.q);
+                    trackAction('faq_interaction', { question: faq.q });
                   }
                 }}
                 className="faq-header"
@@ -791,15 +751,6 @@ function Homepage() {
           100% { transform: translateX(-50%); }
         }
       `}</style>
-
-      {/* ₹50 Discount Popup */}
-      {showDiscountPopup && (
-        <DiscountPopup 
-          sessionId={sessionId}
-          currentPage="homepage"
-          onClose={() => setShowDiscountPopup(false)}
-        />
-      )}
     </div>
   );
 }
