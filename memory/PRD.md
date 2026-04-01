@@ -24,9 +24,38 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 ## Referral Program (Updated April 1, 2026)
 - **Referred Customer Gets**: ₹50 discount (was ₹100)
 - **Referrer Gets**: ₹100 cashback after delivery (was ₹200 immediately)
-- **Social Proof**: Dynamic counter showing referrers and earnings (updates daily +3-4 referrers)
+- **Social Proof**: Dynamic counter showing referrers and earnings (updates daily +2-3 referrers)
+
+### Complete Referral Flow:
+1. **Customer A orders** → Gets unique referral link (`celestaglow.com?ref=CODE`)
+2. **Referral link stored** in order document (MongoDB)
+3. **Order Success Page** displays referral link with Copy & WhatsApp share buttons
+4. **Customer B uses referral link** → ₹50 discount auto-applied at checkout
+5. **Admin marks order as Delivered** → ₹100 cashback becomes "ready to pay"
+6. **Admin clicks "Pay"** → Cashback marked as paid
+
+### Admin Referrals Dashboard Features:
+- View all referrers with their referral links
+- Track clicks, purchases, earnings
+- See pending vs paid earnings
+- Click eye icon to view referred orders
+- Process individual order cashback payments
 
 ## What's Been Implemented
+
+### April 1, 2026 - Complete Referral System
+- **Order Success Page**: Shows full referral link with copy/share buttons
+- **Admin Referrals Dashboard**: 
+  - Displays referral links (not just codes)
+  - View details modal with all referred orders
+  - "Pay ₹100" button for each delivered order
+  - Track paid vs pending earnings
+- **Delivery Cashback Flow**:
+  - When order marked "Delivered", cashback status → "ready_to_pay"
+  - Admin can process individual payments
+  - Earnings tracked in referrer's account
+- **Notification Close Button**: Added X button to dismiss notifications immediately
+- **Dynamic Referrer Count**: Updated to 2-3 per day growth
 
 ### April 1, 2026 - Pricing & Referral Update
 - **Price Changes:**

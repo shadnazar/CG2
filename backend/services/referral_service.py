@@ -192,6 +192,76 @@ class ReferralService:
                 "$inc": {
                     "earnings_paid": amount,
                     "earnings_pending": -amount
+                },
+                "$set": {
+                    "last_payment_at": datetime.now(timezone.utc).isoformat()
+                }
+            }
+        )
+        return result.modified_count > 0
+    
+    async def process_delivery_cashback(self, referred_order_id: str) -> Dict:
+        """
+        Process cashback when a referred order is delivered.
+        Called when order status changes to 'Delivered'.
+        """
+        # Find the referral that has this order in referred_orders
+        referral = await self.db.referrals.find_one(
+            {"referred_orders.order_id": referred_order_id},
+            {"_id": 0}
+        )
+        
+        if not referral:
+            return {"success": False, "error": "No referral found for this order"}
+        
+        # Check if already processed
+        for order in referral.get("referred_orders", []):
+            if order.get("order_id") == referred_order_id:
+                if order.get("delivery_status") == "delivered":
+                    return {"success": False, "error": "Already processed"}
+                break
+        
+        # Update the referred order's delivery status
+        await self.db.referrals.update_one(
+            {"referral_code": referral["referral_code"], "referred_orders.order_id": referred_order_id},
+            {
+                "$set": {
+                    "referred_orders.$.delivery_status": "delivered",
+                    "referred_orders.$.delivered_at": datetime.now(timezone.utc).isoformat(),
+                    "referred_orders.$.cashback_status": "ready_to_pay"  # ₹100 ready for the referrer
+                }
+            }
+        )
+        
+        return {
+            "success": True,
+            "referrer_phone": referral.get("referrer_phone"),
+            "referrer_name": referral.get("referrer_name"),
+            "referral_code": referral.get("referral_code"),
+            "cashback_amount": 100,
+            "message": f"₹100 cashback ready for {referral.get('referrer_name')}"
+        }
+    
+    async def get_referral_with_orders(self, referral_code: str) -> Optional[Dict]:
+        """Get detailed referral info including all referred orders"""
+        referral = await self.db.referrals.find_one(
+            {"referral_code": referral_code},
+            {"_id": 0}
+        )
+        return referral
+    
+    async def mark_order_cashback_paid(self, referral_code: str, order_id: str) -> bool:
+        """Mark a specific referred order's cashback as paid"""
+        result = await self.db.referrals.update_one(
+            {"referral_code": referral_code, "referred_orders.order_id": order_id},
+            {
+                "$set": {
+                    "referred_orders.$.cashback_status": "paid",
+                    "referred_orders.$.paid_at": datetime.now(timezone.utc).isoformat()
+                },
+                "$inc": {
+                    "earnings_paid": 100,
+                    "earnings_pending": -100
                 }
             }
         )

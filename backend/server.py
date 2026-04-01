@@ -567,6 +567,12 @@ async def update_order_status(order_id: str, status_update: OrderStatusUpdate):
     # Get updated order data
     updated_order = await db.orders.find_one({"order_id": order_id}, {"_id": 0})
     
+    # If delivered and this was a referred order, process cashback for the referrer
+    referral_cashback = None
+    if new_status == "delivered" and updated_order.get("referral_code_used"):
+        referral_cashback = await referral_service.process_delivery_cashback(order_id)
+        logging.info(f"Referral cashback processed for order {order_id}: {referral_cashback}")
+    
     # Send email notification if shipped or delivered
     if new_status in ["shipped", "delivered"]:
         send_order_status_email(updated_order, new_status)
@@ -575,7 +581,8 @@ async def update_order_status(order_id: str, status_update: OrderStatusUpdate):
         "success": True,
         "order_id": order_id,
         "new_status": new_status,
-        "email_sent": new_status in ["shipped", "delivered"] and bool(updated_order.get('email'))
+        "email_sent": new_status in ["shipped", "delivered"] and bool(updated_order.get('email')),
+        "referral_cashback": referral_cashback
     }
 
 
@@ -1926,6 +1933,35 @@ async def mark_referral_paid(
     
     success = await referral_service.mark_earnings_paid(referral_code, amount)
     return {"success": success}
+
+
+@api_router.post("/admin/referrals/mark-order-paid")
+async def mark_order_cashback_paid(
+    referral_code: str = Query(...),
+    order_id: str = Query(...),
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    """Mark a specific referred order's cashback as paid"""
+    if x_admin_token != "celestaglow2024":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    success = await referral_service.mark_order_cashback_paid(referral_code, order_id)
+    return {"success": success, "message": f"Cashback for order {order_id} marked as paid" if success else "Failed to mark as paid"}
+
+
+@api_router.get("/admin/referrals/{referral_code}")
+async def get_referral_details(
+    referral_code: str,
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    """Get detailed referral info including all referred orders"""
+    if x_admin_token != "celestaglow2024":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    referral = await referral_service.get_referral_with_orders(referral_code)
+    if not referral:
+        raise HTTPException(status_code=404, detail="Referral not found")
+    return referral
 
 
 @api_router.post("/admin/referrals/test-purchase")

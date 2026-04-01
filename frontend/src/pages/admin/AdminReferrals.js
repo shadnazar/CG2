@@ -4,7 +4,7 @@ import axios from 'axios';
 import { 
   Users, DollarSign, MousePointer, ShoppingBag, 
   ArrowLeft, Copy, CheckCircle, RefreshCw, Gift,
-  TrendingUp, Clock, ExternalLink
+  TrendingUp, Clock, ExternalLink, CreditCard, Eye, X
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -16,6 +16,8 @@ function AdminReferrals() {
   const [testReferralCode, setTestReferralCode] = useState('');
   const [testResult, setTestResult] = useState(null);
   const [copiedCode, setCopiedCode] = useState(null);
+  const [selectedReferral, setSelectedReferral] = useState(null);
+  const [processingPayment, setProcessingPayment] = useState(null);
   const adminToken = sessionStorage.getItem('adminToken') || 'celestaglow2024';
 
   useEffect(() => {
@@ -59,6 +61,54 @@ function AdminReferrals() {
     navigator.clipboard.writeText(`https://celestaglow.com?ref=${code}`);
     setCopiedCode(code);
     setTimeout(() => setCopiedCode(null), 2000);
+  };
+
+  const viewReferralDetails = async (referralCode) => {
+    try {
+      const res = await axios.get(`${API}/admin/referrals/${referralCode}`, {
+        headers: { 'X-Admin-Token': adminToken }
+      });
+      setSelectedReferral(res.data);
+    } catch (err) {
+      console.error('Failed to fetch referral details:', err);
+    }
+  };
+
+  const markOrderAsPaid = async (referralCode, orderId) => {
+    setProcessingPayment(orderId);
+    try {
+      await axios.post(
+        `${API}/admin/referrals/mark-order-paid?referral_code=${referralCode}&order_id=${orderId}`,
+        {},
+        { headers: { 'X-Admin-Token': adminToken } }
+      );
+      // Refresh both the selected referral and the main list
+      await viewReferralDetails(referralCode);
+      await fetchReferrals();
+    } catch (err) {
+      console.error('Failed to mark as paid:', err);
+    } finally {
+      setProcessingPayment(null);
+    }
+  };
+
+  const markAllPending = async (referralCode, pendingAmount) => {
+    setProcessingPayment(referralCode);
+    try {
+      await axios.post(
+        `${API}/admin/referrals/mark-paid?referral_code=${referralCode}&amount=${pendingAmount}`,
+        {},
+        { headers: { 'X-Admin-Token': adminToken } }
+      );
+      await fetchReferrals();
+      if (selectedReferral) {
+        await viewReferralDetails(referralCode);
+      }
+    } catch (err) {
+      console.error('Failed to mark as paid:', err);
+    } finally {
+      setProcessingPayment(null);
+    }
   };
 
   const formatDate = (dateStr) => {
@@ -203,7 +253,7 @@ function AdminReferrals() {
                 <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
                   <tr>
                     <th className="px-4 py-3 text-left">Referrer</th>
-                    <th className="px-4 py-3 text-left">Code</th>
+                    <th className="px-4 py-3 text-left">Referral Link</th>
                     <th className="px-4 py-3 text-center">Clicks</th>
                     <th className="px-4 py-3 text-center">Purchases</th>
                     <th className="px-4 py-3 text-right">Earnings</th>
@@ -222,9 +272,22 @@ function AdminReferrals() {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <code className="bg-gray-100 px-2 py-1 rounded text-sm font-mono">
-                          {ref.referral_code}
-                        </code>
+                        <div className="flex items-center gap-2">
+                          <code className="bg-gray-100 px-2 py-1 rounded text-xs font-mono truncate max-w-[180px]">
+                            celestaglow.com?ref={ref.referral_code}
+                          </code>
+                          <button
+                            onClick={() => copyToClipboard(ref.referral_code)}
+                            className="p-1.5 hover:bg-gray-100 rounded text-gray-400 hover:text-green-600"
+                            title="Copy link"
+                          >
+                            {copiedCode === ref.referral_code ? (
+                              <CheckCircle size={14} className="text-green-500" />
+                            ) : (
+                              <Copy size={14} />
+                            )}
+                          </button>
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className="text-blue-600 font-medium">{ref.total_referrals || 0}</span>
@@ -234,22 +297,41 @@ function AdminReferrals() {
                       </td>
                       <td className="px-4 py-3 text-right">
                         <span className="font-bold text-gray-900">₹{ref.total_earnings || 0}</span>
+                        {ref.earnings_paid > 0 && (
+                          <p className="text-xs text-green-600">₹{ref.earnings_paid} paid</p>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <span className="text-amber-600 font-medium">₹{ref.earnings_pending || 0}</span>
+                        {(ref.earnings_pending || 0) > 0 ? (
+                          <span className="text-amber-600 font-bold">₹{ref.earnings_pending}</span>
+                        ) : (
+                          <span className="text-gray-400">₹0</span>
+                        )}
                       </td>
-                      <td className="px-4 py-3 text-center">
-                        <button
-                          onClick={() => copyToClipboard(ref.referral_code)}
-                          className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-green-600"
-                          title="Copy referral link"
-                        >
-                          {copiedCode === ref.referral_code ? (
-                            <CheckCircle size={16} className="text-green-500" />
-                          ) : (
-                            <Copy size={16} />
+                      <td className="px-4 py-3">
+                        <div className="flex items-center justify-center gap-1">
+                          <button
+                            onClick={() => viewReferralDetails(ref.referral_code)}
+                            className="p-2 hover:bg-blue-50 rounded-lg text-gray-500 hover:text-blue-600"
+                            title="View details"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          {(ref.earnings_pending || 0) > 0 && (
+                            <button
+                              onClick={() => markAllPending(ref.referral_code, ref.earnings_pending)}
+                              disabled={processingPayment === ref.referral_code}
+                              className="p-2 hover:bg-green-50 rounded-lg text-gray-500 hover:text-green-600 disabled:opacity-50"
+                              title="Mark all pending as paid"
+                            >
+                              {processingPayment === ref.referral_code ? (
+                                <RefreshCw size={16} className="animate-spin" />
+                              ) : (
+                                <CreditCard size={16} />
+                              )}
+                            </button>
                           )}
-                        </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -270,6 +352,110 @@ function AdminReferrals() {
           </ul>
         </div>
       </div>
+
+      {/* Referral Details Modal */}
+      {selectedReferral && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white">
+              <div>
+                <h3 className="font-bold text-gray-900">{selectedReferral.referrer_name}</h3>
+                <p className="text-sm text-gray-500">{selectedReferral.referrer_phone}</p>
+              </div>
+              <button
+                onClick={() => setSelectedReferral(null)}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              {/* Referral Link */}
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <p className="text-sm font-medium text-green-800 mb-2">Referral Link</p>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 bg-white px-3 py-2 rounded-lg text-sm font-mono text-green-700 border border-green-200">
+                    https://celestaglow.com?ref={selectedReferral.referral_code}
+                  </code>
+                  <button
+                    onClick={() => copyToClipboard(selectedReferral.referral_code)}
+                    className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                  >
+                    {copiedCode === selectedReferral.referral_code ? <CheckCircle size={18} /> : <Copy size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Stats Summary */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-gray-50 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-gray-900">₹{selectedReferral.total_earnings || 0}</p>
+                  <p className="text-xs text-gray-500">Total Earnings</p>
+                </div>
+                <div className="bg-green-50 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-green-600">₹{selectedReferral.earnings_paid || 0}</p>
+                  <p className="text-xs text-gray-500">Paid</p>
+                </div>
+                <div className="bg-amber-50 rounded-xl p-3 text-center">
+                  <p className="text-2xl font-bold text-amber-600">₹{selectedReferral.earnings_pending || 0}</p>
+                  <p className="text-xs text-gray-500">Pending</p>
+                </div>
+              </div>
+
+              {/* Referred Orders */}
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-3">Referred Orders ({selectedReferral.referred_orders?.length || 0})</h4>
+                {selectedReferral.referred_orders && selectedReferral.referred_orders.length > 0 ? (
+                  <div className="space-y-2">
+                    {selectedReferral.referred_orders.map((order, idx) => (
+                      <div key={idx} className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900">{order.buyer_name}</p>
+                          <p className="text-xs text-gray-500">Order: {order.order_id}</p>
+                          <p className="text-xs text-gray-400">{formatDate(order.purchased_at)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm font-bold text-gray-900">₹{order.order_amount}</p>
+                          <div className="flex items-center gap-2 mt-1">
+                            {order.delivery_status === 'delivered' ? (
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Delivered</span>
+                            ) : (
+                              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">Pending Delivery</span>
+                            )}
+                            {order.cashback_status === 'paid' ? (
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <CheckCircle size={10} /> ₹100 Paid
+                              </span>
+                            ) : order.cashback_status === 'ready_to_pay' ? (
+                              <button
+                                onClick={() => markOrderAsPaid(selectedReferral.referral_code, order.order_id)}
+                                disabled={processingPayment === order.order_id}
+                                className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full hover:bg-amber-200 flex items-center gap-1 disabled:opacity-50"
+                              >
+                                {processingPayment === order.order_id ? (
+                                  <RefreshCw size={10} className="animate-spin" />
+                                ) : (
+                                  <CreditCard size={10} />
+                                )}
+                                Pay ₹100
+                              </button>
+                            ) : (
+                              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Awaiting Delivery</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500 text-center py-4">No referred orders yet</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
