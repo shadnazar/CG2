@@ -1,0 +1,196 @@
+"""
+Referral System Service
+- Generate unique referral links
+- Track referral purchases
+- Calculate earnings
+"""
+import uuid
+import hashlib
+from datetime import datetime, timezone
+from typing import Dict, Optional, List
+from motor.motor_asyncio import AsyncIOMotorDatabase
+
+class ReferralService:
+    def __init__(self, db: AsyncIOMotorDatabase):
+        self.db = db
+    
+    def generate_referral_code(self, phone: str) -> str:
+        """Generate a unique referral code based on phone number"""
+        # Create a short unique code
+        hash_input = f"{phone}_{datetime.now().timestamp()}"
+        hash_value = hashlib.md5(hash_input.encode()).hexdigest()[:8].upper()
+        return f"CG{hash_value}"
+    
+    async def create_referral(self, order_data: Dict) -> Dict:
+        """Create a referral entry after successful order"""
+        referral_code = self.generate_referral_code(order_data.get("phone", ""))
+        
+        referral_doc = {
+            "referral_code": referral_code,
+            "referrer_phone": order_data.get("phone"),
+            "referrer_email": order_data.get("email"),
+            "referrer_name": order_data.get("name"),
+            "referrer_order_id": order_data.get("order_id"),
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "total_referrals": 0,
+            "successful_purchases": 0,
+            "total_earnings": 0,
+            "earnings_paid": 0,
+            "earnings_pending": 0,
+            "referred_orders": [],
+            "status": "active"
+        }
+        
+        # Check if referral already exists for this phone
+        existing = await self.db.referrals.find_one({"referrer_phone": order_data.get("phone")})
+        if existing:
+            # Return existing referral code
+            return {
+                "referral_code": existing["referral_code"],
+                "referral_link": f"https://celestaglow.com?ref={existing['referral_code']}",
+                "is_new": False
+            }
+        
+        await self.db.referrals.insert_one(referral_doc)
+        
+        return {
+            "referral_code": referral_code,
+            "referral_link": f"https://celestaglow.com?ref={referral_code}",
+            "is_new": True
+        }
+    
+    async def track_referral_click(self, referral_code: str, visitor_id: str = None) -> bool:
+        """Track when someone clicks a referral link"""
+        referral = await self.db.referrals.find_one({"referral_code": referral_code})
+        if not referral:
+            return False
+        
+        await self.db.referrals.update_one(
+            {"referral_code": referral_code},
+            {
+                "$inc": {"total_referrals": 1},
+                "$push": {
+                    "clicks": {
+                        "visitor_id": visitor_id,
+                        "clicked_at": datetime.now(timezone.utc).isoformat()
+                    }
+                }
+            }
+        )
+        return True
+    
+    async def validate_referral_code(self, referral_code: str) -> Optional[Dict]:
+        """Check if a referral code is valid and return referrer info"""
+        referral = await self.db.referrals.find_one(
+            {"referral_code": referral_code, "status": "active"},
+            {"_id": 0, "referral_code": 1, "referrer_name": 1, "referrer_phone": 1}
+        )
+        return referral
+    
+    async def record_referral_purchase(self, referral_code: str, order_data: Dict) -> Dict:
+        """Record a purchase made through a referral link"""
+        referral = await self.db.referrals.find_one({"referral_code": referral_code})
+        if not referral:
+            return {"success": False, "error": "Invalid referral code"}
+        
+        # Earnings: ₹200 for each successful referral
+        earnings_per_referral = 200
+        
+        referred_order = {
+            "order_id": order_data.get("order_id"),
+            "buyer_phone": order_data.get("phone"),
+            "buyer_name": order_data.get("name"),
+            "order_amount": order_data.get("amount"),
+            "purchased_at": datetime.now(timezone.utc).isoformat(),
+            "referral_discount_applied": 100  # ₹100 discount for referred user
+        }
+        
+        await self.db.referrals.update_one(
+            {"referral_code": referral_code},
+            {
+                "$inc": {
+                    "successful_purchases": 1,
+                    "total_earnings": earnings_per_referral,
+                    "earnings_pending": earnings_per_referral
+                },
+                "$push": {"referred_orders": referred_order}
+            }
+        )
+        
+        return {
+            "success": True,
+            "referrer_phone": referral.get("referrer_phone"),
+            "referrer_name": referral.get("referrer_name"),
+            "earnings_added": earnings_per_referral
+        }
+    
+    async def get_referral_stats(self, phone: str = None, referral_code: str = None) -> Optional[Dict]:
+        """Get referral stats for a user"""
+        query = {}
+        if phone:
+            query["referrer_phone"] = phone
+        elif referral_code:
+            query["referral_code"] = referral_code
+        else:
+            return None
+        
+        referral = await self.db.referrals.find_one(query, {"_id": 0})
+        return referral
+    
+    async def get_all_referrals(self, limit: int = 100) -> List[Dict]:
+        """Get all referrals for admin panel"""
+        referrals = await self.db.referrals.find(
+            {},
+            {"_id": 0}
+        ).sort("created_at", -1).limit(limit).to_list(limit)
+        return referrals
+    
+    async def get_referral_summary(self) -> Dict:
+        """Get summary stats for admin dashboard"""
+        pipeline = [
+            {
+                "$group": {
+                    "_id": None,
+                    "total_referrers": {"$sum": 1},
+                    "total_clicks": {"$sum": "$total_referrals"},
+                    "total_purchases": {"$sum": "$successful_purchases"},
+                    "total_earnings": {"$sum": "$total_earnings"},
+                    "total_paid": {"$sum": "$earnings_paid"},
+                    "total_pending": {"$sum": "$earnings_pending"}
+                }
+            }
+        ]
+        
+        result = await self.db.referrals.aggregate(pipeline).to_list(1)
+        
+        if result:
+            return {
+                "total_referrers": result[0].get("total_referrers", 0),
+                "total_clicks": result[0].get("total_clicks", 0),
+                "total_purchases": result[0].get("total_purchases", 0),
+                "total_earnings": result[0].get("total_earnings", 0),
+                "total_paid": result[0].get("total_paid", 0),
+                "total_pending": result[0].get("total_pending", 0)
+            }
+        
+        return {
+            "total_referrers": 0,
+            "total_clicks": 0,
+            "total_purchases": 0,
+            "total_earnings": 0,
+            "total_paid": 0,
+            "total_pending": 0
+        }
+    
+    async def mark_earnings_paid(self, referral_code: str, amount: int) -> bool:
+        """Mark earnings as paid for a referrer"""
+        result = await self.db.referrals.update_one(
+            {"referral_code": referral_code},
+            {
+                "$inc": {
+                    "earnings_paid": amount,
+                    "earnings_pending": -amount
+                }
+            }
+        )
+        return result.modified_count > 0

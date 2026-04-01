@@ -27,6 +27,7 @@ from services.image_service import get_image_for_category, get_image_for_keyword
 from services.user_behavior_tracker import UserBehaviorTracker
 from services.whatsapp_service import WhatsAppService
 from services.trending_news_generator import TrendingNewsBlogGenerator
+from services.referral_service import ReferralService
 
 
 ROOT_DIR = Path(__file__).parent
@@ -45,6 +46,7 @@ auto_blog_generator = AutoBlogGenerator(db)
 user_behavior_tracker = UserBehaviorTracker(db)
 whatsapp_service = WhatsAppService(db)
 trending_news_generator = TrendingNewsBlogGenerator(db)
+referral_service = ReferralService(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
@@ -68,6 +70,8 @@ class OrderCreate(BaseModel):
     payment_method: str
     amount: float
     email: Optional[str] = None
+    referral_code: Optional[str] = None  # Referral code if user came through referral link
+    referral_discount: Optional[float] = 0  # Discount applied from referral
 
 
 class Order(BaseModel):
@@ -99,7 +103,7 @@ class RazorpayPaymentVerify(BaseModel):
     razorpay_signature: str
 
 
-def send_order_confirmation_email(order: Order):
+def send_order_confirmation_email(order: Order, referral_data: dict = None):
     try:
         smtp_host = os.environ['SMTP_HOST']
         smtp_port = int(os.environ['SMTP_PORT'])
@@ -108,6 +112,21 @@ def send_order_confirmation_email(order: Order):
         business_email = os.environ['BUSINESS_EMAIL']
         
         full_address = f"{order.house_number}, {order.area}, {order.state} - {order.pincode}"
+        
+        # Referral section for email
+        referral_section = ""
+        if referral_data and referral_data.get('referral_code'):
+            referral_link = referral_data.get('referral_link', f"https://celestaglow.com?ref={referral_data['referral_code']}")
+            referral_section = f"""
+                    <div style="background: linear-gradient(135deg, #10b981, #059669); color: white; padding: 20px; margin-top: 25px; border-radius: 10px; text-align: center;">
+                      <h3 style="margin: 0 0 10px;">🎁 Share & Earn ₹200!</h3>
+                      <p style="margin: 0 0 15px; font-size: 14px;">Give your friends ₹100 off and earn ₹200 when they buy!</p>
+                      <div style="background: white; color: #059669; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 14px; word-break: break-all;">
+                        {referral_link}
+                      </div>
+                      <p style="margin: 15px 0 0; font-size: 12px; opacity: 0.9;">Your Referral Code: <strong>{referral_data['referral_code']}</strong></p>
+                    </div>
+            """
         
         # Send email to customer
         if order.email:
@@ -159,6 +178,8 @@ def send_order_confirmation_email(order: Order):
                     <div style="background: #FFFBEB; border-left: 4px solid #F59E0B; padding: 15px; margin-top: 25px; border-radius: 5px;">
                       <p style="margin: 0; color: #92400E;">🌟 <strong>Your skin transformation journey begins!</strong> Start using Celesta Glow as soon as you receive it for best results.</p>
                     </div>
+                    
+                    {referral_section}
                   </div>
                   
                   <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
@@ -309,11 +330,36 @@ async def create_order(order_input: OrderCreate):
     doc = order_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     
+    # Check if this order was made through a referral
+    referral_code = order_input.referral_code if hasattr(order_input, 'referral_code') else None
+    if referral_code:
+        doc['referral_code_used'] = referral_code
+        # Record the referral purchase
+        await referral_service.record_referral_purchase(referral_code, {
+            "order_id": doc['order_id'],
+            "phone": doc.get('phone'),
+            "name": doc.get('name'),
+            "amount": doc.get('final_amount', doc.get('cod_amount', 599))
+        })
+    
     await db.orders.insert_one(doc)
     
-    send_order_confirmation_email(order_obj)
+    # Generate referral code for this customer
+    referral_data = await referral_service.create_referral({
+        "phone": doc.get('phone'),
+        "email": doc.get('email'),
+        "name": doc.get('name'),
+        "order_id": doc['order_id']
+    })
     
-    return order_obj
+    # Add referral info to response
+    order_obj_dict = order_obj.model_dump()
+    order_obj_dict['referral_code'] = referral_data['referral_code']
+    order_obj_dict['referral_link'] = referral_data['referral_link']
+    
+    send_order_confirmation_email(order_obj, referral_data)
+    
+    return order_obj_dict
 
 
 @api_router.get("/orders/{order_id}", response_model=Order)
@@ -1808,6 +1854,88 @@ async def test_whatsapp_connection(x_admin_token: str = Header(None), phone: str
     )
     
     return result
+
+
+
+# ==================== REFERRAL SYSTEM ENDPOINTS ====================
+
+@api_router.post("/referral/validate")
+async def validate_referral(referral_code: str = Query(...)):
+    """Validate a referral code and return referrer info"""
+    referral = await referral_service.validate_referral_code(referral_code)
+    if referral:
+        return {"valid": True, "referral": referral, "discount": 100}
+    return {"valid": False, "discount": 0}
+
+
+@api_router.post("/referral/track-click")
+async def track_referral_click(referral_code: str = Query(...), visitor_id: str = Query(None)):
+    """Track when someone clicks a referral link"""
+    success = await referral_service.track_referral_click(referral_code, visitor_id)
+    return {"success": success}
+
+
+@api_router.get("/referral/stats/{phone}")
+async def get_referral_stats(phone: str):
+    """Get referral stats for a user"""
+    stats = await referral_service.get_referral_stats(phone=phone)
+    if stats:
+        return {"success": True, "stats": stats}
+    return {"success": False, "stats": None}
+
+
+@api_router.get("/admin/referrals")
+async def get_all_referrals(
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    limit: int = Query(100)
+):
+    """Get all referrals for admin panel"""
+    if x_admin_token != "celestaglow2024":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    referrals = await referral_service.get_all_referrals(limit)
+    summary = await referral_service.get_referral_summary()
+    
+    return {
+        "referrals": referrals,
+        "summary": summary
+    }
+
+
+@api_router.post("/admin/referrals/mark-paid")
+async def mark_referral_paid(
+    referral_code: str = Query(...),
+    amount: int = Query(...),
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    """Mark referral earnings as paid"""
+    if x_admin_token != "celestaglow2024":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    success = await referral_service.mark_earnings_paid(referral_code, amount)
+    return {"success": success}
+
+
+@api_router.post("/admin/referrals/test-purchase")
+async def test_referral_purchase(
+    referral_code: str = Query(...),
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    """Simulate a referral purchase for testing"""
+    if x_admin_token != "celestaglow2024":
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    # Create a test order
+    test_order = {
+        "order_id": f"TEST_{uuid.uuid4().hex[:8].upper()}",
+        "phone": "9999999999",
+        "name": "Test Buyer",
+        "amount": 599
+    }
+    
+    result = await referral_service.record_referral_purchase(referral_code, test_order)
+    return result
+
 
 
 app.include_router(api_router)

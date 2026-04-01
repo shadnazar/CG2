@@ -49,13 +49,42 @@ function ProductPage() {
   // Discount state
   const [hasDiscount, setHasDiscount] = useState(false);
   const [discountApplied, setDiscountApplied] = useState(false);
-  const [discountAmount, setDiscountAmount] = useState(DISCOUNT_AMOUNT); // Track actual discount amount
+  const [discountAmount, setDiscountAmount] = useState(DISCOUNT_AMOUNT);
+  
+  // Referral state
+  const [referralCode, setReferralCode] = useState(null);
+  const [referralDiscount, setReferralDiscount] = useState(0);
+  const [referralData, setReferralData] = useState(null);
   
   // Exit-Intent Popup state
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [exitPopupShown, setExitPopupShown] = useState(false);
 
-  // Track checkout visits when step changes (for internal analytics only - InitiateCheckout is fired on button click)
+  // Check for referral code in URL on mount
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      validateReferralCode(refCode);
+    }
+  }, []);
+
+  const validateReferralCode = async (code) => {
+    try {
+      const res = await axios.post(`${API}/referral/validate?referral_code=${code}`);
+      if (res.data.valid) {
+        setReferralCode(code);
+        setReferralDiscount(res.data.discount || 100);
+        setReferralData(res.data.referral);
+        // Also track the click
+        axios.post(`${API}/referral/track-click?referral_code=${code}&visitor_id=${getVisitorId()}`).catch(() => {});
+      }
+    } catch (err) {
+      console.log('Invalid referral code');
+    }
+  };
+
+  // Track checkout visits when step changes
   useEffect(() => {
     if (step === 'checkout' && sessionId) {
       // Track checkout page visit for internal analytics
@@ -218,17 +247,35 @@ function ProductPage() {
 
   // Calculate prices with discount - ALWAYS apply if has discount
   const getFinalPrepaidPrice = () => {
+    let price = PREPAID_PRICE;
     if (hasDiscount) {
-      return PREPAID_PRICE - discountAmount;
+      price -= discountAmount;
     }
-    return PREPAID_PRICE;
+    // Apply referral discount (₹100)
+    if (referralDiscount > 0) {
+      price -= referralDiscount;
+    }
+    return Math.max(price, 0);
   };
 
   const getFinalCodPrice = () => {
+    let price = COD_PRICE;
     if (hasDiscount) {
-      return COD_PRICE - discountAmount;
+      price -= discountAmount;
     }
-    return COD_PRICE;
+    // Apply referral discount (₹100)
+    if (referralDiscount > 0) {
+      price -= referralDiscount;
+    }
+    return Math.max(price, 0);
+  };
+
+  // Get total discount amount for display
+  const getTotalDiscount = () => {
+    let discount = 0;
+    if (hasDiscount) discount += discountAmount;
+    if (referralDiscount > 0) discount += referralDiscount;
+    return discount;
   };
 
   // Check for discount when phone entered (for users who didn't use popup)
@@ -319,7 +366,9 @@ function ProductPage() {
               ...formData,
               payment_method: paymentMethod === 'prepaid' ? 'Prepaid' : 'COD (Advance Paid)',
               amount: finalPrice,
-              discount_applied: discountApplied ? discountAmount : 0
+              discount_applied: discountApplied ? discountAmount : 0,
+              referral_code: referralCode || null,
+              referral_discount: referralDiscount || 0
             });
             
             // REDIRECT to Order Success Page - Meta Pixel will fire Purchase there
@@ -1103,29 +1152,65 @@ function ProductPage() {
           <div className="mt-6">
             <p className="font-semibold text-gray-900 mb-3">Payment Method</p>
             
-            {/* Price Breakdown - Shows FREE charges for conversion */}
+            {/* Referral Discount Banner */}
+            {referralDiscount > 0 && (
+              <div className="mb-4 p-3 bg-purple-50 border border-purple-200 rounded-xl">
+                <div className="flex items-center gap-2 text-purple-700">
+                  <Gift size={18} />
+                  <span className="font-semibold">Referral Discount Applied!</span>
+                </div>
+                <p className="text-sm text-purple-600 mt-1">You're saving extra ₹{referralDiscount} from your friend's referral</p>
+              </div>
+            )}
+            
+            {/* Price Breakdown */}
             <div className="mb-4 p-3 bg-gray-50 rounded-xl text-sm space-y-1.5">
               <div className="flex justify-between text-gray-600">
                 <span>Product Price</span>
                 <span className="line-through text-gray-400">₹1,499</span>
               </div>
               <div className="flex justify-between text-green-600">
-                <span>Discount ({discountApplied ? '65%' : '60%'} OFF)</span>
-                <span>- ₹{discountApplied ? 1499 - getFinalPrepaidPrice() : 1499 - PREPAID_PRICE}</span>
+                <span>Sale Discount</span>
+                <span>- ₹{1499 - PREPAID_PRICE}</span>
               </div>
+              {discountApplied && (
+                <div className="flex justify-between text-green-600">
+                  <span>Promo Discount</span>
+                  <span>- ₹{discountAmount}</span>
+                </div>
+              )}
+              {referralDiscount > 0 && (
+                <div className="flex justify-between text-purple-600">
+                  <span>Referral Discount</span>
+                  <span>- ₹{referralDiscount}</span>
+                </div>
+              )}
               <div className="flex justify-between text-gray-600">
                 <span>Shipping</span>
-                <span className="text-green-600 font-medium">FREE ₹0</span>
-              </div>
-              <div className="flex justify-between text-gray-600">
-                <span>Tax/GST</span>
-                <span className="text-green-600 font-medium">Included ₹0</span>
+                <span className="text-green-600 font-medium">FREE</span>
               </div>
               <div className="h-px bg-gray-200 my-2"></div>
               <div className="flex justify-between font-bold text-gray-900 text-base">
                 <span>Total</span>
                 <span className="text-green-600">₹{paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice()}</span>
               </div>
+              {getTotalDiscount() > 0 && (
+                <p className="text-xs text-green-600 text-center mt-1">You're saving ₹{MRP - getFinalPrepaidPrice()} on this order!</p>
+              )}
+            </div>
+            
+            {/* Referral Offer Banner - Show to ALL checkout users */}
+            <div className="mb-4 p-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl text-white">
+              <div className="flex items-center gap-2 mb-2">
+                <Gift size={20} />
+                <span className="font-bold">Share & Earn ₹200!</span>
+              </div>
+              <p className="text-sm opacity-95 mb-2">
+                Give your friends ₹100 off → Earn ₹200 when they buy
+              </p>
+              <p className="text-xs opacity-80">
+                After your order, you'll receive your unique referral link via email
+              </p>
             </div>
             
             <div className="space-y-2">

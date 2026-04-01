@@ -27,6 +27,7 @@ import AdminAIStudio from './pages/admin/AdminAIStudio';
 import AdminConsultations from './pages/admin/AdminConsultations';
 import AdminUserJourney from './pages/admin/AdminUserJourney';
 import AdminWhatsApp from './pages/admin/AdminWhatsApp';
+import AdminReferrals from './pages/admin/AdminReferrals';
 
 // Layout component for public pages with navigation
 function PublicLayout({ children }) {
@@ -63,6 +64,7 @@ function App() {
         <Route path="/admin/consultations" element={<AdminConsultations />} />
         <Route path="/admin/user-journey" element={<AdminUserJourney />} />
         <Route path="/admin/whatsapp" element={<AdminWhatsApp />} />
+        <Route path="/admin/referrals" element={<AdminReferrals />} />
         
         {/* Consultation Route (no navigation - full screen experience) */}
         <Route path="/consultation" element={<ConsultationPage />} />

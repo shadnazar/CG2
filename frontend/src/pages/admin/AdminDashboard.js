@@ -6,7 +6,7 @@ import {
   TrendingUp, Package, Eye, IndianRupee, ChevronRight, Plus,
   Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope,
   Home, ShoppingCart, Lock, Settings, Calendar, Filter, ChevronDown,
-  MousePointer, Route, MessageSquare, Bell, Volume2
+  MousePointer, Route, MessageSquare, Bell, Volume2, Gift
 } from 'lucide-react';
 import { useOrderNotifications } from '../../utils/orderNotifications';
 
@@ -247,6 +247,9 @@ function AdminDashboard() {
           </Link>
           <Link to="/admin/user-journey" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-user-journey">
             <Route size={20} /> User Journey
+          </Link>
+          <Link to="/admin/referrals" className="flex items-center gap-3 px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-xl" data-testid="nav-referrals">
+            <Gift size={20} /> Referrals
           </Link>
           <Link to="/admin/whatsapp" className="flex items-center gap-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-xl" data-testid="nav-whatsapp">
             <MessageSquare size={20} /> WhatsApp
@@ -616,6 +619,13 @@ function AdminDashboard() {
                         <span className="font-medium text-orange-700">User Journey Tracking</span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-orange-600" />
+                    </Link>
+                    <Link to="/admin/referrals" className="flex items-center justify-between p-4 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors" data-testid="quick-referrals">
+                      <div className="flex items-center gap-3">
+                        <Gift className="w-5 h-5 text-purple-600" />
+                        <span className="font-medium text-purple-700">Referral Program</span>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-purple-600" />
                     </Link>
                   </div>
                 </div>

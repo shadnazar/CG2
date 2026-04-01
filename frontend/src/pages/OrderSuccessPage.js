@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Check, Package, Truck, Phone } from 'lucide-react';
+import { Check, Package, Truck, Phone, Gift, Copy, Share2, MessageCircle } from 'lucide-react';
 import { trackPurchase } from '../utils/metaPixel';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -12,6 +12,7 @@ function OrderSuccessPage() {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [pixelFired, setPixelFired] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchOrderAndTrack = async () => {
@@ -54,6 +55,26 @@ function OrderSuccessPage() {
       fetchOrderAndTrack();
     }
   }, [orderId, pixelFired]);
+
+  const referralLink = order?.referral_link || `https://celestaglow.com?ref=${order?.referral_code || ''}`;
+
+  const copyReferralLink = () => {
+    navigator.clipboard.writeText(referralLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const shareOnWhatsApp = () => {
+    const message = encodeURIComponent(
+      `Hey! I just ordered from Celesta Glow and got amazing results! 🌟\n\nUse my link to get ₹100 OFF on India's #1 Anti-Aging Serum:\n${referralLink}\n\nTrust me, your skin will thank you! ✨`
+    );
+    window.open(`https://wa.me/?text=${message}`, '_blank');
+  };
+
+  const contactWhatsApp = () => {
+    const message = encodeURIComponent(`Hi! I just placed order ${order?.order_id}. Need help with my order.`);
+    window.open(`https://wa.me/919446125745?text=${message}`, '_blank');
+  };
 
   if (loading) {
     return (
@@ -100,6 +121,49 @@ function OrderSuccessPage() {
         <p className="text-gray-500 text-sm mb-1">Order ID</p>
         <p className="text-2xl font-bold text-green-500 tracking-wider">{order.order_id}</p>
       </div>
+
+      {/* 🎁 Referral Section - Prominent */}
+      {order.referral_code && (
+        <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl shadow-lg p-5 mb-5 text-white">
+          <div className="flex items-center gap-2 mb-3">
+            <Gift size={24} />
+            <h3 className="font-bold text-lg">Earn ₹200 - Share & Earn!</h3>
+          </div>
+          <p className="text-sm opacity-95 mb-4">
+            Give your friends ₹100 off and earn ₹200 for each purchase they make!
+          </p>
+          
+          {/* Referral Link Box */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-3 mb-4">
+            <p className="text-xs opacity-80 mb-1">Your Referral Link:</p>
+            <p className="text-sm font-mono break-all">{referralLink}</p>
+          </div>
+          
+          {/* Action Buttons */}
+          <div className="flex gap-2">
+            <button
+              onClick={copyReferralLink}
+              className="flex-1 flex items-center justify-center gap-2 bg-white text-green-600 font-semibold py-3 rounded-xl hover:bg-green-50 transition-colors"
+              data-testid="copy-referral-btn"
+            >
+              {copied ? <Check size={18} /> : <Copy size={18} />}
+              {copied ? 'Copied!' : 'Copy Link'}
+            </button>
+            <button
+              onClick={shareOnWhatsApp}
+              className="flex-1 flex items-center justify-center gap-2 bg-[#25D366] text-white font-semibold py-3 rounded-xl hover:bg-[#20BD5A] transition-colors"
+              data-testid="whatsapp-share-btn"
+            >
+              <MessageCircle size={18} />
+              Share on WhatsApp
+            </button>
+          </div>
+          
+          <p className="text-xs opacity-80 mt-3 text-center">
+            Referral link also sent to your email: {order.email || 'Not provided'}
+          </p>
+        </div>
+      )}
 
       {/* Order Timeline */}
       <div className="bg-white rounded-2xl shadow-sm p-5 mb-5">
@@ -155,6 +219,12 @@ function OrderSuccessPage() {
             <span className="text-gray-500">Payment Method</span>
             <span className="text-gray-900">{order.payment_method}</span>
           </div>
+          {order.referral_code_used && (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Referral Used</span>
+              <span className="text-purple-600 font-medium">{order.referral_code_used}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -172,6 +242,16 @@ function OrderSuccessPage() {
         </p>
       </div>
 
+      {/* WhatsApp Support */}
+      <button
+        onClick={contactWhatsApp}
+        className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white font-semibold py-4 rounded-full mb-4"
+        data-testid="whatsapp-support-btn"
+      >
+        <MessageCircle size={20} />
+        Contact Us on WhatsApp
+      </button>
+
       {/* Continue Shopping Button */}
       <button
         onClick={() => navigate('/')}
@@ -183,7 +263,7 @@ function OrderSuccessPage() {
 
       {/* Support Info */}
       <p className="text-center text-xs text-gray-500 mt-4">
-        Need help? Contact us on WhatsApp: +91 9446125745
+        Need help? WhatsApp: +91 9446125745
       </p>
     </div>
   );
