@@ -49,6 +49,12 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
   - Now properly stores events in `tracking_events` collection
   - Updates `visitor_profiles` with action history
 - **Welcome Notification Verified WORKING**: Green welcome notification displays correctly for new users
+- **User Tracking Not Updating FIXED**: 
+  - Root cause: `TrackingProvider.js` only called `/api/track-visit` (enhanced_analytics → page_visits collection)
+  - But Admin User Journey reads from `user_page_visits` collection (populated by `/api/tracking/page-visit`)
+  - Fix: Updated `TrackingProvider.js` to ALSO call `/api/tracking/page-visit` with full visitor data
+  - Now all page visits tracked in: `page_visits`, `user_page_visits`, and `tracking_events` collections
+  - Verified: 558 total page visits, 148 visitor profiles, 31 unique visitors today
 
 ### April 1, 2026 - Performance Optimization (Session 2)
 - **TrackingProvider**: Centralized tracking (Meta Pixel, GA, User Behavior) - reduces code duplication

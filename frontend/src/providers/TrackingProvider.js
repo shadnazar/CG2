@@ -103,10 +103,25 @@ export function TrackingProvider({ children }) {
     }
     trackedPagesRef.current.add(pageKey);
     
-    // Send to backend
-    axios.post(`${API}/track-visit?page=${page}&session_id=${getSessionId()}`).catch(() => {});
+    const visitorId = getVisitorId();
+    const sessionId = getSessionId();
     
-    // Queue for batch
+    // Send to enhanced analytics (for page_visits collection)
+    axios.post(`${API}/track-visit?page=${page}&session_id=${sessionId}`).catch(() => {});
+    
+    // ALSO send to user behavior tracker (for user_page_visits collection - Admin User Journey)
+    axios.post(`${API}/tracking/page-visit`, {
+      visitor_id: visitorId,
+      session_id: sessionId,
+      page: page,
+      referrer: document.referrer || null,
+      user_agent: navigator.userAgent,
+      screen_width: window.screen.width,
+      screen_height: window.screen.height,
+      timestamp: new Date().toISOString()
+    }).catch(() => {});
+    
+    // Queue for batch (for tracking_events collection)
     queueEvent('page_visit', { page });
   }, [queueEvent]);
   
