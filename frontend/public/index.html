@@ -3,6 +3,25 @@
     <head>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        
+        <!-- Meta Pixel Code - MUST BE FIRST for Landing Page Views tracking -->
+        <script>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '690863659974240');
+        fbq('track', 'PageView');
+        </script>
+        <noscript><img height="1" width="1" style="display:none"
+        src="https://www.facebook.com/tr?id=690863659974240&ev=PageView&noscript=1"
+        /></noscript>
+        <!-- End Meta Pixel Code -->
+        
         <meta name="theme-color" content="#000000" />
         <meta name="description" content="Get younger, glowing skin with Celesta Glow Anti-Aging Face Serum. Premium ingredients like Retinol, Niacinamide & Hyaluronic Acid. Flash Sale: ₹599 only! Free shipping across India." />
         
@@ -38,20 +57,8 @@
         -->
         <title>Anti Aging Celesta Glow</title>
         
-        <!-- Meta Pixel Code -->
+        <!-- ViewContent auto-tracking for product pages -->
         <script>
-        !function(f,b,e,v,n,t,s)
-        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
-        t.src=v;s=b.getElementsByTagName(e)[0];
-        s.parentNode.insertBefore(t,s)}(window, document,'script',
-        'https://connect.facebook.net/en_US/fbevents.js');
-        fbq('init', '690863659974240');
-        fbq('track', 'PageView');
-        
-        // Auto-track ViewContent on product pages
         window.addEventListener('load', function() {
           setTimeout(function() {
             var path = window.location.pathname;
@@ -62,19 +69,14 @@
                   content_category: 'Skincare',
                   content_ids: ['celestaglow_serum_001'],
                   content_type: 'product',
-                  value: 599.00,
+                  value: 699.00,
                   currency: 'INR'
                 });
-                console.log('[Meta Pixel HTML] ViewContent auto-fired on:', path);
               }
             }
           }, 1000);
         });
         </script>
-        <noscript><img height="1" width="1" style="display:none"
-        src="https://www.facebook.com/tr?id=690863659974240&ev=PageView&noscript=1"
-        /></noscript>
-        <!-- End Meta Pixel Code -->
         <script>window.addEventListener("error",function(e){if(e.error instanceof DOMException&&e.error.name==="DataCloneError"&&e.message&&e.message.includes("PerformanceServerTiming")){e.stopImmediatePropagation();e.preventDefault()}},true);</script>
         <script src="https://assets.emergent.sh/scripts/emergent-main.js"></script>
     </head>
