@@ -10,7 +10,7 @@
         {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
         n.callMethod.apply(n,arguments):n.queue.push(arguments)};
         if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-        n.queue=[];t=b.createElement(e);t.async=!0;
+        n.queue=[];t=b.createElement(e);t.async=!1;
         t.src=v;s=b.getElementsByTagName(e)[0];
         s.parentNode.insertBefore(t,s)}(window, document,'script',
         'https://connect.facebook.net/en_US/fbevents.js');
@@ -21,6 +21,11 @@
         src="https://www.facebook.com/tr?id=690863659974240&ev=PageView&noscript=1"
         /></noscript>
         <!-- End Meta Pixel Code -->
+        
+        <!-- Backup: Direct pixel image for Landing Page View -->
+        <img height="1" width="1" style="display:none" 
+        src="https://www.facebook.com/tr?id=690863659974240&ev=PageView&noscript=1" 
+        loading="eager" fetchpriority="high" />
         
         <meta name="theme-color" content="#000000" />
         <meta name="description" content="Get younger, glowing skin with Celesta Glow Anti-Aging Face Serum. Premium ingredients like Retinol, Niacinamide & Hyaluronic Acid. Flash Sale: ₹599 only! Free shipping across India." />

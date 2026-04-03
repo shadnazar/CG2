@@ -10,9 +10,9 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 
 const PREPAID_PRICE = 699;
-const COD_PRICE = 699;  // Total COD price (₹49 advance + ₹650 at delivery)
+const COD_PRICE = 749;  // Total COD price
 const COD_ADVANCE = 49; // Booking amount for COD
-const COD_BALANCE = 650; // Balance to pay at delivery
+const COD_BALANCE = 700; // Balance to pay at delivery (749 - 49)
 const MRP = 1499;
 const DISCOUNT_AMOUNT = 50;
 const EXIT_DISCOUNT_AMOUNT = 100;
@@ -1272,7 +1272,7 @@ function ProductPage() {
                   </p>
                   <p className="text-gray-500 text-xs">Pay ₹{Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} now + ₹{getFinalCodPrice() - Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} on delivery</p>
                 </div>
-                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">53% OFF</span>
+                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">50% OFF</span>
               </label>
             </div>
           </div>
