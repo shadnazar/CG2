@@ -197,37 +197,18 @@ class UserBehaviorTracker:
     async def get_all_visitors(self, date: str = None, days: int = 7, limit: int = 1000) -> List[dict]:
         """Get all visitors with summary
         
-        When filtering by date: Shows visitors who FIRST visited on that date
+        When filtering by date: Shows ALL visitors who had ANY activity on that date
         When using days: Shows visitors active in the last N days
         """
         query = {}
         
         if date:
-            # For specific date: Get visitors who FIRST visited on that date
-            # Use first_visit field from page_visits collection
-            first_visits_on_date = await self.db.user_page_visits.aggregate([
-                {"$match": {"date": date}},
-                {"$sort": {"timestamp": 1}},
-                {"$group": {"_id": "$visitor_id", "first_visit_time": {"$first": "$timestamp"}}},
-            ]).to_list(10000)
+            # For specific date: Get ALL visitors who had ANY activity on that date
+            visitor_ids_on_date = await self.db.user_page_visits.distinct("visitor_id", {"date": date})
             
-            # Get visitor IDs whose FIRST visit was on this date
-            visitor_ids_first_visit = []
-            for fv in first_visits_on_date:
-                vid = fv.get("_id")
-                if vid:
-                    # Check if this visitor's first ever visit was on this date
-                    earliest_visit = await self.db.user_page_visits.find_one(
-                        {"visitor_id": vid},
-                        sort=[("timestamp", 1)]
-                    )
-                    if earliest_visit and earliest_visit.get("date") == date:
-                        visitor_ids_first_visit.append(vid)
-            
-            if visitor_ids_first_visit:
-                query["visitor_id"] = {"$in": visitor_ids_first_visit}
+            if visitor_ids_on_date:
+                query["visitor_id"] = {"$in": visitor_ids_on_date}
             else:
-                # No visitors first visited on this date
                 return []
         else:
             cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
@@ -236,7 +217,7 @@ class UserBehaviorTracker:
         visitors = await self.db.visitor_profiles.find(
             query,
             {"_id": 0}
-        ).sort("first_seen", -1).limit(limit).to_list(limit)
+        ).sort("last_seen", -1).limit(limit).to_list(limit)
         
         # Enrich with page count for the specific date if filtering
         for visitor in visitors:
@@ -245,6 +226,10 @@ class UserBehaviorTracker:
                 # Show page count for that specific date
                 page_count = await self.db.user_page_visits.count_documents({"visitor_id": vid, "date": date})
                 action_count = await self.db.user_actions.count_documents({"visitor_id": vid, "date": date})
+                
+                # Check if reached checkout on this date
+                checkout_on_date = await self.db.user_page_visits.count_documents({"visitor_id": vid, "date": date, "page": "checkout"})
+                visitor["reached_checkout_today"] = checkout_on_date > 0
             else:
                 page_count = await self.db.user_page_visits.count_documents({"visitor_id": vid})
                 action_count = await self.db.user_actions.count_documents({"visitor_id": vid})
@@ -259,24 +244,14 @@ class UserBehaviorTracker:
     async def get_visitor_stats(self, days: int = 7, date: str = None) -> dict:
         """Get visitor statistics - supports both days range and single date
         
-        When filtering by date: Counts visitors who FIRST visited on that date
+        When filtering by date: Shows ALL visitors who had ANY activity on that date
         """
         if date:
-            # For specific date - get visitors who FIRST visited on this date
+            # For specific date - get ALL visitors who had any activity on this date
             all_visitor_ids = await self.db.user_page_visits.distinct("visitor_id", {"date": date})
             
-            # Filter to only those whose first visit was on this date
-            visitor_ids_first_visit = []
-            for vid in all_visitor_ids:
-                earliest = await self.db.user_page_visits.find_one(
-                    {"visitor_id": vid},
-                    sort=[("timestamp", 1)]
-                )
-                if earliest and earliest.get("date") == date:
-                    visitor_ids_first_visit.append(vid)
-            
-            if visitor_ids_first_visit:
-                query = {"visitor_id": {"$in": visitor_ids_first_visit}}
+            if all_visitor_ids:
+                query = {"visitor_id": {"$in": all_visitor_ids}}
             else:
                 return {
                     "total_visitors": 0,
@@ -289,6 +264,54 @@ class UserBehaviorTracker:
                     "period_days": days,
                     "selected_date": date
                 }
+            
+            # Count new vs returning for this specific date
+            total_visitors = len(all_visitor_ids)
+            
+            # New visitors = those whose first visit was on this date
+            new_visitors = 0
+            for vid in all_visitor_ids:
+                earliest = await self.db.user_page_visits.find_one(
+                    {"visitor_id": vid},
+                    sort=[("timestamp", 1)]
+                )
+                if earliest and earliest.get("date") == date:
+                    new_visitors += 1
+            
+            returning_visitors = total_visitors - new_visitors
+            
+            # Checkout count for this specific date
+            checkout_visits = await self.db.user_page_visits.distinct(
+                "visitor_id", 
+                {"date": date, "page": "checkout"}
+            )
+            reached_checkout = len(checkout_visits)
+            
+            # Address entered (from visitor_profiles with activity on this date)
+            address_entered = await self.db.visitor_profiles.count_documents({
+                "visitor_id": {"$in": all_visitor_ids},
+                "address_entered": True
+            })
+            
+            # Average time spent (from profiles)
+            pipeline = [
+                {"$match": {"visitor_id": {"$in": all_visitor_ids}}},
+                {"$group": {"_id": None, "avg_time": {"$avg": "$total_time_spent"}}}
+            ]
+            avg_result = await self.db.visitor_profiles.aggregate(pipeline).to_list(1)
+            avg_time = avg_result[0]["avg_time"] if avg_result else 0
+            
+            return {
+                "total_visitors": total_visitors,
+                "returning_visitors": returning_visitors,
+                "new_visitors": new_visitors,
+                "reached_checkout": reached_checkout,
+                "address_entered": address_entered,
+                "avg_time_spent": round(avg_time or 0, 1),
+                "checkout_rate": round((reached_checkout / max(total_visitors, 1)) * 100, 1),
+                "period_days": days,
+                "selected_date": date
+            }
         else:
             # Filter for last N days
             cutoff = (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
@@ -322,7 +345,7 @@ class UserBehaviorTracker:
             "avg_time_spent": round(avg_time or 0, 1),
             "checkout_rate": round((reached_checkout / max(total_visitors, 1)) * 100, 1),
             "period_days": days,
-            "selected_date": date
+            "selected_date": None
         }
     
     async def get_visitors_by_date(self, date: str, limit: int = 1000) -> List[dict]:
@@ -335,25 +358,14 @@ class UserBehaviorTracker:
         
         all_visitor_ids = list(set(v.get("visitor_id") for v in page_visits if v.get("visitor_id")))
         
-        # Filter to only visitors whose FIRST visit was on this date
-        visitor_ids_first_visit = []
-        for vid in all_visitor_ids:
-            # Get the earliest visit for this visitor
-            earliest_visit = await self.db.user_page_visits.find_one(
-                {"visitor_id": vid},
-                sort=[("timestamp", 1)]
-            )
-            if earliest_visit and earliest_visit.get("date") == date:
-                visitor_ids_first_visit.append(vid)
-        
-        if not visitor_ids_first_visit:
+        if not all_visitor_ids:
             return []
         
-        # Get profiles for visitors who first visited on this date
+        # Get profiles for ALL visitors who had activity on this date
         visitors = await self.db.visitor_profiles.find(
-            {"visitor_id": {"$in": visitor_ids_first_visit}},
+            {"visitor_id": {"$in": all_visitor_ids}},
             {"_id": 0}
-        ).sort("first_seen", -1).limit(limit).to_list(limit)
+        ).sort("last_seen", -1).limit(limit).to_list(limit)
         
         # Enrich with page/action counts for that date
         for visitor in visitors:
@@ -362,5 +374,16 @@ class UserBehaviorTracker:
             action_count = await self.db.user_actions.count_documents({"visitor_id": vid, "date": date})
             visitor["pages_visited"] = page_count
             visitor["actions_count"] = action_count
+            
+            # Check if this was their first visit
+            earliest = await self.db.user_page_visits.find_one(
+                {"visitor_id": vid},
+                sort=[("timestamp", 1)]
+            )
+            visitor["is_new_visitor"] = earliest and earliest.get("date") == date
+            
+            # Check if reached checkout on this date
+            checkout_on_date = await self.db.user_page_visits.count_documents({"visitor_id": vid, "date": date, "page": "checkout"})
+            visitor["reached_checkout_today"] = checkout_on_date > 0
         
         return visitors
