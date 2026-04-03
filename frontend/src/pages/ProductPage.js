@@ -49,6 +49,9 @@ function ProductPage() {
   const [referralDiscount, setReferralDiscount] = useState(0);
   const [referralData, setReferralData] = useState(null);
   
+  // Animated counter for checkout
+  const [animatedOrderCount, setAnimatedOrderCount] = useState(0);
+  
   // Exit-Intent Popup state
   const [showExitPopup, setShowExitPopup] = useState(false);
   const [exitPopupShown, setExitPopupShown] = useState(false);
@@ -194,6 +197,30 @@ function ProductPage() {
       document.removeEventListener('click', handleInitiateCheckoutClick, true);
     };
   }, []);
+
+  // Animate order counter when checkout step loads
+  useEffect(() => {
+    if (step === 'checkout') {
+      const targetCount = soldToday;
+      let current = 0;
+      const duration = 1500; // 1.5 seconds
+      const steps = 30;
+      const increment = targetCount / steps;
+      const stepTime = duration / steps;
+      
+      const timer = setInterval(() => {
+        current += increment;
+        if (current >= targetCount) {
+          setAnimatedOrderCount(targetCount);
+          clearInterval(timer);
+        } else {
+          setAnimatedOrderCount(Math.floor(current));
+        }
+      }, stepTime);
+      
+      return () => clearInterval(timer);
+    }
+  }, [step, soldToday]);
 
   // Check if user has a discount - Auto apply if claimed
   const checkDiscountStatus = async () => {
@@ -1287,46 +1314,50 @@ function ProductPage() {
             </div>
           </div>
 
-          {/* Trust & Urgency Section - Conversion Boosters */}
-          <div className="mt-6 space-y-3">
-            {/* Money Back Guarantee - #1 Trust Builder */}
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-3 flex items-center gap-3">
-              <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                </svg>
+          {/* Clean Trust Section */}
+          <div className="mt-6 bg-gray-50 rounded-2xl p-4 space-y-4">
+            {/* Header with animated counter */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <span className="text-sm text-gray-600"><strong className="text-gray-900">{animatedOrderCount}</strong> orders placed today</span>
               </div>
-              <div>
-                <p className="font-semibold text-green-800 text-sm">30-Day Money Back Guarantee</p>
-                <p className="text-green-600 text-xs">Not satisfied? Get 100% refund, no questions asked</p>
-              </div>
-            </div>
-
-            {/* Live Orders Today - Social Proof */}
-            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-xl p-3 flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0 animate-pulse">
-                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6z" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-orange-800 text-sm">{Math.floor(47 + Math.random() * 30)} orders placed today!</p>
-                <p className="text-orange-600 text-xs">Join thousands of happy customers</p>
-              </div>
-            </div>
-
-            {/* Quick Review Snippet */}
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-3">
-              <div className="flex items-center gap-1 mb-1">
+              <div className="flex items-center gap-1">
                 {[1,2,3,4,5].map(i => (
-                  <svg key={i} className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                  <svg key={i} className="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 ))}
-                <span className="text-xs text-gray-500 ml-1">Verified Purchase</span>
+                <span className="text-xs text-gray-500 ml-1">4.9/5</span>
               </div>
-              <p className="text-sm text-gray-700 italic">"Saw visible results in just 2 weeks! My skin feels so much smoother now."</p>
-              <p className="text-xs text-gray-500 mt-1">- Priya S., Mumbai</p>
+            </div>
+            
+            {/* Trust badges row */}
+            <div className="flex justify-between text-xs text-gray-600">
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                30-Day Guarantee
+              </span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                Secure Payment
+              </span>
+              <span className="flex items-center gap-1.5">
+                <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+                Free Delivery
+              </span>
+            </div>
+
+            {/* Quick testimonial */}
+            <div className="pt-3 border-t border-gray-200">
+              <p className="text-sm text-gray-600 italic">"Visible results in 2 weeks! My skin feels amazing."</p>
+              <p className="text-xs text-gray-400 mt-1">— Priya S., Mumbai ✓ Verified</p>
             </div>
           </div>
 
@@ -1340,30 +1371,8 @@ function ProductPage() {
             {loading ? 'Processing...' : `Pay ₹${paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} & Place Order`}
           </button>
 
-          {/* Trust Signals */}
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex justify-center gap-6 text-xs text-gray-500">
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                Secure Checkout
-              </span>
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                100% Genuine
-              </span>
-              <span className="flex items-center gap-1">
-                <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-                Free Delivery
-              </span>
-            </div>
-            <p className="text-center text-xs text-gray-400 mt-3">Trusted by 50,000+ customers across India</p>
-          </div>
+          {/* Simple trust line */}
+          <p className="text-center text-xs text-gray-400 mt-4">🔒 Secure checkout • Trusted by 50,000+ customers</p>
 
           <button
             onClick={() => setStep('product')}
