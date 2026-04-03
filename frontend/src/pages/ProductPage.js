@@ -296,16 +296,67 @@ function ProductPage() {
     if (!formData.area.trim()) newErrors.area = 'Required';
     if (!formData.pincode.match(/^\d{6}$/)) newErrors.pincode = 'Enter 6-digit pincode';
     
-    // Email validation (if provided)
+    // Strict email validation (if provided)
     if (formData.email.trim()) {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-      if (!emailRegex.test(formData.email)) {
-        newErrors.email = 'Enter valid email (e.g. name@gmail.com)';
+      const email = formData.email.trim().toLowerCase();
+      
+      // Common typos in domain extensions
+      const typoExtensions = ['.con', '.cmo', '.ocm', '.vom', '.xom', '.comm', '.cm', '.co,', '.c0m', '.gmai.com', '.gmial.com', '.gmal.com', '.gmil.com', '.gamil.com', '.gnail.com', '.yaho.com', '.yahooo.com', '.hotmal.com', '.outlok.com', '.outloo.com'];
+      const hasTypo = typoExtensions.some(typo => email.endsWith(typo));
+      
+      if (hasTypo) {
+        newErrors.email = 'Check email spelling (did you mean .com?)';
+      } else {
+        // Valid TLDs
+        const validTLDs = ['.com', '.in', '.co.in', '.net', '.org', '.edu', '.gov', '.io', '.co', '.me', '.info', '.biz', '.xyz', '.online', '.live', '.gmail.com', '.yahoo.com', '.hotmail.com', '.outlook.com', '.rediffmail.com', '.aol.com', '.icloud.com', '.protonmail.com'];
+        
+        // Basic email format check
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        
+        if (!emailRegex.test(email)) {
+          newErrors.email = 'Enter valid email (e.g. name@gmail.com)';
+        } else {
+          // Check for valid domain structure
+          const domain = email.split('@')[1];
+          const hasValidTLD = validTLDs.some(tld => domain.endsWith(tld.replace('.', '')));
+          
+          // Check for common email providers with correct spelling
+          const commonProviders = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'rediffmail.com', 'yahoo.in', 'gmail.in'];
+          const isCommonProvider = commonProviders.includes(domain);
+          
+          // If using common provider, it should match exactly
+          if (!isCommonProvider && !hasValidTLD) {
+            // Check for near-matches (typos)
+            const nearMatches = commonProviders.filter(p => {
+              const dist = levenshteinDistance(domain, p);
+              return dist > 0 && dist <= 2;
+            });
+            
+            if (nearMatches.length > 0) {
+              newErrors.email = `Did you mean @${nearMatches[0]}?`;
+            }
+          }
+        }
       }
     }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+  
+  // Helper function for typo detection
+  const levenshteinDistance = (str1, str2) => {
+    const m = str1.length, n = str2.length;
+    const dp = Array(m + 1).fill(null).map(() => Array(n + 1).fill(0));
+    for (let i = 0; i <= m; i++) dp[i][0] = i;
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        if (str1[i-1] === str2[j-1]) dp[i][j] = dp[i-1][j-1];
+        else dp[i][j] = 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+      }
+    }
+    return dp[m][n];
   };
 
   const handlePincodeChange = async (pincode) => {

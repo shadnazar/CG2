@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Package, ChevronLeft, Search, Filter, Download,
-  Phone, MapPin, Calendar, IndianRupee, Truck, CheckCircle, X
+  Phone, MapPin, Calendar, IndianRupee, Truck, CheckCircle, X, Edit2, Save
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -15,6 +15,8 @@ function AdminOrders() {
   const [filterPayment, setFilterPayment] = useState('all');
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(null);
+  const [editingEmail, setEditingEmail] = useState(false);
+  const [newEmail, setNewEmail] = useState('');
   const navigate = useNavigate();
   const adminToken = localStorage.getItem('adminToken');
 
@@ -71,6 +73,36 @@ function AdminOrders() {
       alert('Failed to update order status');
     } finally {
       setUpdatingStatus(null);
+    }
+  };
+
+  const updateOrderEmail = async (orderId, email) => {
+    try {
+      const res = await axios.put(
+        `${API}/orders/${orderId}/email`,
+        { email },
+        { headers: { 'X-Admin-Token': adminToken } }
+      );
+      
+      if (res.data.success) {
+        // Update local state
+        setOrders(orders.map(order => 
+          order.order_id === orderId 
+            ? { ...order, email }
+            : order
+        ));
+        
+        // Update selected order
+        if (selectedOrder?.order_id === orderId) {
+          setSelectedOrder({ ...selectedOrder, email });
+        }
+        
+        setEditingEmail(false);
+        setNewEmail('');
+        alert('Email updated successfully!');
+      }
+    } catch (err) {
+      alert('Failed to update email');
     }
   };
 
@@ -338,7 +370,48 @@ function AdminOrders() {
                 <p className="text-gray-600 mb-2">Customer</p>
                 <p className="font-semibold">{selectedOrder.name}</p>
                 <p className="text-gray-600">+91 {selectedOrder.phone}</p>
-                {selectedOrder.email && <p className="text-gray-600">{selectedOrder.email}</p>}
+                
+                {/* Email with edit option */}
+                <div className="mt-2">
+                  {editingEmail ? (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="email"
+                        value={newEmail}
+                        onChange={(e) => setNewEmail(e.target.value)}
+                        placeholder="Enter email"
+                        className="flex-1 px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                      />
+                      <button
+                        onClick={() => updateOrderEmail(selectedOrder.order_id, newEmail)}
+                        className="p-1.5 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                      >
+                        <Save size={16} />
+                      </button>
+                      <button
+                        onClick={() => { setEditingEmail(false); setNewEmail(''); }}
+                        className="p-1.5 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      {selectedOrder.email ? (
+                        <p className="text-gray-600">{selectedOrder.email}</p>
+                      ) : (
+                        <p className="text-gray-400 italic text-sm">No email provided</p>
+                      )}
+                      <button
+                        onClick={() => { setEditingEmail(true); setNewEmail(selectedOrder.email || ''); }}
+                        className="p-1 text-gray-400 hover:text-green-600"
+                        title="Edit email"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
               
               <div className="p-4 bg-gray-50 rounded-xl">

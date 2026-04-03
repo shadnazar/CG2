@@ -586,6 +586,42 @@ async def update_order_status(order_id: str, status_update: OrderStatusUpdate):
     }
 
 
+class OrderEmailUpdate(BaseModel):
+    email: str
+
+
+@api_router.put("/orders/{order_id}/email")
+async def update_order_email(order_id: str, email_update: OrderEmailUpdate):
+    """Update customer email for an order (Admin only)"""
+    # Find the order
+    order = await db.orders.find_one({"order_id": order_id})
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    # Validate email format
+    import re
+    email = email_update.email.strip().lower()
+    email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    
+    if not re.match(email_regex, email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
+    
+    # Update the order email
+    await db.orders.update_one(
+        {"order_id": order_id},
+        {"$set": {
+            "email": email,
+            "email_updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {
+        "success": True,
+        "order_id": order_id,
+        "email": email
+    }
+
+
 @api_router.get("/stats/recent-orders")
 async def get_recent_orders_count():
     count = await db.orders.count_documents({})
