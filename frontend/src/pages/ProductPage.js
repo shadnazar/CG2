@@ -987,7 +987,7 @@ function ProductPage() {
           <p className="text-gray-500 text-sm mb-5">Fast & secure checkout</p>
 
           {/* Order Summary Mini */}
-          <div className="card-cg mb-5 flex items-center gap-3 p-4">
+          <div className="card-cg mb-4 flex items-center gap-3 p-4">
             <img src={PRODUCT_IMAGE} alt="Product" className="w-14 h-14 object-contain" />
             <div className="flex-1">
               <p className="font-semibold text-gray-900 text-sm">Super Anti-Aging Serum</p>
@@ -998,6 +998,31 @@ function ProductPage() {
                 <p className="text-xs text-gray-400 line-through">₹{paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_PRICE}</p>
               )}
               <p className="font-bold text-green-600">₹{paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice()}</p>
+            </div>
+          </div>
+
+          {/* Trust Badges - Right after product */}
+          <div className="grid grid-cols-3 gap-2 mb-5">
+            <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-green-200 rounded-xl p-2.5 text-center">
+              <div className="w-7 h-7 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-1.5">
+                <ShieldCheck size={14} className="text-white" />
+              </div>
+              <p className="text-[10px] font-semibold text-gray-800">30-Day</p>
+              <p className="text-[10px] text-gray-500">Money Back</p>
+            </div>
+            <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-2.5 text-center">
+              <div className="w-7 h-7 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-1.5">
+                <Shield size={14} className="text-white" />
+              </div>
+              <p className="text-[10px] font-semibold text-gray-800">100%</p>
+              <p className="text-[10px] text-gray-500">Secure</p>
+            </div>
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-2.5 text-center">
+              <div className="w-7 h-7 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-1.5">
+                <Truck size={14} className="text-white" />
+              </div>
+              <p className="text-[10px] font-semibold text-gray-800">Free</p>
+              <p className="text-[10px] text-gray-500">Delivery</p>
             </div>
           </div>
 
@@ -1264,6 +1289,24 @@ function ProductPage() {
                 After your order, you'll receive your unique referral link via email
               </p>
             </div>
+
+            {/* Orders Today Banner - After Share & Earn */}
+            <div className="mb-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl p-3 shadow-md">
+              <div className="flex items-center justify-between text-white">
+                <div className="flex items-center gap-2">
+                  <Flame size={18} className="animate-pulse" />
+                  <div>
+                    <p className="font-bold">{animatedOrderCount} orders today</p>
+                    <p className="text-amber-100 text-xs">Join happy customers</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-0.5">
+                  {[1,2,3,4,5].map(i => (
+                    <Star key={i} size={12} className="text-yellow-200 fill-yellow-200" />
+                  ))}
+                </div>
+              </div>
+            </div>
             
             <div className="space-y-2">
               <label 
@@ -1314,77 +1357,26 @@ function ProductPage() {
             </div>
           </div>
 
-          {/* Premium Trust Section */}
-          <div className="mt-6 space-y-4">
-            {/* Live Activity Banner - Premium Green Gradient */}
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl p-4 shadow-lg">
-              <div className="flex items-center justify-between text-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <Flame size={20} className="text-white animate-pulse" />
-                  </div>
-                  <div>
-                    <p className="font-bold text-lg">{animatedOrderCount} orders today</p>
-                    <p className="text-green-100 text-xs">Join thousands of happy customers</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-0.5">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} size={14} className="text-yellow-300 fill-yellow-300" />
-                    ))}
-                  </div>
-                  <p className="text-green-100 text-xs mt-0.5">4.9/5 (2,847 reviews)</p>
-                </div>
+          {/* Premium Review Card - At bottom before button */}
+          <div className="mt-5 bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 border border-amber-200 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
+                <span className="text-white font-bold text-sm">P</span>
               </div>
-            </div>
-
-            {/* Trust Badges - Premium Cards */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-gradient-to-br from-emerald-50 to-green-50 border border-green-200 rounded-xl p-3 text-center shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <ShieldCheck size={16} className="text-white" />
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-gray-800 text-sm">Priya S.</span>
+                  <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                    <BadgeCheck size={10} /> Verified
+                  </span>
                 </div>
-                <p className="text-xs font-semibold text-gray-800">30-Day</p>
-                <p className="text-xs text-gray-500">Money Back</p>
-              </div>
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-3 text-center shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Shield size={16} className="text-white" />
+                <div className="flex items-center gap-0.5 mb-1">
+                  {[1,2,3,4,5].map(i => (
+                    <Star key={i} size={12} className="text-amber-400 fill-amber-400" />
+                  ))}
                 </div>
-                <p className="text-xs font-semibold text-gray-800">100%</p>
-                <p className="text-xs text-gray-500">Secure</p>
-              </div>
-              <div className="bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-3 text-center shadow-sm hover:shadow-md transition-shadow">
-                <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center mx-auto mb-2">
-                  <Truck size={16} className="text-white" />
-                </div>
-                <p className="text-xs font-semibold text-gray-800">Free</p>
-                <p className="text-xs text-gray-500">Delivery</p>
-              </div>
-            </div>
-
-            {/* Premium Review Card */}
-            <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 border border-amber-200 rounded-2xl p-4 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0 shadow-md">
-                  <span className="text-white font-bold text-sm">P</span>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-gray-800 text-sm">Priya S.</span>
-                    <span className="bg-green-100 text-green-700 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-                      <BadgeCheck size={10} /> Verified
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-0.5 mb-1">
-                    {[1,2,3,4,5].map(i => (
-                      <Star key={i} size={12} className="text-amber-400 fill-amber-400" />
-                    ))}
-                  </div>
-                  <p className="text-sm text-gray-700">"Saw visible results in just 2 weeks! My skin feels so much smoother and younger now."</p>
-                  <p className="text-xs text-gray-400 mt-1">Mumbai • 3 days ago</p>
-                </div>
+                <p className="text-sm text-gray-700">"Saw visible results in just 2 weeks! My skin feels so much smoother and younger now."</p>
+                <p className="text-xs text-gray-400 mt-1">Mumbai • 3 days ago</p>
               </div>
             </div>
           </div>
