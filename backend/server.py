@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Dict, Any
 import uuid
 from datetime import datetime, timezone, timedelta
-import random
+import secrets  # Cryptographically secure random
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
@@ -79,7 +79,7 @@ class OrderCreate(BaseModel):
 class Order(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
-    order_id: str = Field(default_factory=lambda: f"CG{random.randint(100000, 999999)}")
+    order_id: str = Field(default_factory=lambda: f"CG{secrets.randbelow(900000) + 100000}")
     name: str
     phone: str
     house_number: str = ""
@@ -662,7 +662,7 @@ async def update_order_email(order_id: str, email_update: OrderEmailUpdate):
 @api_router.get("/stats/recent-orders")
 async def get_recent_orders_count():
     count = await db.orders.count_documents({})
-    base_count = 30 + random.randint(0, 15)
+    base_count = 30 + secrets.randbelow(16)  # 0-15 range
     return {"count": base_count + count}
 
 
@@ -704,7 +704,7 @@ async def send_push_notification(
     x_admin_token: str = Header(None, alias="X-Admin-Token")
 ):
     """Send in-site notification to CURRENT visitors only (expires in 5 minutes)"""
-    if x_admin_token != "celestaglow2024":
+    if x_admin_token != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     notification_id = f"notif_{uuid.uuid4().hex[:8]}"
@@ -820,7 +820,7 @@ async def get_notification_subscribers(
     x_admin_token: str = Header(None, alias="X-Admin-Token")
 ):
     """Get list of push notification subscribers"""
-    if x_admin_token != "celestaglow2024":
+    if x_admin_token != ADMIN_PASSWORD:
         raise HTTPException(status_code=401, detail="Unauthorized")
     
     subscribers = await db.push_subscriptions.find(
@@ -907,7 +907,7 @@ async def create_blog(blog_data: BlogCreate):
     # Check if slug already exists
     existing = await db.blogs.find_one({"slug": slug})
     if existing:
-        slug = f"{slug}-{random.randint(1000, 9999)}"
+        slug = f"{slug}-{secrets.randbelow(9000) + 1000}"  # 1000-9999 range
     
     now = datetime.now(timezone.utc).isoformat()
     blog_doc = {
@@ -1070,7 +1070,8 @@ async def claim_visitor_discount(lead: VisitorLeadCreate):
 
 # ==================== ADMIN ANALYTICS ENDPOINTS ====================
 
-ADMIN_PASSWORD = "celestaglow2024"
+# Load admin password from environment variable (with fallback for development)
+ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'celestaglow2024')
 
 def verify_admin_token(x_admin_token: str = Header(None)):
     """Verify admin token - accepts both plain password and hashed token"""

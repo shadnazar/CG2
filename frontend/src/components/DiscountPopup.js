@@ -35,9 +35,12 @@ const safeTrack = async (action, data) => {
         ...data,
         timestamp: new Date().toISOString()
       })
-    }).catch(() => {});
+    }).catch((err) => {
+      if (process.env.NODE_ENV === 'development') console.warn('Tracking failed:', err);
+    });
   } catch (e) {
     // Silently fail - tracking should never crash the app
+    if (process.env.NODE_ENV === 'development') console.warn('safeTrack error:', e);
   }
 };
 
@@ -56,14 +59,16 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
         onClose();
       }
     } catch (e) {
-      // Ignore errors
+      if (process.env.NODE_ENV === 'development') console.warn('DiscountPopup check error:', e);
     }
   }, [onClose]);
 
   const handleClose = () => {
     try {
       safeTrack('popup_dismissed', { popup: 'discount' });
-    } catch (e) {}
+    } catch (e) {
+      if (process.env.NODE_ENV === 'development') console.warn('Track dismiss error:', e);
+    }
     onClose();
   };
 

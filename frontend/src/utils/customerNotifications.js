@@ -7,6 +7,7 @@
  * - Soft Instagram/Messenger-like sound
  */
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -171,13 +172,13 @@ const showNotificationInternal = (message, options = {}) => {
       cursor: pointer;
       border: 1px solid rgba(0,0,0,0.05);
     `;
-    notification.innerHTML = `<span style="color:#10b981;font-size:8px;">●</span> ${message}`;
+    notification.innerHTML = `<span style="color:#10b981;font-size:8px;">●</span> ${DOMPurify.sanitize(message)}`;
   }
   
   if (isBroadcast) {
     notification.innerHTML = `
-      <div style="font-weight:600; font-size:12px; margin-bottom:2px;">${options.title || 'Sale'}</div>
-      <div style="font-size:11px; opacity:0.95;">${message}</div>
+      <div style="font-weight:600; font-size:12px; margin-bottom:2px;">${DOMPurify.sanitize(options.title || 'Sale')}</div>
+      <div style="font-size:11px; opacity:0.95;">${DOMPurify.sanitize(message)}</div>
     `;
   }
   

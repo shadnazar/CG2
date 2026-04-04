@@ -2,7 +2,7 @@
 Image Service - Fetch relevant stock images for blog posts
 Uses category-based image mapping to ensure relevant images
 """
-import random
+import secrets
 from typing import Optional
 
 # Category-specific Unsplash/Pexels image URLs (high-quality, free to use)
@@ -124,7 +124,7 @@ def get_image_for_category(category: str, used_images: Optional[list] = None) ->
     if not available_images:
         available_images = images
     
-    return random.choice(available_images)
+    return secrets.choice(available_images)
 
 
 def get_image_for_keywords(keywords: list, title: str = "") -> str:

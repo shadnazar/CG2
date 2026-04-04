@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Clock, ChevronRight } from 'lucide-react';
+import DOMPurify from 'dompurify';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -101,7 +102,7 @@ function BlogPost() {
             prose-li:text-gray-600 prose-li:mb-2
             prose-strong:text-gray-800 prose-strong:font-semibold
             prose-a:text-green-600 prose-a:no-underline hover:prose-a:underline"
-          dangerouslySetInnerHTML={{ __html: blog.content }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }}
         />
       </div>
 

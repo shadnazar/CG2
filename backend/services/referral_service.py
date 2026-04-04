@@ -16,9 +16,9 @@ class ReferralService:
     
     def generate_referral_code(self, phone: str) -> str:
         """Generate a unique referral code based on phone number"""
-        # Create a short unique code
+        # Create a short unique code using SHA-256 (more secure than MD5)
         hash_input = f"{phone}_{datetime.now().timestamp()}"
-        hash_value = hashlib.md5(hash_input.encode()).hexdigest()[:8].upper()
+        hash_value = hashlib.sha256(hash_input.encode()).hexdigest()[:8].upper()
         return f"CG{hash_value}"
     
     async def create_referral(self, order_data: Dict) -> Dict:

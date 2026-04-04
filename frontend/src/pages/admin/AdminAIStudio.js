@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import DOMPurify from 'dompurify';
 import { 
   ChevronLeft, Sparkles, FileText, MapPin, Lightbulb, 
   Loader2, Check, AlertCircle, Copy, Save, Zap, Clock, History, Globe, Tag,
@@ -1246,7 +1247,7 @@ function AdminAIStudio() {
               </div>
               <div 
                 className="prose prose-sm max-w-none text-gray-700 max-h-64 overflow-y-auto"
-                dangerouslySetInnerHTML={{ __html: result.data.content }}
+                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(result.data.content) }}
               />
             </div>
             
