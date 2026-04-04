@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query, Header
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Header, Request
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -28,6 +28,7 @@ from services.user_behavior_tracker import UserBehaviorTracker
 from services.whatsapp_service import WhatsAppService
 from services.trending_news_generator import TrendingNewsBlogGenerator
 from services.referral_service import ReferralService
+from services.delhivery_service import init_delhivery_service
 
 
 ROOT_DIR = Path(__file__).parent
@@ -47,6 +48,7 @@ user_behavior_tracker = UserBehaviorTracker(db)
 whatsapp_service = WhatsAppService(db)
 trending_news_generator = TrendingNewsBlogGenerator(db)
 referral_service = ReferralService(db)
+delhivery_service = init_delhivery_service(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
@@ -2102,6 +2104,140 @@ async def test_referral_purchase(
     result = await referral_service.record_referral_purchase(referral_code, test_order)
     return result
 
+
+
+# ==================== DELHIVERY SHIPPING INTEGRATION ====================
+
+class TrackOrderRequest(BaseModel):
+    phone: str
+
+
+@api_router.post("/track-order")
+async def track_order_by_phone(request: TrackOrderRequest):
+    """Track orders by phone number (Customer facing)"""
+    phone = request.phone.strip()
+    
+    # Validate phone (last 10 digits)
+    if len(phone) < 10:
+        raise HTTPException(status_code=400, detail="Enter valid 10-digit phone number")
+    
+    phone = phone[-10:]  # Get last 10 digits
+    
+    result = await delhivery_service.track_by_phone(phone)
+    return result
+
+
+@api_router.get("/track-order/{order_id}")
+async def track_order_by_id(order_id: str):
+    """Track a specific order by order ID"""
+    order = await db.orders.find_one(
+        {"order_id": order_id},
+        {"_id": 0}
+    )
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    result = {
+        "success": True,
+        "order_id": order_id,
+        "name": order.get("name"),
+        "status": order.get("status"),
+        "total_amount": order.get("total_amount"),
+        "payment_method": order.get("payment_method"),
+        "created_at": order.get("created_at"),
+        "awb_number": order.get("awb_number"),
+        "tracking_url": None,
+        "delivery_status": None
+    }
+    
+    # If AWB exists, get tracking info
+    awb = order.get("awb_number")
+    if awb:
+        tracking = await delhivery_service.track_shipment(awb)
+        if tracking.get("success"):
+            result["delivery_status"] = tracking.get("status")
+            result["expected_delivery"] = tracking.get("expected_delivery")
+            result["status_location"] = tracking.get("status_location")
+            result["tracking_url"] = f"https://www.delhivery.com/track/package/{awb}"
+            result["scans"] = tracking.get("scans", [])
+    
+    return result
+
+
+@api_router.get("/shipping/serviceability/{pincode}")
+async def check_pincode_serviceability(pincode: str):
+    """Check if a pincode is serviceable for delivery"""
+    if not pincode.isdigit() or len(pincode) != 6:
+        raise HTTPException(status_code=400, detail="Invalid pincode")
+    
+    result = await delhivery_service.check_serviceability(pincode)
+    return result
+
+
+@api_router.post("/admin/shipping/create-shipment/{order_id}")
+async def admin_create_shipment(order_id: str):
+    """Create a Delhivery shipment for an order (Admin only)"""
+    order = await db.orders.find_one({"order_id": order_id})
+    
+    if not order:
+        raise HTTPException(status_code=404, detail="Order not found")
+    
+    if order.get("awb_number"):
+        return {
+            "success": False,
+            "error": "Shipment already created",
+            "awb_number": order.get("awb_number")
+        }
+    
+    result = await delhivery_service.create_shipment(order)
+    return result
+
+
+@api_router.get("/admin/shipping/track/{awb}")
+async def admin_track_shipment(awb: str):
+    """Track a shipment by AWB number (Admin only)"""
+    result = await delhivery_service.track_shipment(awb)
+    return result
+
+
+# Webhook for Delhivery status updates
+@api_router.post("/webhook/delhivery")
+async def delhivery_webhook(request: Request):
+    """Receive delivery status updates from Delhivery"""
+    try:
+        data = await request.json()
+        
+        waybill = data.get("waybill")
+        status = data.get("status", {})
+        
+        if waybill:
+            # Update order status based on Delhivery status
+            delhivery_status = status.get("Status", "").lower()
+            
+            new_status = None
+            if "delivered" in delhivery_status:
+                new_status = "delivered"
+            elif "out for delivery" in delhivery_status:
+                new_status = "out_for_delivery"
+            elif "in transit" in delhivery_status:
+                new_status = "shipped"
+            
+            if new_status:
+                await db.orders.update_one(
+                    {"awb_number": waybill},
+                    {"$set": {
+                        "status": new_status,
+                        "delivery_status": delhivery_status,
+                        "last_tracking_update": datetime.now(timezone.utc).isoformat()
+                    }}
+                )
+        
+        return {"success": True}
+        
+    except Exception as e:
+        logging.error(f"Delhivery webhook error: {str(e)}")
+        return {"success": False, "error": str(e)}
 
 
 app.include_router(api_router)

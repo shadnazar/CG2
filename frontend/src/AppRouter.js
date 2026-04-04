@@ -17,6 +17,7 @@ const SearchResults = lazy(() => import('./pages/SearchResults'));
 const ConsultationPage = lazy(() => import('./pages/ConsultationPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const TrackOrder = lazy(() => import('./pages/TrackOrder'));
 
 // Lazy loaded admin pages (separate chunk, only loaded when visiting admin)
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
@@ -101,6 +102,11 @@ function App() {
                 <PublicLayout>
                   <Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense>
                 </PublicLayout>
+              } />
+              
+              {/* Track Order Page */}
+              <Route path="/track-order" element={
+                <Suspense fallback={<PageLoader />}><TrackOrder /></Suspense>
               } />
               
               {/* Main Public Routes */}

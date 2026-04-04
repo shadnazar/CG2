@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { X, Gift, Phone, Check, Loader2, MapPin, Bell } from 'lucide-react';
+import { X, Gift, Phone, Check, Loader2, Bell } from 'lucide-react';
 import { trackLead, trackPopupDismissed } from '../utils/metaPixel';
-import { trackAction, getVisitorId, requestLocationPermission } from '../utils/userTracking';
+import { trackAction, getVisitorId } from '../utils/userTracking';
 import { requestNotificationPermission, isPushSupported, isSubscribed } from '../utils/pushNotifications';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -15,7 +15,6 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
   const [error, setError] = useState('');
   const [discountCode, setDiscountCode] = useState('');
   const [acceptedTerms, setAcceptedTerms] = useState(true); // Auto-ticked by default
-  const [locationRequested, setLocationRequested] = useState(false);
   const [notificationRequested, setNotificationRequested] = useState(false);
 
   const handleClose = () => {
@@ -36,20 +35,7 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
     // Track the discount claim action with phone info
     await trackAction('discount_claimed', { phone_entered: true, has_phone: true });
     
-    // Request location permission after claiming discount
-    if (!locationRequested) {
-      setLocationRequested(true);
-      const location = await requestLocationPermission();
-      if (location && !location.error) {
-        await trackAction('location_shared', { 
-          has_location: true, 
-          latitude: location.latitude,
-          longitude: location.longitude 
-        });
-      }
-    }
-    
-    // Request push notification permission after a short delay
+    // Request push notification permission after a short delay (location removed - only asked in blog section)
     if (!notificationRequested && isPushSupported() && !isSubscribed()) {
       setNotificationRequested(true);
       setTimeout(async () => {

@@ -22,6 +22,7 @@ function Navigation() {
     { path: '/', label: 'Home' },
     { path: '/product/anti-aging-serum', label: 'Shop' },
     { path: '/consultation', label: 'Skin Analysis', icon: Stethoscope, highlight: true },
+    { path: '/track-order', label: 'Track Order', icon: ShoppingBag },
     { path: '/blog', label: 'Beauty Tips' },
   ];
 
