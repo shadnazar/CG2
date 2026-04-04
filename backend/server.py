@@ -557,13 +557,46 @@ async def update_order_status(order_id: str, status_update: OrderStatusUpdate):
     if new_status not in valid_statuses:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid_statuses}")
     
+    # If marking as shipped, create Delhivery shipment first
+    delhivery_result = None
+    if new_status == "shipped" and not order.get("awb_number"):
+        try:
+            from services.delhivery_service import delhivery_service
+            if delhivery_service:
+                # Prepare order data for Delhivery
+                order_for_delhivery = {
+                    "order_id": order.get("order_id"),
+                    "name": order.get("name"),
+                    "phone": order.get("phone"),
+                    "house_number": order.get("house_number", ""),
+                    "area": order.get("area", ""),
+                    "pincode": order.get("pincode"),
+                    "city": order.get("city", ""),
+                    "state": order.get("state", ""),
+                    "payment_method": "cod" if "COD" in order.get("payment_method", "") else "prepaid",
+                    "cod_balance": order.get("amount", 0) - 49 if "COD" in order.get("payment_method", "") else 0,
+                    "total_amount": order.get("amount", 0)
+                }
+                delhivery_result = await delhivery_service.create_shipment(order_for_delhivery)
+                logging.info(f"Delhivery shipment created for order {order_id}: {delhivery_result}")
+        except Exception as e:
+            logging.error(f"Delhivery shipment creation failed: {str(e)}")
+            delhivery_result = {"success": False, "error": str(e)}
+    
     # Update the order status
+    update_data = {
+        "status": new_status,
+        "status_updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    # If Delhivery shipment was created, add AWB to update
+    if delhivery_result and delhivery_result.get("success"):
+        update_data["awb_number"] = delhivery_result.get("awb")
+        update_data["shipping_provider"] = "delhivery"
+    
     await db.orders.update_one(
         {"order_id": order_id},
-        {"$set": {
-            "status": new_status,
-            "status_updated_at": datetime.now(timezone.utc).isoformat()
-        }}
+        {"$set": update_data}
     )
     
     # Get updated order data
@@ -584,7 +617,9 @@ async def update_order_status(order_id: str, status_update: OrderStatusUpdate):
         "order_id": order_id,
         "new_status": new_status,
         "email_sent": new_status in ["shipped", "delivered"] and bool(updated_order.get('email')),
-        "referral_cashback": referral_cashback
+        "referral_cashback": referral_cashback,
+        "delhivery": delhivery_result,
+        "awb_number": updated_order.get("awb_number")
     }
 
 

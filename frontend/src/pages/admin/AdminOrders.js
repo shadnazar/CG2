@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Package, ChevronLeft, Search, Filter, Download,
-  Phone, MapPin, Calendar, IndianRupee, Truck, CheckCircle, X, Edit2, Save
+  Phone, MapPin, Calendar, IndianRupee, Truck, CheckCircle, X, Edit2, Save, ExternalLink
 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -326,6 +326,25 @@ function AdminOrders() {
                   {selectedOrder.status?.charAt(0).toUpperCase() + selectedOrder.status?.slice(1) || 'Confirmed'}
                 </span>
               </div>
+              
+              {/* Delhivery Tracking Info */}
+              {selectedOrder.awb_number && (
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-blue-700 font-medium">Delhivery Tracking</span>
+                    <span className="text-blue-600 font-mono text-sm">{selectedOrder.awb_number}</span>
+                  </div>
+                  <a 
+                    href={`https://www.delhivery.com/track/package/${selectedOrder.awb_number}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-700 text-sm underline flex items-center gap-1"
+                  >
+                    <ExternalLink size={14} />
+                    Track on Delhivery
+                  </a>
+                </div>
+              )}
               
               {/* Status Update Buttons */}
               <div className="p-4 bg-gradient-to-r from-blue-50 to-green-50 rounded-xl">
