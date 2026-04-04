@@ -415,9 +415,15 @@ function ProductPage() {
     if (!validateForm()) return;
     setLoading(true);
 
-    // Calculate final amount with discount (use dynamic discount amount)
-    const baseAmount = paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_ADVANCE;
-    const amount = discountApplied ? Math.max(baseAmount - discountAmount, 0) : baseAmount;
+    // For COD: Always charge the fixed advance amount (₹49), discount applies to total, not advance
+    // For Prepaid: Charge the discounted price
+    let amountToCharge;
+    if (paymentMethod === 'prepaid') {
+      amountToCharge = getFinalPrepaidPrice(); // Already includes discount
+    } else {
+      // COD: Always charge ₹49 advance (discount applies to balance at delivery)
+      amountToCharge = COD_ADVANCE;
+    }
     
     // Track InitiateCheckout
     trackInitiateCheckout(paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice());
@@ -426,10 +432,10 @@ function ProductPage() {
       const loaded = await loadRazorpay();
       if (!loaded) { alert('Failed to load payment gateway.'); setLoading(false); return; }
 
-      const orderResponse = await axios.post(`${API}/create-razorpay-order`, { amount: amount > 0 ? amount : 1 });
+      const orderResponse = await axios.post(`${API}/create-razorpay-order`, { amount: amountToCharge });
       
       // Track AddPaymentInfo
-      trackAction('add_payment_info', { payment_method: paymentMethod, amount: amount });
+      trackAction('add_payment_info', { payment_method: paymentMethod, amount: amountToCharge });
       
       const options = {
         key: RAZORPAY_KEY,
@@ -1431,7 +1437,7 @@ function ProductPage() {
                   <p className="font-semibold text-gray-900 text-sm">
                     Cash on Delivery  {discountApplied && <span className="line-through text-gray-400">₹{COD_PRICE}</span>} ₹{getFinalCodPrice()}
                   </p>
-                  <p className="text-gray-500 text-xs">Pay ₹{Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} now + ₹{getFinalCodPrice() - Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} on delivery</p>
+                  <p className="text-gray-500 text-xs">Pay ₹{COD_ADVANCE} now + ₹{getFinalCodPrice() - COD_ADVANCE} on delivery</p>
                 </div>
                 <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">50% OFF</span>
               </label>
@@ -1469,7 +1475,7 @@ function ProductPage() {
             className={`w-full mt-6 py-4 rounded-full font-semibold transition-all ${loading ? 'bg-gray-300 text-gray-500' : 'btn-cg-primary'}`}
             data-testid="place-order-button"
           >
-            {loading ? 'Processing...' : `Pay ₹${paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : Math.max(COD_ADVANCE - (discountApplied ? discountAmount : 0), 49)} & Place Order`}
+            {loading ? 'Processing...' : `Pay ₹${paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : COD_ADVANCE} & Place Order`}
           </button>
 
           {/* Premium Trust Footer */}

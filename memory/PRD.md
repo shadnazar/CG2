@@ -43,12 +43,16 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 
 ## What's Been Implemented
 
-### April 4, 2026 - Instant Discount Update Fix
-- **Discount Not Updating on Checkout FIXED**: When claiming discount while on checkout page, the price now updates instantly
+### April 4, 2026 - COD Payment & Instant Discount Fixes
+- **COD ₹1 Bug FIXED**: COD advance was showing ₹1 instead of ₹49 when discount was applied
+  - Root cause: Discount was being subtracted from COD advance (₹49 - ₹50 = -₹1 → ₹1 minimum)
+  - Fix: COD advance is now always ₹49; discount applies to total price, not advance
+  - Display updated: "Pay ₹49 now + ₹650 on delivery" shows correctly
+  - Button shows "Pay ₹49 & Place Order" for COD
+- **Instant Discount Update FIXED**: When claiming discount while on checkout, price now updates instantly
   - Added custom `discountClaimed` event dispatch from `DiscountPopup.js`
-  - Added event listener in `ProductPage.js` to catch instant discount claims
-  - Added 500ms localStorage poll as backup for edge cases
-  - Price updates from ₹699 → ₹649 immediately when discount is claimed
+  - Added event listener in `ProductPage.js` for real-time updates
+- **Admin Orders**: Added "Balance at Delivery" display for COD orders
 
 ### April 1, 2026 - P0 Bug Fixes (Session 3)
 - **Tracking API 404 Errors FIXED**: Added missing `/api/track-action` and `/api/track-batch` endpoints

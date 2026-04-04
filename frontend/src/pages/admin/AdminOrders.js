@@ -296,6 +296,14 @@ function AdminOrders() {
                 <span className="font-bold text-green-600">₹{selectedOrder.amount}</span>
               </div>
               
+              {/* Show balance for COD orders */}
+              {(selectedOrder.payment_method === 'COD' || selectedOrder.payment_method === 'COD (Advance Paid)') && (
+                <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                  <span className="text-yellow-700">Balance at Delivery</span>
+                  <span className="font-bold text-yellow-700">₹{selectedOrder.amount - 49}</span>
+                </div>
+              )}
+              
               <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
                 <span className="text-gray-600">Payment</span>
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${
