@@ -43,6 +43,13 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 
 ## What's Been Implemented
 
+### April 4, 2026 - Instant Discount Update Fix
+- **Discount Not Updating on Checkout FIXED**: When claiming discount while on checkout page, the price now updates instantly
+  - Added custom `discountClaimed` event dispatch from `DiscountPopup.js`
+  - Added event listener in `ProductPage.js` to catch instant discount claims
+  - Added 500ms localStorage poll as backup for edge cases
+  - Price updates from ₹699 → ₹649 immediately when discount is claimed
+
 ### April 1, 2026 - P0 Bug Fixes (Session 3)
 - **Tracking API 404 Errors FIXED**: Added missing `/api/track-action` and `/api/track-batch` endpoints
   - `TrackingProvider.js` was calling these endpoints but they didn't exist in backend

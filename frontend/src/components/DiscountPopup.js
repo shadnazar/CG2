@@ -104,6 +104,11 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
         safeLocalStorage.setItem('discountClaimed', 'true');
         safeLocalStorage.setItem('discountCode', res.data.discount_code || 'WELCOME50');
         
+        // Dispatch custom event to notify other components (like ProductPage checkout)
+        window.dispatchEvent(new CustomEvent('discountClaimed', { 
+          detail: { amount: 50, code: res.data.discount_code || 'WELCOME50' } 
+        }));
+        
         // Track (non-blocking)
         safeTrack('discount_claimed', { phone: cleanPhone, amount: 50 });
         

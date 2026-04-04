@@ -153,6 +153,33 @@ function ProductPage() {
       setViewingNow(stats.viewingNow);
       setSoldToday(stats.soldToday);
     }, 2000);
+    
+    // Listen for custom discount claimed event (instant update)
+    const handleDiscountClaimed = (e) => {
+      console.log('[ProductPage] Discount claimed event received:', e.detail);
+      setHasDiscount(true);
+      setDiscountApplied(true);
+      setDiscountAmount(e.detail?.amount || DISCOUNT_AMOUNT);
+    };
+    window.addEventListener('discountClaimed', handleDiscountClaimed);
+    
+    // Listen for discount changes in localStorage (when popup claims discount)
+    const handleStorageChange = (e) => {
+      if (e.key === 'discountClaimed' || e.key === 'exitDiscountClaimed') {
+        checkDiscountStatus();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    
+    // Also poll localStorage every 500ms as backup (for same-tab changes)
+    const discountPollInterval = setInterval(() => {
+      const exitDiscount = localStorage.getItem('exitDiscountClaimed');
+      const regularDiscount = localStorage.getItem('discountClaimed');
+      
+      if ((exitDiscount || regularDiscount) && !hasDiscount) {
+        checkDiscountStatus();
+      }
+    }, 500);
 
     // Exit-Intent Detection (Desktop)
     const handleMouseLeave = (e) => {
@@ -174,9 +201,12 @@ function ProductPage() {
       trackAction('time_on_page', { page: 'product', seconds: timeOnPage });
       clearInterval(timer); 
       clearInterval(viewerInterval);
+      clearInterval(discountPollInterval);
+      window.removeEventListener('discountClaimed', handleDiscountClaimed);
+      window.removeEventListener('storage', handleStorageChange);
       document.removeEventListener('mouseleave', handleMouseLeave);
     };
-  }, [exitPopupShown, trackPageVisit, trackViewContent, trackAction]);
+  }, [exitPopupShown, hasDiscount, trackPageVisit, trackViewContent, trackAction]);
 
   // DOM-level Click Listener for InitiateCheckout - EVENT DELEGATION PATTERN
   // Uses capture phase (true) to ensure event fires before any other handlers
