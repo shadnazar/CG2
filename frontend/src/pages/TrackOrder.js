@@ -146,8 +146,8 @@ function TrackOrder() {
               Found {orders.length} order{orders.length > 1 ? 's' : ''}
             </h3>
             
-            {orders.map((order, index) => (
-              <div key={index} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            {orders.map((order) => (
+              <div key={order.order_id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
                 {/* Order Header */}
                 <div className="p-4 bg-gradient-to-r from-gray-50 to-gray-100 border-b">
                   <div className="flex items-center justify-between">
@@ -236,7 +236,7 @@ function TrackOrder() {
                       <p className="text-sm font-medium text-gray-700 mb-3">Tracking History</p>
                       <div className="space-y-3">
                         {order.scans.slice(0, 5).map((scan, i) => (
-                          <div key={i} className="flex gap-3">
+                          <div key={`${order.order_id}-scan-${scan.ScanDetail?.ScanDateTime || i}`} className="flex gap-3">
                             <div className="flex flex-col items-center">
                               <div className={`w-3 h-3 rounded-full ${i === 0 ? 'bg-green-500' : 'bg-gray-300'}`}></div>
                               {i < order.scans.length - 1 && i < 4 && (

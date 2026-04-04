@@ -203,21 +203,17 @@ class AISkinAnalyzer:
     
     def _get_default_analysis(self, position: str = "front") -> Dict:
         """Return varied analysis when AI is not available - based on randomization to feel unique"""
-        import random
+        import secrets
         import hashlib
         import time
         
-        # Create a unique seed based on current time to ensure different results
-        seed = int(time.time() * 1000) + random.randint(0, 10000)
-        random.seed(seed)
-        
-        # Generate varied but realistic scores - wider range for more variation
-        beauty_score = random.randint(4, 8)
-        aging_score = random.randint(4, 9)
-        acne_score = random.randint(5, 9)
-        dullness_score = random.randint(4, 8)
-        pigmentation_score = random.randint(4, 8)
-        texture_score = random.randint(5, 9)
+        # Generate varied but realistic scores using cryptographically secure random
+        beauty_score = 4 + secrets.randbelow(5)  # 4-8
+        aging_score = 4 + secrets.randbelow(6)   # 4-9
+        acne_score = 5 + secrets.randbelow(5)    # 5-9
+        dullness_score = 4 + secrets.randbelow(5)  # 4-8
+        pigmentation_score = 4 + secrets.randbelow(5)  # 4-8
+        texture_score = 5 + secrets.randbelow(5)  # 5-9
         
         # Varied reasons based on scores
         beauty_reasons = [
@@ -271,9 +267,6 @@ class AISkinAnalyzer:
             "Focus on problem areas like forehead and under-eye"
         ]
         
-        # Reset random seed for true randomness in next call
-        random.seed()
-        
         return {
             "beauty_score": beauty_score,
             "aging_score": aging_score,
@@ -281,16 +274,16 @@ class AISkinAnalyzer:
             "dullness_score": dullness_score,
             "pigmentation_score": pigmentation_score,
             "texture_score": texture_score,
-            "beauty_reason": random.choice(beauty_reasons),
-            "aging_reason": random.choice(aging_reasons),
-            "acne_reason": random.choice(acne_reasons),
-            "dullness_reason": random.choice(dullness_reasons),
+            "beauty_reason": secrets.choice(beauty_reasons),
+            "aging_reason": secrets.choice(aging_reasons),
+            "acne_reason": secrets.choice(acne_reasons),
+            "dullness_reason": secrets.choice(dullness_reasons),
             "pigmentation_reason": "Some uneven skin tone detected in cheek and forehead areas",
             "texture_reason": "Minor texture variations observed, generally smooth",
-            "primary_concern": random.choice(primary_concerns),
-            "skin_type_estimate": random.choice(skin_types),
-            "focus_areas": random.choice(focus_options),
-            "personalized_tip": random.choice(personalized_tips),
+            "primary_concern": secrets.choice(primary_concerns),
+            "skin_type_estimate": secrets.choice(skin_types),
+            "focus_areas": secrets.choice(focus_options),
+            "personalized_tip": secrets.choice(personalized_tips),
             "image_position": position,
             "ai_analyzed": False
         }

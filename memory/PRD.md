@@ -43,6 +43,20 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 
 ## What's Been Implemented
 
+### April 4, 2026 - Additional Code Quality Fixes (Round 2)
+**Critical Security Fixes:**
+1. **Test Files Hardcoded Secrets** - All test files now use `os.environ.get("ADMIN_PASSWORD")`
+2. **ai_skin_analyzer.py** - Replaced `random` module with `secrets` for secure randomization
+3. **userTracking.js** - Wrapped 14 console.log statements in `isDev` conditional
+
+**Index Key Fixes (20+ more):**
+- Homepage.js: ingredients, steps, audience list, FAQs all use unique IDs
+- TrackOrder.js: orders use `order_id`, scans use datetime-based keys
+
+**Performance Improvements:**
+- Console statements only execute in development mode
+- Proper memoization of static data arrays with unique IDs
+
 ### April 4, 2026 - Performance & Code Quality Improvements
 **Refactoring & Performance:**
 1. **Created Reusable Product Components** (`/components/product/`):

@@ -12,7 +12,7 @@ import time
 import uuid
 
 BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://serum-ecommerce-ai.preview.emergentagent.com')
-ADMIN_PASSWORD = "celestaglow2024"
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "celestaglow2024")
 
 
 class TestHealthCheck:

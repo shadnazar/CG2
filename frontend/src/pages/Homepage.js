@@ -253,11 +253,11 @@ function Homepage() {
   });
 
   const faqs = [
-    { q: 'Can I use this serum daily?', a: 'Yes, our anti-aging serum is formulated for daily use. Apply it morning and evening after cleansing for best results. Consistent use helps maintain skin health and supports visible improvements over time.' },
-    { q: 'Is this suitable for sensitive skin?', a: 'Our serum is dermatologically tested and formulated to be gentle. However, if you have very sensitive skin or specific concerns, we recommend doing a patch test first or consulting with a dermatologist before regular use.' },
-    { q: 'How long until I see results?', a: 'Most users notice improved skin texture and hydration within 2-4 weeks of consistent use. Visible reduction in fine lines and enhanced radiance typically appear after 6-8 weeks. Results vary based on individual skin type and condition.' },
-    { q: 'Is this serum suitable for both men and women?', a: 'Absolutely. Our anti-aging serum is designed for all skin types and genders. The active ingredients work effectively regardless of gender, addressing common signs of aging and supporting healthy, radiant skin for everyone.' },
-    { q: 'Can I layer this with other skincare products?', a: 'Yes, this serum layers well with other products. Apply it after cleansing and toning, but before heavier creams or oils. Allow it to absorb for a minute before applying your moisturizer or sunscreen for optimal results.' },
+    { id: 'faq-daily', q: 'Can I use this serum daily?', a: 'Yes, our anti-aging serum is formulated for daily use. Apply it morning and evening after cleansing for best results. Consistent use helps maintain skin health and supports visible improvements over time.' },
+    { id: 'faq-sensitive', q: 'Is this suitable for sensitive skin?', a: 'Our serum is dermatologically tested and formulated to be gentle. However, if you have very sensitive skin or specific concerns, we recommend doing a patch test first or consulting with a dermatologist before regular use.' },
+    { id: 'faq-results', q: 'How long until I see results?', a: 'Most users notice improved skin texture and hydration within 2-4 weeks of consistent use. Visible reduction in fine lines and enhanced radiance typically appear after 6-8 weeks. Results vary based on individual skin type and condition.' },
+    { id: 'faq-gender', q: 'Is this serum suitable for both men and women?', a: 'Absolutely. Our anti-aging serum is designed for all skin types and genders. The active ingredients work effectively regardless of gender, addressing common signs of aging and supporting healthy, radiant skin for everyone.' },
+    { id: 'faq-layer', q: 'Can I layer this with other skincare products?', a: 'Yes, this serum layers well with other products. Apply it after cleansing and toning, but before heavier creams or oils. Allow it to absorb for a minute before applying your moisturizer or sunscreen for optimal results.' },
   ];
 
   return (
@@ -599,12 +599,12 @@ function Homepage() {
         
         <div className="grid grid-cols-2 gap-3">
           {[
-            { num: 1, label: 'Anti Aging', ingredient: 'Retinol', desc: 'Smooths skin texture and minimizes pores' },
-            { num: 2, label: 'Skin Brightening', ingredient: 'Niacinamide', desc: 'Reduces dark spots and pigmentation' },
-            { num: 3, label: 'Skin Protection', ingredient: 'Vitamin E', desc: 'Fights fine lines and protects from damage' },
-            { num: 4, label: 'Deep Hydration', ingredient: 'Hyaluronic Acid', desc: 'Locks in moisture for plump skin' },
-          ].map((item, i) => (
-            <div key={i} className="ingredient-card" data-testid={`ingredient-${i}`}>
+            { id: 'ing-retinol', num: 1, label: 'Anti Aging', ingredient: 'Retinol', desc: 'Smooths skin texture and minimizes pores' },
+            { id: 'ing-niacinamide', num: 2, label: 'Skin Brightening', ingredient: 'Niacinamide', desc: 'Reduces dark spots and pigmentation' },
+            { id: 'ing-vitamine', num: 3, label: 'Skin Protection', ingredient: 'Vitamin E', desc: 'Fights fine lines and protects from damage' },
+            { id: 'ing-hyaluronic', num: 4, label: 'Deep Hydration', ingredient: 'Hyaluronic Acid', desc: 'Locks in moisture for plump skin' },
+          ].map((item) => (
+            <div key={item.id} className="ingredient-card" data-testid={item.id}>
               <div className="ingredient-number">{item.num}</div>
               <p className="text-xs text-gray-500 mb-0.5">{item.label}</p>
               <h3 className="font-bold text-gray-900 mb-1 text-sm">{item.ingredient}</h3>
@@ -631,16 +631,16 @@ function Homepage() {
           <h3 className="font-semibold text-gray-900 mb-3">How to Use</h3>
           <div className="space-y-2">
             {[
-              'Cleanse your face thoroughly with a gentle cleanser',
-              'Apply 2–3 drops to face and neck, avoiding eye area',
-              'Follow with your favorite moisturizer',
-              'Use sunscreen during daytime (SPF 30 or higher)'
-            ].map((step, i) => (
-              <div key={i} className="flex items-start gap-2">
+              { id: 'step-cleanse', step: 'Cleanse your face thoroughly with a gentle cleanser' },
+              { id: 'step-apply', step: 'Apply 2–3 drops to face and neck, avoiding eye area' },
+              { id: 'step-moisturize', step: 'Follow with your favorite moisturizer' },
+              { id: 'step-sunscreen', step: 'Use sunscreen during daytime (SPF 30 or higher)' }
+            ].map((item, i) => (
+              <div key={item.id} className="flex items-start gap-2">
                 <div className="w-5 h-5 rounded-full bg-green-500 text-white flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">
                   {i + 1}
                 </div>
-                <span className="text-gray-700 text-sm">{step}</span>
+                <span className="text-gray-700 text-sm">{item.step}</span>
               </div>
             ))}
           </div>
@@ -653,14 +653,14 @@ function Homepage() {
           <h3 className="font-semibold text-gray-900 mb-3">Ideal For</h3>
           <div className="space-y-1.5">
             {[
-              'Ages 28+ looking to maintain youthful skin',
-              'Uneven skin tone and texture concerns',
-              'Fine lines and early signs of aging',
-              'Those seeking simplified, effective routines'
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-2 text-gray-700 text-sm">
+              { id: 'for-ages', text: 'Ages 28+ looking to maintain youthful skin' },
+              { id: 'for-uneven', text: 'Uneven skin tone and texture concerns' },
+              { id: 'for-lines', text: 'Fine lines and early signs of aging' },
+              { id: 'for-simple', text: 'Those seeking simplified, effective routines' }
+            ].map((item) => (
+              <div key={item.id} className="flex items-center gap-2 text-gray-700 text-sm">
                 <span className="text-green-500">•</span>
-                {item}
+                {item.text}
               </div>
             ))}
           </div>
@@ -673,21 +673,21 @@ function Homepage() {
         <p className="text-gray-500 text-sm mb-5">Everything you need to know about our serum</p>
         
         <div className="space-y-2">
-          {faqs.map((faq, i) => (
-            <div key={i} className="faq-item" data-testid={`faq-${i}`}>
+          {faqs.map((faq) => (
+            <div key={faq.id} className="faq-item" data-testid={faq.id}>
               <button
                 onClick={() => {
-                  setExpandedFaq(expandedFaq === i ? null : i);
-                  if (expandedFaq !== i) {
+                  setExpandedFaq(expandedFaq === faq.id ? null : faq.id);
+                  if (expandedFaq !== faq.id) {
                     trackAction('faq_interaction', { question: faq.q });
                   }
                 }}
                 className="faq-header"
               >
                 <span className="text-sm">{faq.q}</span>
-                {expandedFaq === i ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
+                {expandedFaq === faq.id ? <ChevronUp size={18} className="text-gray-400" /> : <ChevronDown size={18} className="text-gray-400" />}
               </button>
-              {expandedFaq === i && (
+              {expandedFaq === faq.id && (
                 <div className="faq-content text-xs">{faq.a}</div>
               )}
             </div>

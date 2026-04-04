@@ -6,6 +6,9 @@
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Only log in development
+const isDev = process.env.NODE_ENV === 'development';
+
 // Google Analytics Measurement ID
 const GA_MEASUREMENT_ID = 'G-LSJCVKB8BP';
 
@@ -53,7 +56,7 @@ export const initGoogleAnalytics = () => {
     user_id: getVisitorId()
   });
   
-  console.log('[Google Analytics] Initialized with ID:', GA_MEASUREMENT_ID);
+  isDev && console.log('[Google Analytics] Initialized with ID:', GA_MEASUREMENT_ID);
 };
 
 // Track event to Google Analytics
@@ -64,7 +67,7 @@ export const trackGAEvent = (eventName, eventParams = {}) => {
       visitor_id: getVisitorId(),
       session_id: getSessionId()
     });
-    console.log('[Google Analytics] Event:', eventName, eventParams);
+    isDev && console.log('[Google Analytics] Event:', eventName, eventParams);
   }
 };
 
@@ -87,7 +90,7 @@ export const initClickTracking = () => {
         page: window.location.pathname
       });
       trackGAEvent('begin_checkout', { currency: 'INR', value: 699 });
-      console.log('[User Tracking] Buy Now clicked');
+      isDev && console.log('[User Tracking] Buy Now clicked');
     }
     
     // Track Add to Cart / Claim Offer clicks
@@ -98,7 +101,7 @@ export const initClickTracking = () => {
         page: window.location.pathname
       });
       trackGAEvent('add_to_cart', { currency: 'INR', value: 699 });
-      console.log('[User Tracking] Claim/Add clicked');
+      isDev && console.log('[User Tracking] Claim/Add clicked');
     }
     
     // Track Place Order / Pay clicks
@@ -109,7 +112,7 @@ export const initClickTracking = () => {
         page: window.location.pathname
       });
       trackGAEvent('add_payment_info', { currency: 'INR', value: 699 });
-      console.log('[User Tracking] Place Order clicked');
+      isDev && console.log('[User Tracking] Place Order clicked');
     }
     
     // Track Consultation / Skin Analysis clicks
@@ -120,7 +123,7 @@ export const initClickTracking = () => {
         page: window.location.pathname
       });
       trackGAEvent('generate_lead', { lead_type: 'consultation' });
-      console.log('[User Tracking] Consultation clicked');
+      isDev && console.log('[User Tracking] Consultation clicked');
     }
     
     // Track WhatsApp clicks
@@ -131,7 +134,7 @@ export const initClickTracking = () => {
         page: window.location.pathname
       });
       trackGAEvent('contact', { method: 'whatsapp' });
-      console.log('[User Tracking] WhatsApp clicked');
+      isDev && console.log('[User Tracking] WhatsApp clicked');
     }
     
     // Track generic button clicks for analytics
@@ -144,7 +147,7 @@ export const initClickTracking = () => {
     }
   }, true); // Capture phase for reliability
   
-  console.log('[User Tracking] DOM click tracking initialized');
+  isDev && console.log('[User Tracking] DOM click tracking initialized');
 };
 
 // Initialize all tracking on page load
@@ -179,7 +182,7 @@ export const requestLocationPermission = async () => {
         resolve(location);
       },
       (error) => {
-        console.log('Location permission denied:', error.message);
+        isDev && console.log('Location permission denied:', error.message);
         resolve({ error: error.message });
       },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
@@ -209,7 +212,7 @@ export const updateVisitorLocation = async (location) => {
       })
     });
   } catch (err) {
-    console.log('Location update error:', err);
+    isDev && console.log('Location update error:', err);
   }
 };
 
@@ -231,7 +234,7 @@ export const trackBlogView = async (blogSlug, blogTitle) => {
       })
     });
   } catch (err) {
-    console.log('Blog view tracking error:', err);
+    isDev && console.log('Blog view tracking error:', err);
   }
 };
 
@@ -262,7 +265,7 @@ export const trackPageVisit = async (page, additionalData = {}) => {
       body: JSON.stringify(trackingData)
     });
   } catch (err) {
-    console.log('Tracking error:', err);
+    isDev && console.log('Tracking error:', err);
   }
 };
 
@@ -285,7 +288,7 @@ export const trackTimeSpent = async (page, timeSpentSeconds) => {
       })
     });
   } catch (err) {
-    console.log('Tracking error:', err);
+    isDev && console.log('Tracking error:', err);
   }
 };
 
@@ -309,7 +312,7 @@ export const trackAction = async (action, details = {}) => {
       })
     });
   } catch (err) {
-    console.log('Tracking error:', err);
+    isDev && console.log('Tracking error:', err);
   }
 };
 
