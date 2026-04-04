@@ -1,12 +1,45 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { X, Gift, Phone, Check, Loader2, Bell } from 'lucide-react';
-import { trackLead, trackPopupDismissed } from '../utils/metaPixel';
-import { trackAction, getVisitorId } from '../utils/userTracking';
-import { requestNotificationPermission, isPushSupported, isSubscribed } from '../utils/pushNotifications';
+import { X, Gift, Check, Loader2 } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Safe localStorage access
+const safeLocalStorage = {
+  getItem: (key) => {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  },
+  setItem: (key, value) => {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.log('localStorage error:', e);
+    }
+  }
+};
+
+// Safe tracking function
+const safeTrack = async (action, data) => {
+  try {
+    // Non-blocking tracking - don't await
+    fetch(`${API}/tracking/action`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        ...data,
+        timestamp: new Date().toISOString()
+      })
+    }).catch(() => {});
+  } catch (e) {
+    // Silently fail - tracking should never crash the app
+  }
+};
 
 function DiscountPopup({ sessionId, currentPage, onClose }) {
   const [phone, setPhone] = useState('');
@@ -14,40 +47,24 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
   const [discountCode, setDiscountCode] = useState('');
-  const [acceptedTerms, setAcceptedTerms] = useState(true); // Auto-ticked by default
-  const [notificationRequested, setNotificationRequested] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(true);
+
+  // Check if already claimed
+  useEffect(() => {
+    try {
+      if (safeLocalStorage.getItem('discountClaimed')) {
+        onClose();
+      }
+    } catch (e) {
+      // Ignore errors
+    }
+  }, [onClose]);
 
   const handleClose = () => {
-    if (!success) {
-      trackPopupDismissed('discount_popup');
-    }
+    try {
+      safeTrack('popup_dismissed', { popup: 'discount' });
+    } catch (e) {}
     onClose();
-  };
-
-  const initializeTracking = async () => {
-    // Set cookie consent as accepted
-    localStorage.setItem('cookieConsent', 'accepted');
-    localStorage.setItem('cookieConsentDate', new Date().toISOString());
-    
-    // Generate unique visitor ID (this also ensures tracking starts)
-    const visitorId = getVisitorId();
-    
-    // Track the discount claim action with phone info
-    await trackAction('discount_claimed', { phone_entered: true, has_phone: true });
-    
-    // Request push notification permission after a short delay (location removed - only asked in blog section)
-    if (!notificationRequested && isPushSupported() && !isSubscribed()) {
-      setNotificationRequested(true);
-      setTimeout(async () => {
-        const result = await requestNotificationPermission();
-        if (result.success) {
-          await trackAction('push_notification_subscribed', { 
-            permission: result.permission 
-          });
-          console.log('[Push] User subscribed to notifications');
-        }
-      }, 1500); // Slight delay after discount claim
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -69,53 +86,39 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
     setError('');
     
     try {
-      // Initialize tracking when user accepts terms
-      initializeTracking();
+      // Set cookie consent
+      safeLocalStorage.setItem('cookieConsent', 'accepted');
       
+      // Claim discount API call
       const res = await axios.post(`${API}/claim-discount`, {
         phone: cleanPhone,
-        session_id: sessionId,
-        page: currentPage
+        session_id: sessionId || 'unknown',
+        page: currentPage || 'homepage'
       });
       
       if (res.data.success) {
         setSuccess(true);
-        setDiscountCode(res.data.discount_code);
-        // Store in localStorage so popup doesn't show again
-        localStorage.setItem('discountClaimed', 'true');
-        localStorage.setItem('discountCode', res.data.discount_code);
+        setDiscountCode(res.data.discount_code || 'WELCOME50');
         
-        // Track discount claim with phone number
-        const visitorId = getVisitorId();
-        try {
-          await axios.post(`${API}/tracking/discount-claimed`, {
-            visitor_id: visitorId,
-            discount_type: 'regular',
-            amount: 50,
-            phone: cleanPhone
-          });
-        } catch (trackErr) {
-          console.log('Tracking error:', trackErr);
-        }
+        // Store in localStorage
+        safeLocalStorage.setItem('discountClaimed', 'true');
+        safeLocalStorage.setItem('discountCode', res.data.discount_code || 'WELCOME50');
         
-        // Track Lead event
-        trackLead('discount_claimed');
+        // Track (non-blocking)
+        safeTrack('discount_claimed', { phone: cleanPhone, amount: 50 });
+        
       } else if (res.data.already_claimed) {
         setError('This number has already claimed the discount');
+      } else {
+        setError('Something went wrong. Please try again.');
       }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Something went wrong');
+      console.log('Discount claim error:', err);
+      setError(err.response?.data?.detail || 'Something went wrong. Please try again.');
     } finally {
       setLoading(false);
     }
   };
-
-  // Don't show if already claimed
-  useEffect(() => {
-    if (localStorage.getItem('discountClaimed')) {
-      onClose();
-    }
-  }, [onClose]);
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[100] p-4" data-testid="discount-popup">
@@ -127,6 +130,7 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
               <button 
                 onClick={handleClose}
                 className="absolute top-3 right-3 text-white/80 hover:text-white"
+                type="button"
               >
                 <X size={20} />
               </button>
@@ -223,7 +227,7 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
             <p className="text-gray-500 mb-4">Use this code at checkout:</p>
             
             <div className="bg-gray-100 rounded-xl p-4 mb-6">
-              <p className="text-2xl font-bold text-green-600 tracking-wider">{discountCode}</p>
+              <p className="text-2xl font-bold text-green-600 tracking-wider">{discountCode || 'WELCOME50'}</p>
             </div>
             
             <div className="bg-green-50 rounded-xl p-3 mb-4">
@@ -232,6 +236,7 @@ function DiscountPopup({ sessionId, currentPage, onClose }) {
             
             <button
               onClick={onClose}
+              type="button"
               className="w-full py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600"
             >
               Start Shopping
