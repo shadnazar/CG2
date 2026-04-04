@@ -560,7 +560,7 @@ function ProductPage() {
           <div className="flex items-center gap-2 mb-4" data-testid="product-rating">
             <div className="flex gap-0.5">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} size={14} className="star-gold" />
+                <Star key={`rating-star-${i}`} size={14} className="star-gold" />
               ))}
             </div>
             <span className="text-gray-500 text-sm">4.8 (2,340 reviews)</span>
@@ -603,12 +603,12 @@ function ProductPage() {
             </h3>
             <div className="space-y-2.5">
               {[
-                { text: 'Reduces wrinkles by 47% in 4 weeks', highlight: '47%' },
-                { text: 'Boosts collagen production by 89%', highlight: '89%' },
-                { text: 'Improves skin elasticity in 14 days', highlight: '14 days' },
-                { text: '10,000+ happy customers across India', highlight: '10,000+' },
-              ].map((benefit, i) => (
-                <div key={i} className="check-item" data-testid={`product-benefit-${i}`}>
+                { id: 'benefit-wrinkles', text: 'Reduces wrinkles by 47% in 4 weeks', highlight: '47%' },
+                { id: 'benefit-collagen', text: 'Boosts collagen production by 89%', highlight: '89%' },
+                { id: 'benefit-elasticity', text: 'Improves skin elasticity in 14 days', highlight: '14 days' },
+                { id: 'benefit-customers', text: '10,000+ happy customers across India', highlight: '10,000+' },
+              ].map((benefit) => (
+                <div key={benefit.id} className="check-item" data-testid={benefit.id}>
                   <div className="check-icon">
                     <Check size={12} />
                   </div>
@@ -650,6 +650,7 @@ function ProductPage() {
             <div className="space-y-3">
               {[
                 { 
+                  id: 'ingredient-retinol',
                   name: '0.3% Retinol', 
                   benefit: 'Gold standard for wrinkle reduction', 
                   detail: 'Clinically proven to boost collagen',
@@ -658,6 +659,7 @@ function ProductPage() {
                   icon: '✨'
                 },
                 { 
+                  id: 'ingredient-hyaluronic',
                   name: 'Hyaluronic Acid', 
                   benefit: '72-hour deep hydration', 
                   detail: 'Holds 1000x its weight in water',
@@ -666,6 +668,7 @@ function ProductPage() {
                   icon: '💧'
                 },
                 { 
+                  id: 'ingredient-niacinamide',
                   name: '5% Niacinamide', 
                   benefit: 'Brightens & evens skin tone', 
                   detail: 'Minimizes pores & dark spots',
@@ -674,6 +677,7 @@ function ProductPage() {
                   icon: '☀️'
                 },
                 { 
+                  id: 'ingredient-vitamine',
                   name: 'Vitamin E Complex', 
                   benefit: 'Protects against damage', 
                   detail: 'Powerful antioxidant shield',
@@ -681,8 +685,8 @@ function ProductPage() {
                   bgGradient: 'from-green-50 to-emerald-50',
                   icon: '🛡️'
                 },
-              ].map((item, i) => (
-                <div key={i} className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${item.bgGradient} border border-gray-100`}>
+              ].map((item) => (
+                <div key={item.id} className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${item.bgGradient} border border-gray-100`}>
                   <div className="p-4">
                     <div className="flex items-start gap-3">
                       <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center text-white text-xl shadow-lg`}>
@@ -709,11 +713,11 @@ function ProductPage() {
           {/* Trust Badges - ENHANCED */}
           <div className="grid grid-cols-3 gap-2 py-5 border-y border-gray-100 mb-5">
             {[
-              { icon: Truck, label: 'Free Delivery', sublabel: 'All India' },
-              { icon: ShieldCheck, label: '100% Genuine', sublabel: 'Authentic' },
-              { icon: Clock, label: 'Fast Shipping', sublabel: '2-3 Days' },
-            ].map((item, i) => (
-              <div key={i} className="text-center">
+              { id: 'trust-delivery', icon: Truck, label: 'Free Delivery', sublabel: 'All India' },
+              { id: 'trust-genuine', icon: ShieldCheck, label: '100% Genuine', sublabel: 'Authentic' },
+              { id: 'trust-shipping', icon: Clock, label: 'Fast Shipping', sublabel: '2-3 Days' },
+            ].map((item) => (
+              <div key={item.id} className="text-center">
                 <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-1">
                   <item.icon size={18} className="text-green-600" />
                 </div>
@@ -783,11 +787,11 @@ function ProductPage() {
             </h3>
             <div className="space-y-3">
               {[
-                { icon: TrendingUp, title: 'Visible Results', desc: 'See younger skin in just 2-4 weeks', stat: '94%' },
-                { icon: Shield, title: 'Safe Formula', desc: 'Dermatologist tested, no harsh chemicals', stat: '100%' },
-                { icon: Award, title: 'Award Winning', desc: "India's #1 rated anti-aging serum", stat: '#1' },
-              ].map((item, i) => (
-                <div key={i} className="flex items-center gap-3 bg-white/15 backdrop-blur p-3 rounded-xl">
+                { id: 'why-results', icon: TrendingUp, title: 'Visible Results', desc: 'See younger skin in just 2-4 weeks', stat: '94%' },
+                { id: 'why-safe', icon: Shield, title: 'Safe Formula', desc: 'Dermatologist tested, no harsh chemicals', stat: '100%' },
+                { id: 'why-award', icon: Award, title: 'Award Winning', desc: "India's #1 rated anti-aging serum", stat: '#1' },
+              ].map((item) => (
+                <div key={item.id} className="flex items-center gap-3 bg-white/15 backdrop-blur p-3 rounded-xl">
                   <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-lg">
                     <item.icon size={20} className="text-white" />
                   </div>
@@ -808,34 +812,38 @@ function ProductPage() {
             <h3 className="font-bold text-gray-900 mb-2">Product Details</h3>
             {[
               { 
+                id: 'detail-ingredients',
                 title: '🧪 Key Ingredients', 
                 content: '0.3% Retinol for cell renewal, Niacinamide for brightening, Hyaluronic Acid for deep hydration, Vitamin E for protection against environmental damage.',
                 highlight: '4-in-1 Formula'
               },
               { 
+                id: 'detail-usage',
                 title: '📝 How to Use', 
                 content: 'Cleanse face, apply 2-3 drops to face and neck avoiding eye area, follow with moisturizer. Use sunscreen during daytime. For retinol beginners, start 2-3 times per week.',
                 highlight: 'Night Use Only'
               },
               { 
+                id: 'detail-clinical',
                 title: '📊 Clinical Results', 
                 content: '94% saw improved hydration. 89% noticed reduced fine lines. 91% reported brighter, more youthful skin. Results from 8-week clinical study with 200 participants.',
                 highlight: '8-Week Study'
               },
               { 
+                id: 'detail-included',
                 title: '📦 What\'s Included', 
                 content: '30ml Premium Anti-Aging Serum in airless pump bottle, detailed usage guide, satisfaction guarantee card. Package includes protective box for safe delivery.',
                 highlight: '30ml Bottle'
               },
-            ].map((section, i) => (
-              <div key={i} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+            ].map((section) => (
+              <div key={section.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
                 <button
                   onClick={() => {
-                    setExpandedSection(expandedSection === i ? null : i);
+                    setExpandedSection(expandedSection === section.id ? null : section.id);
                     trackAction('faq_interaction', { section: section.title });
                   }}
                   className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50 transition-colors"
-                  data-testid={`accordion-${i}`}
+                  data-testid={`accordion-${section.id}`}
                 >
                   <div className="flex items-center gap-3">
                     <span className="text-sm font-semibold text-gray-900">{section.title}</span>
@@ -843,12 +851,12 @@ function ProductPage() {
                       {section.highlight}
                     </span>
                   </div>
-                  {expandedSection === i 
+                  {expandedSection === section.id 
                     ? <ChevronUp size={18} className="text-green-500" /> 
                     : <ChevronDown size={18} className="text-gray-400" />
                   }
                 </button>
-                {expandedSection === i && (
+                {expandedSection === section.id && (
                   <div className="px-4 pb-4 pt-0">
                     <div className="p-3 bg-gray-50 rounded-xl">
                       <p className="text-sm text-gray-600 leading-relaxed">{section.content}</p>
@@ -863,7 +871,7 @@ function ProductPage() {
           <div className="mt-6 text-center pb-6">
             <div className="flex items-center justify-center gap-2 mb-2">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />
+                <Star key={`trust-star-${i}`} size={16} className="text-yellow-400 fill-yellow-400" />
               ))}
             </div>
             <p className="text-sm text-gray-600">Rated 4.8/5 by 2,340+ customers</p>
@@ -1389,7 +1397,7 @@ function ProductPage() {
                 </div>
                 <div className="flex items-center gap-0.5">
                   {[1,2,3,4,5].map(i => (
-                    <Star key={i} size={12} className="text-yellow-200 fill-yellow-200" />
+                    <Star key={`checkout-star-${i}`} size={12} className="text-yellow-200 fill-yellow-200" />
                   ))}
                 </div>
               </div>
@@ -1459,7 +1467,7 @@ function ProductPage() {
                 </div>
                 <div className="flex items-center gap-0.5 mb-1">
                   {[1,2,3,4,5].map(i => (
-                    <Star key={i} size={12} className="text-amber-400 fill-amber-400" />
+                    <Star key={`review-star-${i}`} size={12} className="text-amber-400 fill-amber-400" />
                   ))}
                 </div>
                 <p className="text-sm text-gray-700">"Saw visible results in just 2 weeks! My skin feels so much smoother and younger now."</p>

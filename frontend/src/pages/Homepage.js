@@ -86,9 +86,9 @@ function TransformationShowcase() {
         
         {/* Dots Indicator */}
         <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-2">
-          {TRANSFORMATION_IMAGES.map((_, i) => (
+          {TRANSFORMATION_IMAGES.map((img, i) => (
             <button
-              key={i}
+              key={`dot-${img.id || i}`}
               onClick={() => {
                 setIsAnimating(true);
                 setTimeout(() => {
@@ -415,12 +415,13 @@ function Homepage() {
         <div className="space-y-3 max-w-sm mx-auto">
           {[
             { problem: 'Fine lines around eyes & forehead', emoji: '👁️' },
-            { problem: 'Dull, tired-looking skin', emoji: '😔' },
-            { problem: 'Sagging & loss of firmness', emoji: '📉' },
-            { problem: 'Dark spots & uneven skin tone', emoji: '🔵' },
-            { problem: 'Dry, dehydrated skin', emoji: '🏜️' },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-amber-100 shadow-sm">
+            { id: 'problem-wrinkles', problem: 'Fine lines & wrinkles', emoji: '📍' },
+            { id: 'problem-dull', problem: 'Dull, tired-looking skin', emoji: '😔' },
+            { id: 'problem-sagging', problem: 'Sagging & loss of firmness', emoji: '📉' },
+            { id: 'problem-spots', problem: 'Dark spots & uneven skin tone', emoji: '🔵' },
+            { id: 'problem-dry', problem: 'Dry, dehydrated skin', emoji: '🏜️' },
+          ].map((item) => (
+            <div key={item.id} className="flex items-center gap-3 bg-white p-3 rounded-xl border border-amber-100 shadow-sm">
               <span className="text-2xl">{item.emoji}</span>
               <span className="text-gray-700 font-medium">{item.problem}</span>
               <Check className="ml-auto text-red-500 w-5 h-5" />
@@ -441,11 +442,11 @@ function Homepage() {
       <section className="px-5 py-4">
         <div className="flex justify-around">
           {[
-            { icon: ShieldCheck, label: 'Dermatologist Tested' },
-            { icon: Truck, label: 'Free Delivery' },
-            { icon: Clock, label: '2-3 Day Delivery' },
-          ].map((item, i) => (
-            <div key={i} className="flex flex-col items-center gap-1">
+            { id: 'badge-derma', icon: ShieldCheck, label: 'Dermatologist Tested' },
+            { id: 'badge-delivery', icon: Truck, label: 'Free Delivery' },
+            { id: 'badge-fast', icon: Clock, label: '2-3 Day Delivery' },
+          ].map((item) => (
+            <div key={item.id} className="flex flex-col items-center gap-1">
               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
                 <item.icon size={18} className="text-green-600" />
               </div>
@@ -470,16 +471,16 @@ function Homepage() {
         
         <div className="space-y-3 mb-6">
           {[
-            'Supports smoother texture',
-            'Helps improve uneven tone',
-            'Maintains hydration balance',
-            'Suitable for daily use'
-          ].map((item, i) => (
-            <div key={i} className="check-item" data-testid={`benefit-${i}`}>
+            { id: 'benefit-texture', text: 'Supports smoother texture' },
+            { id: 'benefit-tone', text: 'Helps improve uneven tone' },
+            { id: 'benefit-hydration', text: 'Maintains hydration balance' },
+            { id: 'benefit-daily', text: 'Suitable for daily use' }
+          ].map((item) => (
+            <div key={item.id} className="check-item" data-testid={item.id}>
               <div className="check-icon">
                 <Check size={14} />
               </div>
-              <span className="text-gray-700">{item}</span>
+              <span className="text-gray-700">{item.text}</span>
             </div>
           ))}
         </div>
@@ -562,12 +563,12 @@ function Homepage() {
         
         <div className="grid grid-cols-2 gap-3 mb-6">
           {[
-            { title: 'Fine Lines', desc: 'Collagen production decreases gradually' },
-            { title: 'Uneven Tone', desc: 'Sun exposure creates pigmentation' },
-            { title: 'Dullness', desc: 'Dead cells diminish natural radiance' },
-            { title: 'Breakouts', desc: 'Hormonal shifts can trigger congestion' },
-          ].map((item, i) => (
-            <div key={i} className="card-cg text-center p-4">
+            { id: 'concern-lines', title: 'Fine Lines', desc: 'Collagen production decreases gradually' },
+            { id: 'concern-tone', title: 'Uneven Tone', desc: 'Sun exposure creates pigmentation' },
+            { id: 'concern-dull', title: 'Dullness', desc: 'Dead cells diminish natural radiance' },
+            { id: 'concern-breakouts', title: 'Breakouts', desc: 'Hormonal shifts can trigger congestion' },
+          ].map((item) => (
+            <div key={item.id} className="card-cg text-center p-4">
               <h3 className="font-semibold text-gray-900 mb-1 text-sm">{item.title}</h3>
               <p className="text-gray-500 text-xs">{item.desc}</p>
             </div>
