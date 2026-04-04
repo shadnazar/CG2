@@ -211,10 +211,30 @@ function OrderSuccessPage() {
             <span className="text-gray-500">Quantity</span>
             <span className="text-gray-900">1</span>
           </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Amount Paid</span>
-            <span className="text-green-600 font-bold">₹{order.amount}</span>
-          </div>
+          
+          {/* Show different payment breakdown for COD vs Prepaid */}
+          {order.payment_method?.includes('COD') ? (
+            <>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Total Amount</span>
+                <span className="text-gray-900 font-medium">₹{order.amount}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Advance Paid</span>
+                <span className="text-green-600 font-bold">₹49</span>
+              </div>
+              <div className="flex justify-between bg-yellow-50 -mx-5 px-5 py-2">
+                <span className="text-yellow-700 font-medium">Balance at Delivery</span>
+                <span className="text-yellow-700 font-bold">₹{order.amount - 49}</span>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between">
+              <span className="text-gray-500">Amount Paid</span>
+              <span className="text-green-600 font-bold">₹{order.amount}</span>
+            </div>
+          )}
+          
           <div className="flex justify-between">
             <span className="text-gray-500">Payment Method</span>
             <span className="text-gray-900">{order.payment_method}</span>
