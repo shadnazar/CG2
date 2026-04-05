@@ -71,7 +71,7 @@ function AdminUserJourney() {
     fetchData();
   }, [fetchData]);
 
-  const calculateFunnelData = (visitorsData) => {
+  const calculateFunnelData = useCallback((visitorsData) => {
     const total = visitorsData.length;
     if (total === 0) {
       setFunnelData(null);
