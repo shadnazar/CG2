@@ -35,7 +35,7 @@ function AdminLogin() {
     setLoading(true);
 
     try {
-      const res = await axios.post(`${API}/admin/login`, { password }, { withCredentials: true });
+      const res = await axios.post(`${API}/admin/login`, { password });
       if (res.data.success) {
         setAdminToken(res.data.token);
         navigate('/admin/dashboard');
