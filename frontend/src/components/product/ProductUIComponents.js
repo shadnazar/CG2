@@ -42,11 +42,11 @@ export const StickyBottomCTA = ({ timeLeft, price, mrp, onClick, loading }) => (
 export const TrustBadges = ({ Truck, ShieldCheck, Clock }) => (
   <div className="grid grid-cols-3 gap-2 py-5 border-y border-gray-100 mb-5">
     {[
-      { icon: Truck, label: 'Free Delivery', sublabel: 'All India' },
-      { icon: ShieldCheck, label: '100% Genuine', sublabel: 'Authentic' },
-      { icon: Clock, label: 'Fast Shipping', sublabel: '2-3 Days' },
-    ].map((item, i) => (
-      <div key={i} className="text-center">
+      { id: 'trust-delivery', icon: Truck, label: 'Free Delivery', sublabel: 'All India' },
+      { id: 'trust-genuine', icon: ShieldCheck, label: '100% Genuine', sublabel: 'Authentic' },
+      { id: 'trust-shipping', icon: Clock, label: 'Fast Shipping', sublabel: '2-3 Days' },
+    ].map((item) => (
+      <div key={item.id} className="text-center">
         <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-1">
           <item.icon size={18} className="text-green-600" />
         </div>
@@ -93,7 +93,7 @@ export const ProductRating = ({ rating = 4.8, reviews = 2340, Star }) => (
   <div className="flex items-center gap-2 mb-4" data-testid="product-rating">
     <div className="flex gap-0.5">
       {[...Array(5)].map((_, i) => (
-        <Star key={i} size={14} className="star-gold" />
+        <Star key={`rating-star-${i}`} size={14} className="star-gold" />
       ))}
     </div>
     <span className="text-gray-500 text-sm">{rating} ({reviews.toLocaleString()} reviews)</span>

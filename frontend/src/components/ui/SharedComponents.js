@@ -7,7 +7,7 @@ export const StarRating = ({ rating = 5, size = 14, showCount = false, count = 0
     <div className="flex gap-0.5">
       {[...Array(5)].map((_, i) => (
         <Star 
-          key={i} 
+          key={`shared-star-${i}`} 
           size={size} 
           className={i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'} 
         />

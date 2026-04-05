@@ -145,9 +145,9 @@ function DermatologistSection() {
 
           {/* Dots */}
           <div className="flex justify-center gap-2 mt-6">
-            {DERMATOLOGISTS.map((_, idx) => (
+            {DERMATOLOGISTS.map((doc, idx) => (
               <button
-                key={idx}
+                key={doc.id || `derma-dot-${idx}`}
                 onClick={() => {
                   setIsAutoPlaying(false);
                   setActiveIndex(idx);

@@ -33,8 +33,8 @@ export const ActiveIngredients = () => {
         Powerful Active Ingredients
       </h3>
       <div className="grid grid-cols-2 gap-2">
-        {ingredients.map((item, i) => (
-          <div key={i} className="bg-gray-50 rounded-xl p-3">
+        {ingredients.map((item) => (
+          <div key={item.name} className="bg-gray-50 rounded-xl p-3">
             <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mb-2`}>
               <Sparkles size={14} className="text-white" />
             </div>
@@ -50,10 +50,10 @@ export const ActiveIngredients = () => {
 // Clinical Results Section
 export const ClinicalResults = () => {
   const results = [
-    { percentage: '94%', text: 'reported visibly smoother skin' },
-    { percentage: '89%', text: 'saw reduction in fine lines' },
-    { percentage: '91%', text: 'noticed improved hydration' },
-    { percentage: '87%', text: 'experienced brighter skin tone' }
+    { id: 'result-smooth', percentage: '94%', text: 'reported visibly smoother skin' },
+    { id: 'result-lines', percentage: '89%', text: 'saw reduction in fine lines' },
+    { id: 'result-hydration', percentage: '91%', text: 'noticed improved hydration' },
+    { id: 'result-bright', percentage: '87%', text: 'experienced brighter skin tone' }
   ];
 
   return (
@@ -63,8 +63,8 @@ export const ClinicalResults = () => {
         Clinical Results in 4 Weeks
       </h3>
       <div className="grid grid-cols-2 gap-2">
-        {results.map((item, i) => (
-          <div key={i} className="bg-green-50 rounded-xl p-3 text-center">
+        {results.map((item) => (
+          <div key={item.id} className="bg-green-50 rounded-xl p-3 text-center">
             <p className="text-2xl font-bold text-green-600 mb-1">{item.percentage}</p>
             <p className="text-[10px] text-gray-600">{item.text}</p>
           </div>
@@ -92,7 +92,7 @@ export const AntiAgingBenefits = () => {
       </h3>
       <div className="space-y-2">
         {benefits.map((benefit, i) => (
-          <div key={i} className="flex items-center gap-3 text-sm">
+          <div key={`benefit-${i}-${benefit.substring(0, 10)}`} className="flex items-center gap-3 text-sm">
             <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
               <Check size={12} className="text-green-600" />
             </div>
@@ -124,21 +124,21 @@ export const AgeRegressionScore = () => (
 // Product Reviews
 export const ProductReviews = () => {
   const reviews = [
-    { name: 'Priya M.', location: 'Mumbai', rating: 5, text: 'My wrinkles have reduced so much! Best investment for my skin at 45.' },
-    { name: 'Anita S.', location: 'Delhi', rating: 5, text: 'I can see visible difference in just 2 weeks. My skin looks 10 years younger!' },
-    { name: 'Kavitha R.', location: 'Bangalore', rating: 5, text: 'Finally found a serum that works on Indian skin. Highly recommend!' }
+    { id: 'review-priya', name: 'Priya M.', location: 'Mumbai', rating: 5, text: 'My wrinkles have reduced so much! Best investment for my skin at 45.' },
+    { id: 'review-anita', name: 'Anita S.', location: 'Delhi', rating: 5, text: 'I can see visible difference in just 2 weeks. My skin looks 10 years younger!' },
+    { id: 'review-kavitha', name: 'Kavitha R.', location: 'Bangalore', rating: 5, text: 'Finally found a serum that works on Indian skin. Highly recommend!' }
   ];
 
   return (
     <div className="mb-6">
       <h3 className="font-bold text-gray-900 mb-3">Customer Reviews</h3>
       <div className="space-y-3">
-        {reviews.map((review, i) => (
-          <div key={i} className="bg-gray-50 rounded-xl p-4">
+        {reviews.map((review) => (
+          <div key={review.id} className="bg-gray-50 rounded-xl p-4">
             <div className="flex items-center gap-2 mb-2">
               <div className="flex gap-0.5">
                 {[...Array(review.rating)].map((_, j) => (
-                  <Star key={j} size={12} className="text-yellow-400 fill-yellow-400" />
+                  <Star key={`${review.id}-star-${j}`} size={12} className="text-yellow-400 fill-yellow-400" />
                 ))}
               </div>
               <span className="text-xs text-gray-500">{review.name}, {review.location}</span>

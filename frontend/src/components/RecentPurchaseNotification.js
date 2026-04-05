@@ -242,7 +242,7 @@ function RecentPurchaseNotification() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-0.5">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={11} className="fill-yellow-400 text-yellow-400" />
+                  <Star key={`notif-star-${i}`} size={11} className="fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
               <span className="text-[10px] text-gray-400">Just now</span>
