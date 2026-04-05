@@ -43,6 +43,18 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 
 ## What's Been Implemented
 
+### April 5, 2026 - Critical Bug Fixes
+**Admin Dashboard White Screen - FIXED:**
+- Root cause: Broken key references from previous sed replacements (`item?.title` when `item` doesn't exist)
+- Fixed AdminDashboard.js: `loc.location` for locations, `blog.slug` for blogs
+- Fixed AdminConsultations.js: Proper key references for stats and photos
+- Fixed AdminReferrals.js: `ref.referral_code` and `order.order_id`
+- Fixed AdminWhatsApp.js: `log.id` for message logs
+
+**WhatsApp Number - FIXED:**
+- TrackOrder.js had wrong number `919876543210` → Changed to `919446125745`
+- All WhatsApp links now use correct number
+
 ### April 4, 2026 - Additional Code Quality Fixes (Round 2)
 **Critical Security Fixes:**
 1. **Test Files Hardcoded Secrets** - All test files now use `os.environ.get("ADMIN_PASSWORD")`
