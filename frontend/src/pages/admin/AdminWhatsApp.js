@@ -28,7 +28,7 @@ function AdminWhatsApp() {
   const [testPhone, setTestPhone] = useState('');
   const [sendStatus, setSendStatus] = useState(null);
 
-  const token = localStorage.getItem('adminToken');
+  const token = sessionStorage.getItem('adminToken');
 
   useEffect(() => {
     if (!token) {

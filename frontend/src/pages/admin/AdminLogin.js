@@ -5,6 +5,12 @@ import { Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
+// Use sessionStorage for admin tokens (cleared when browser closes)
+// This is more secure than localStorage for admin sessions
+const getAdminToken = () => sessionStorage.getItem('adminToken');
+const setAdminToken = (token) => sessionStorage.setItem('adminToken', token);
+const clearAdminToken = () => sessionStorage.removeItem('adminToken');
+
 function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,12 +20,12 @@ function AdminLogin() {
 
   // Check if already logged in
   useEffect(() => {
-    const token = localStorage.getItem('adminToken');
+    const token = getAdminToken();
     if (token) {
       // Verify token is still valid
       axios.get(`${API}/admin/analytics/live`, { headers: { 'X-Admin-Token': token } })
         .then(() => navigate('/admin/dashboard'))
-        .catch(() => localStorage.removeItem('adminToken'));
+        .catch(() => clearAdminToken());
     }
   }, [navigate]);
 
@@ -29,9 +35,9 @@ function AdminLogin() {
     setLoading(true);
 
     try {
-      const res = await axios.post(`${API}/admin/login`, { password });
+      const res = await axios.post(`${API}/admin/login`, { password }, { withCredentials: true });
       if (res.data.success) {
-        localStorage.setItem('adminToken', res.data.token);
+        setAdminToken(res.data.token);
         navigate('/admin/dashboard');
       }
     } catch (err) {

@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query, Header, Request
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Header, Request, Response, Cookie
+from fastapi.responses import JSONResponse
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -52,6 +53,9 @@ delhivery_service = init_delhivery_service(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
+
+# Share admin_sessions with admin routes (will be set after admin_sessions is defined)
+# This is done later in the file after admin_sessions is created
 
 # Initialize consultation routes with database
 consultation_routes.set_db(db)
@@ -1073,19 +1077,38 @@ async def claim_visitor_discount(lead: VisitorLeadCreate):
 # Load admin password from environment variable (with fallback for development)
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'celestaglow2024')
 
-def verify_admin_token(x_admin_token: str = Header(None)):
-    """Verify admin token - accepts both plain password and hashed token"""
-    if not x_admin_token:
+def verify_admin_token(x_admin_token: str = Header(None), admin_session: str = Cookie(None)):
+    """Verify admin token - accepts header token, cookie, or plain password"""
+    # Get the token from header or cookie
+    token_to_check = x_admin_token or admin_session
+    
+    # Ensure we have a string, not a Cookie object
+    if token_to_check is not None and not isinstance(token_to_check, str):
+        token_to_check = str(token_to_check) if token_to_check else None
+    
+    if not token_to_check:
         raise HTTPException(status_code=401, detail="Admin token required")
     
-    # Accept plain password for simplicity
-    if x_admin_token == ADMIN_PASSWORD:
+    # Accept plain password for simplicity (backward compatibility)
+    if token_to_check == ADMIN_PASSWORD:
         return True
+    
+    # Check if it's a valid session token
+    if token_to_check in admin_sessions:
+        session = admin_sessions[token_to_check]
+        # Check if session hasn't expired
+        expires_at = datetime.fromisoformat(session["expires_at"].replace("Z", "+00:00"))
+        if datetime.now(timezone.utc) < expires_at:
+            return True
+        else:
+            # Remove expired session
+            del admin_sessions[token_to_check]
+            raise HTTPException(status_code=401, detail="Session expired, please login again")
     
     # Also check if it matches the token (for backward compatibility)
     import hashlib
     ADMIN_PASSWORD_HASH = hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest()
-    if hashlib.sha256(x_admin_token.encode()).hexdigest() != ADMIN_PASSWORD_HASH:
+    if hashlib.sha256(token_to_check.encode()).hexdigest() != ADMIN_PASSWORD_HASH:
         raise HTTPException(status_code=403, detail="Invalid admin token")
     return True
 
@@ -1094,12 +1117,58 @@ class AdminLoginRequest(BaseModel):
     password: str
 
 
+# Generate a secure admin session token
+def generate_admin_session_token() -> str:
+    """Generate a cryptographically secure session token"""
+    import hashlib
+    import time
+    data = f"{ADMIN_PASSWORD}{time.time()}{secrets.token_hex(16)}"
+    return hashlib.sha256(data.encode()).hexdigest()
+
+# In-memory store for valid admin sessions (for single-server deployments)
+# In production, use Redis or database-backed sessions
+admin_sessions: dict = {}
+
+# Share admin_sessions with admin routes for token verification
+admin_routes.set_admin_sessions(admin_sessions)
+
 @api_router.post("/admin/login")
-async def admin_login(request: AdminLoginRequest):
-    """Admin login endpoint"""
+async def admin_login(request: AdminLoginRequest, response: Response):
+    """Admin login endpoint - sets httpOnly cookie for security"""
     if request.password == ADMIN_PASSWORD:
-        return {"success": True, "token": ADMIN_PASSWORD}
+        # Generate a session token
+        session_token = generate_admin_session_token()
+        
+        # Store session (with expiry in 24 hours)
+        admin_sessions[session_token] = {
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat()
+        }
+        
+        # Set httpOnly cookie for security (prevents XSS attacks from accessing token)
+        response.set_cookie(
+            key="admin_session",
+            value=session_token,
+            httponly=True,
+            secure=True,  # Only send over HTTPS
+            samesite="lax",
+            max_age=86400,  # 24 hours
+            path="/api/admin"
+        )
+        
+        # Also return token for backward compatibility with existing frontend
+        return {"success": True, "token": session_token}
     raise HTTPException(status_code=401, detail="Invalid password")
+
+
+@api_router.post("/admin/logout")
+async def admin_logout(response: Response, admin_session: str = Cookie(None)):
+    """Admin logout - clears session"""
+    if admin_session and admin_session in admin_sessions:
+        del admin_sessions[admin_session]
+    
+    response.delete_cookie(key="admin_session", path="/api/admin")
+    return {"success": True, "message": "Logged out successfully"}
 
 
 @api_router.get("/admin/analytics/live")

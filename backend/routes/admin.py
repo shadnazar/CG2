@@ -81,20 +81,38 @@ async def verify_admin_async(x_admin_token: str):
     raise HTTPException(status_code=403, detail="Invalid admin token")
 
 
+# Reference to admin_sessions from server.py (will be set via set_admin_sessions)
+admin_sessions = {}
+
+def set_admin_sessions(sessions_dict):
+    """Set reference to admin_sessions from server.py"""
+    global admin_sessions
+    admin_sessions = sessions_dict
+
 def verify_admin(x_admin_token: str = Header(None)):
-    """Simple admin token verification - checks both stored and default password synchronously
-    Note: This checks the default password only. For DB password check, use verify_admin_async"""
+    """Admin token verification - checks session tokens, stored password, and default password"""
+    from datetime import datetime, timezone
+    
     if not x_admin_token:
         raise HTTPException(status_code=401, detail="Admin token required")
     
+    # First check if it's a valid session token
+    if x_admin_token in admin_sessions:
+        session = admin_sessions[x_admin_token]
+        expires_at = datetime.fromisoformat(session["expires_at"].replace("Z", "+00:00"))
+        if datetime.now(timezone.utc) < expires_at:
+            return True
+        else:
+            # Remove expired session
+            del admin_sessions[x_admin_token]
+    
+    # Check if it's the plain password (hash and compare)
     token_hash = hashlib.sha256(x_admin_token.encode()).hexdigest()
     
     # Check default password
     if token_hash == ADMIN_PASSWORD_HASH:
         return True
     
-    # Note: This sync version can't check DB. Routes needing DB check should use verify_admin_async
-    # For now, we'll also accept the token directly (temporary for backwards compat)
     raise HTTPException(status_code=403, detail="Invalid admin token")
 
 

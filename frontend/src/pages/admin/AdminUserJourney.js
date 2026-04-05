@@ -14,7 +14,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function AdminUserJourney() {
   const navigate = useNavigate();
-  const adminToken = localStorage.getItem('adminToken');
+  const adminToken = sessionStorage.getItem('adminToken');
   
   const [visitors, setVisitors] = useState([]);
   const [stats, setStats] = useState(null);
@@ -130,7 +130,7 @@ function AdminUserJourney() {
       conversionRate: Math.round((enteredAddress / total) * 100),
       dropOffPoints: dropOffPoints.sort((a, b) => b.dropped - a.dropped)
     });
-  };
+  }, []);
 
   const fetchVisitorJourney = async (visitorId) => {
     if (expandedVisitor === visitorId) {

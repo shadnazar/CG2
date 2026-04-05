@@ -12,7 +12,7 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function AdminAIStudio() {
   const navigate = useNavigate();
-  const adminToken = localStorage.getItem('adminToken');
+  const adminToken = sessionStorage.getItem('adminToken');
   
   const [activeMode, setActiveMode] = useState('auto');
   const [loading, setLoading] = useState(false);

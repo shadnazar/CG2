@@ -11,7 +11,7 @@ function AdminBlogEditor() {
   const { id } = useParams();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
-  const adminToken = localStorage.getItem('adminToken');
+  const adminToken = sessionStorage.getItem('adminToken');
 
   const [formData, setFormData] = useState({
     title: '',

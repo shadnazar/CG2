@@ -21,7 +21,7 @@ function AdminConsultations() {
   }, []);
 
   const fetchData = async () => {
-    const token = localStorage.getItem('adminToken');
+    const token = sessionStorage.getItem('adminToken');
     if (!token) return;
 
     try {

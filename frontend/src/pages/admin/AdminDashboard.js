@@ -48,7 +48,7 @@ function AdminDashboard() {
   const [blogStats, setBlogStats] = useState(null);
   
   const navigate = useNavigate();
-  const adminToken = localStorage.getItem('adminToken');
+  const adminToken = sessionStorage.getItem('adminToken');
   
   // Order notification hook
   const { newOrders, clearNewOrders, testSound } = useOrderNotifications(
@@ -80,7 +80,7 @@ function AdminDashboard() {
       setBlogStats(blogStatsRes.data);
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) {
-        localStorage.removeItem('adminToken');
+        sessionStorage.removeItem('adminToken');
         navigate('/admin');
       }
     } finally {
@@ -144,7 +144,7 @@ function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    sessionStorage.removeItem('adminToken');
     navigate('/admin');
   };
 
@@ -201,7 +201,7 @@ function AdminDashboard() {
       
       setPasswordSuccess('Password changed successfully! Please login again.');
       setTimeout(() => {
-        localStorage.removeItem('adminToken');
+        sessionStorage.removeItem('adminToken');
         navigate('/admin');
       }, 2000);
     } catch (err) {

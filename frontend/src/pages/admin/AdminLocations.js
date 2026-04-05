@@ -14,7 +14,7 @@ function AdminLocations() {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const navigate = useNavigate();
-  const adminToken = localStorage.getItem('adminToken');
+  const adminToken = sessionStorage.getItem('adminToken');
 
   useEffect(() => {
     if (!adminToken) {
@@ -32,7 +32,7 @@ function AdminLocations() {
       setLocations(res.data);
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) {
-        localStorage.removeItem('adminToken');
+        sessionStorage.removeItem('adminToken');
         navigate('/admin');
       }
     } finally {

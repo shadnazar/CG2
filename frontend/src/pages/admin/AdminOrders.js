@@ -18,7 +18,7 @@ function AdminOrders() {
   const [editingEmail, setEditingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const navigate = useNavigate();
-  const adminToken = localStorage.getItem('adminToken');
+  const adminToken = sessionStorage.getItem('adminToken');
 
   useEffect(() => {
     if (!adminToken) {
@@ -36,7 +36,7 @@ function AdminOrders() {
       setOrders(res.data);
     } catch (err) {
       if (err.response?.status === 401 || err.response?.status === 403) {
-        localStorage.removeItem('adminToken');
+        sessionStorage.removeItem('adminToken');
         navigate('/admin');
       }
     } finally {
