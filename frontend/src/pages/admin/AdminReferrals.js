@@ -263,7 +263,7 @@ function AdminReferrals() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {referrals.map((ref, idx) => (
-                    <tr key={referral?.referral_code || `ref-${idx}`} className="hover:bg-gray-50">
+                    <tr key={ref.referral_code || `ref-${idx}`} className="hover:bg-gray-50">
                       <td className="px-4 py-3">
                         <div>
                           <p className="font-medium text-gray-900">{ref.referrer_name || 'Unknown'}</p>
@@ -409,7 +409,7 @@ function AdminReferrals() {
                 {selectedReferral.referred_orders && selectedReferral.referred_orders.length > 0 ? (
                   <div className="space-y-2">
                     {selectedReferral.referred_orders.map((order, idx) => (
-                      <div key={order?.order_id || `order-${idx}`} className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
+                      <div key={order.order_id || `order-${idx}`} className="bg-gray-50 rounded-xl p-3 flex items-center justify-between">
                         <div>
                           <p className="font-medium text-gray-900">{order.buyer_name}</p>
                           <p className="text-xs text-gray-500">Order: {order.order_id}</p>

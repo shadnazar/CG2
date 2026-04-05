@@ -198,7 +198,7 @@ function AdminConsultations() {
                 { label: 'Completed', value: stats.funnel_stats?.completed || 0 },
                 { label: 'PDF Downloads', value: stats.funnel_stats?.pdf_downloads || 0 },
               ].map((item, i) => (
-                <div key={`consult-${item?.name || i}`} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
+                <div key={`consult-stat-${item.label}`} className="flex justify-between py-2 border-b border-gray-100 last:border-0">
                   <span className="text-gray-600">{item.label}</span>
                   <span className="font-semibold text-gray-900">{item.value}</span>
                 </div>
@@ -336,7 +336,7 @@ function AdminConsultations() {
                           </h4>
                           <div className="flex gap-3 overflow-x-auto pb-2">
                             {consultation.face_images.map((img, i) => (
-                              <div key={`score-${item?.label || i}`} className="flex-shrink-0 text-center">
+                              <div key={`photo-${consultation.id}-${i}`} className="flex-shrink-0 text-center">
                                 <img
                                   src={img}
                                   alt={`Face ${i + 1}`}

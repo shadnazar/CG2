@@ -497,7 +497,7 @@ function AdminWhatsApp() {
                 </div>
               ) : (
                 logs.map((log, idx) => (
-                  <div key={msg?.id || `msg-${idx}`} className="p-4 hover:bg-gray-50">
+                  <div key={log.id || `msg-${idx}`} className="p-4 hover:bg-gray-50">
                     <div className="flex items-start justify-between">
                       <div>
                         <div className="flex items-center gap-2">

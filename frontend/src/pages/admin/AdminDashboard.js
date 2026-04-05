@@ -573,7 +573,7 @@ function AdminDashboard() {
                   </h3>
                   <div className="space-y-3">
                     {liveAnalytics.top_locations.top_states.slice(0, 5).map((loc, i) => (
-                      <div key={`dash-item-${item?.title || i}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                      <div key={`loc-state-${loc.location || i}`} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                         <div className="flex items-center gap-3">
                           <span className="w-6 h-6 bg-green-100 text-green-600 rounded-full flex items-center justify-center text-xs font-bold">
                             {i + 1}
@@ -661,7 +661,7 @@ function AdminDashboard() {
                       <h4 className="text-sm font-medium text-gray-700 mb-2">Latest Blogs</h4>
                       <div className="space-y-2 max-h-48 overflow-y-auto">
                         {blogStats.recent_blogs?.slice(0, 5).map((blog, i) => (
-                          <div key={`recent-${item?.order_id || i}`} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm">
+                          <div key={`recent-blog-${blog.slug || blog.title || i}`} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg text-sm">
                             <div className="flex-1 min-w-0 mr-2">
                               <p className="font-medium text-gray-900 truncate">{blog.title}</p>
                               <p className="text-xs text-gray-400">
