@@ -3,6 +3,17 @@
  * Export all product-related components from a single entry point
  */
 
+// Product Hero Components
+export {
+  ProductImageGallery,
+  ProductInfoHeader,
+  AgeRegressionScore,
+  BenefitsList,
+  ClinicalResults,
+  IngredientsSection,
+  StickyBottomCTA
+} from './ProductHero';
+
 // Product Page Sections
 export {
   TrustBadgesGrid,
@@ -25,14 +36,3 @@ export {
   OrderSummaryCard,
   CheckoutTrustBadges
 } from './CheckoutComponents';
-
-// Product Hero Components
-export {
-  ProductImageGallery,
-  ProductInfoHeader,
-  AgeRegressionScore,
-  BenefitsList,
-  ClinicalResults,
-  IngredientsSection,
-  StickyBottomCTA
-} from './ProductHero';
