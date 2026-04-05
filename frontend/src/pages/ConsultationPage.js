@@ -807,12 +807,12 @@ function ConsultationPage() {
           {/* Features */}
           <div className="grid grid-cols-2 gap-3 mb-8 max-w-sm mx-auto">
             {[
-              { icon: Clock, text: '60 seconds' },
-              { icon: Shield, text: '100% Free' },
-              { icon: Star, text: 'Personalized' },
-              { icon: Heart, text: 'Expert Tips' }
-            ].map((item, i) => (
-              <div key={i} className="bg-white rounded-xl p-3 flex items-center gap-2 shadow-sm">
+              { id: 'consult-time', icon: Clock, text: '60 seconds' },
+              { id: 'consult-free', icon: Shield, text: '100% Free' },
+              { id: 'consult-personal', icon: Star, text: 'Personalized' },
+              { id: 'consult-expert', icon: Heart, text: 'Expert Tips' }
+            ].map((item) => (
+              <div key={item.id} className="bg-white rounded-xl p-3 flex items-center gap-2 shadow-sm">
                 <item.icon className="w-5 h-5 text-green-500" />
                 <span className="text-sm text-gray-700">{item.text}</span>
               </div>
@@ -838,7 +838,7 @@ function ConsultationPage() {
             <p className="text-center text-sm text-gray-600 mb-3">Trusted by 10,000+ users</p>
             <div className="flex justify-center gap-1">
               {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
+                <Star key={`consult-star-${i}`} className="w-5 h-5 text-yellow-400 fill-yellow-400" />
               ))}
             </div>
             <p className="text-center text-xs text-gray-500 mt-2">4.8 average rating</p>
@@ -1200,7 +1200,7 @@ function ConsultationPage() {
               </h3>
               <div className="flex gap-3 overflow-x-auto pb-2">
                 {uploadedImages.map((img, i) => (
-                  <div key={i} className="flex-shrink-0">
+                  <div key={`uploaded-photo-${i}`} className="flex-shrink-0">
                     <img 
                       src={img} 
                       alt={`Photo ${i + 1}`}
@@ -1355,7 +1355,7 @@ function ConsultationPage() {
             </h3>
             <ul className="space-y-2">
               {result.result.causes.map((cause, i) => (
-                <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
+                <li key={`cause-${i}-${cause.substring(0, 20)}`} className="flex items-start gap-2 text-gray-600 text-sm">
                   <span className="text-orange-500 mt-1">•</span>
                   {cause}
                 </li>
@@ -1371,7 +1371,7 @@ function ConsultationPage() {
             </h3>
             <ol className="space-y-2">
               {result.result.morning_routine.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-gray-600 text-sm">
+                <li key={`morning-${i}`} className="flex items-start gap-3 text-gray-600 text-sm">
                   <span className="w-6 h-6 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-700 font-medium text-xs flex-shrink-0">
                     {i + 1}
                   </span>
@@ -1389,7 +1389,7 @@ function ConsultationPage() {
             </h3>
             <ol className="space-y-2">
               {result.result.night_routine.map((item, i) => (
-                <li key={i} className="flex items-start gap-3 text-gray-600 text-sm">
+                <li key={`night-${i}`} className="flex items-start gap-3 text-gray-600 text-sm">
                   <span className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-medium text-xs flex-shrink-0">
                     {i + 1}
                   </span>
@@ -1407,7 +1407,7 @@ function ConsultationPage() {
             </h3>
             <ul className="space-y-2">
               {result.result.rules.map((rule, i) => (
-                <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
+                <li key={`rule-${i}`} className="flex items-start gap-2 text-gray-600 text-sm">
                   <Check className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   {rule}
                 </li>
@@ -1423,7 +1423,7 @@ function ConsultationPage() {
             </h3>
             <ul className="space-y-2">
               {result.result.diet_tips.map((tip, i) => (
-                <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
+                <li key={`diet-${i}`} className="flex items-start gap-2 text-gray-600 text-sm">
                   <span className="text-pink-500">•</span>
                   {tip}
                 </li>
@@ -1439,7 +1439,7 @@ function ConsultationPage() {
             </h3>
             <ul className="space-y-2">
               {result.result.exercise_tips.map((tip, i) => (
-                <li key={i} className="flex items-start gap-2 text-gray-600 text-sm">
+                <li key={`exercise-${i}`} className="flex items-start gap-2 text-gray-600 text-sm">
                   <span className="text-purple-500">•</span>
                   {tip}
                 </li>

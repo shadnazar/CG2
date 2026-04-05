@@ -439,7 +439,7 @@ function AdminUserJourney() {
                 </h3>
                 <div className="space-y-3">
                   {funnelData.dropOffPoints.map((point, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
+                    <div key={point.stage || `dropoff-${i}`} className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-100">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center text-red-600 font-bold">
                           {i + 1}
@@ -726,7 +726,7 @@ function AdminUserJourney() {
                                     </h4>
                                     <div className="space-y-2 max-h-64 overflow-y-auto">
                                       {visitorJourney.actions.slice().reverse().slice(0, 20).map((action, i) => (
-                                        <div key={i} className="flex items-start gap-3 p-2 bg-purple-50 rounded-lg border border-purple-100">
+                                        <div key={action.timestamp || `action-${i}`} className="flex items-start gap-3 p-2 bg-purple-50 rounded-lg border border-purple-100">
                                           <div className="w-6 h-6 bg-purple-200 rounded-full flex items-center justify-center text-purple-700">
                                             {getActionIcon(action.action)}
                                           </div>
@@ -753,7 +753,7 @@ function AdminUserJourney() {
                                   </h4>
                                   <div className="space-y-2 max-h-48 overflow-y-auto">
                                     {visitorJourney.page_visits?.slice().reverse().slice(0, 15).map((visit, i) => (
-                                      <div key={i} className="flex items-center gap-3">
+                                      <div key={visit.timestamp || `visit-${i}`} className="flex items-center gap-3">
                                         <div className="w-8 text-center">
                                           {getPageIcon(visit.page)}
                                         </div>

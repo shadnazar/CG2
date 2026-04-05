@@ -623,8 +623,8 @@ function AdminAIStudio() {
                 )}
                 
                 <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {autoResult.blogs?.map((blog, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  {autoResult.blogs?.map((blog) => (
+                    <div key={blog.slug || blog.title} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-900 truncate">{blog.title}</p>
                         <span className="text-xs text-gray-500">{blog.category}</span>
@@ -657,8 +657,8 @@ function AdminAIStudio() {
                   Generation History
                 </h3>
                 <div className="space-y-2">
-                  {generationHistory.map((log, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl text-sm">
+                  {generationHistory.map((log) => (
+                    <div key={log.timestamp || log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl text-sm">
                       <div className="flex items-center gap-2">
                         <Clock size={14} className="text-gray-400" />
                         <span className="text-gray-600">
@@ -769,8 +769,8 @@ function AdminAIStudio() {
                 )}
                 
                 <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {locationResult.blogs?.map((blog, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  {locationResult.blogs?.map((blog) => (
+                    <div key={blog.slug || blog.title} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-900 truncate">{blog.title}</p>
                         <span className="text-xs text-blue-500">{blog.location_target}</span>
@@ -883,8 +883,8 @@ function AdminAIStudio() {
                 )}
                 
                 <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {topicResult.blogs?.map((blog, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  {topicResult.blogs?.map((blog) => (
+                    <div key={blog.slug || blog.title} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-900 truncate">{blog.title}</p>
                         <span className="text-xs text-orange-500">{blog.original_topic}</span>
@@ -985,8 +985,8 @@ function AdminAIStudio() {
                   Current Trending News
                 </h3>
                 <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {trendingNews.map((news, i) => (
-                    <div key={i} className="p-3 bg-gray-50 rounded-xl">
+                  {trendingNews.map((news) => (
+                    <div key={news.link || news.title} className="p-3 bg-gray-50 rounded-xl">
                       <p className="font-medium text-gray-900 text-sm line-clamp-2">{news.title}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-gray-500">{news.source}</span>
@@ -1022,8 +1022,8 @@ function AdminAIStudio() {
                 </div>
                 
                 <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {trendingResult.blogs?.map((blog, i) => (
-                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                  {trendingResult.blogs?.map((blog) => (
+                    <div key={blog.slug || blog.title} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-900 truncate">{blog.title}</p>
                         <div className="flex items-center gap-2 mt-1">
@@ -1156,8 +1156,8 @@ function AdminAIStudio() {
               </div>
             ) : suggestedTopics.length > 0 ? (
               <div className="space-y-3">
-                {suggestedTopics.map((topic, i) => (
-                  <div key={i} className="p-4 bg-gray-50 rounded-xl">
+                {suggestedTopics.map((topic) => (
+                  <div key={topic.topic} className="p-4 bg-gray-50 rounded-xl">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <h4 className="font-medium text-gray-900">{topic.topic}</h4>

@@ -57,14 +57,14 @@ function LocationPage() {
         <h2 className="font-bold text-lg text-gray-900 mb-4">Why Choose Celesta Glow?</h2>
         <div className="space-y-3">
           {[
-            { icon: Shield, text: 'Dermatologist tested for all skin types' },
-            { icon: Truck, text: `Free delivery across ${locationTitle}` },
-            { icon: Check, text: 'Cash on Delivery available' },
-          ].map((item, i) => (
+            { id: 'loc-shield', icon: Shield, text: 'Dermatologist tested for all skin types' },
+            { id: 'loc-truck', icon: Truck, text: `Free delivery across ${locationTitle}` },
+            { id: 'loc-check', icon: Check, text: 'Cash on Delivery available' },
+          ].map((item) => (
             <div 
-              key={i} 
+              key={item.id} 
               className="flex items-center gap-3 p-4 card-cg"
-              data-testid={`location-benefit-${i}`}
+              data-testid={item.id}
             >
               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                 <item.icon size={18} className="text-green-500" />
