@@ -33,7 +33,7 @@ class TestDiscountValidation:
         data = response.json()
         
         # Verify discount is valid
-        assert data["valid"] == True
+        assert data["valid"] is True
         assert data["discount_code"] == "WELCOME50"
         assert data["discount_amount"] == 50
         assert "message" in data
@@ -46,7 +46,7 @@ class TestDiscountValidation:
         data = response.json()
         
         # Verify no discount found
-        assert data["valid"] == False
+        assert data["valid"] is False
         assert "message" in data
         print(f"✓ Invalid phone returns no discount: {data}")
 

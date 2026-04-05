@@ -128,7 +128,7 @@ class TestBlogBackfillAPI:
         
         data = response.json()
         assert 'success' in data
-        assert data['success'] == True
+        assert data['success'] is True
         assert 'updated_count' in data
         assert 'message' in data
         

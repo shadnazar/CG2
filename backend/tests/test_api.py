@@ -247,7 +247,7 @@ class TestAdminEndpoints:
         response = requests.post(f"{BASE_URL}/api/admin/login", json=payload)
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         print("✓ Admin login successful")
     
     def test_admin_login_failure(self):

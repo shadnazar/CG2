@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -58,13 +58,13 @@ export function LanguageProvider({ children }) {
     }
   };
 
-  const changeLanguage = (newLang) => {
+  const changeLanguage = useCallback((newLang) => {
     localStorage.setItem('lang', newLang);
     setLanguage(newLang);
-  };
+  }, []);
 
   // Translation function with variable substitution
-  const t = (key, vars = {}) => {
+  const t = useCallback((key, vars = {}) => {
     let text = translations[key] || defaultTranslations.en[key] || key;
     
     // Replace variables like {count}
@@ -73,19 +73,22 @@ export function LanguageProvider({ children }) {
     });
     
     return text;
-  };
+  }, [translations]);
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(() => ({
+    language, 
+    changeLanguage, 
+    t, 
+    loading,
+    availableLanguages: [
+      { code: 'en', name: 'English' },
+      { code: 'hi', name: 'हिन्दी' }
+    ]
+  }), [language, changeLanguage, t, loading]);
 
   return (
-    <LanguageContext.Provider value={{ 
-      language, 
-      changeLanguage, 
-      t, 
-      loading,
-      availableLanguages: [
-        { code: 'en', name: 'English' },
-        { code: 'hi', name: 'हिन्दी' }
-      ]
-    }}>
+    <LanguageContext.Provider value={contextValue}>
       {children}
     </LanguageContext.Provider>
   );

@@ -43,7 +43,7 @@ class TestEnhancedAnalytics:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data.get("tracked") == True
+        assert data.get("tracked") is True
         print(f"✓ Page visit tracked successfully for session: {session_id}")
     
     def test_get_live_visitors(self):

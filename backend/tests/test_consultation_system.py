@@ -254,7 +254,7 @@ class TestConsultationEventTracking:
         assert response.status_code == 200
         
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         
         print("✓ Event tracking working correctly")
     
@@ -359,7 +359,7 @@ class TestConsultationPDFDownload:
         assert response.status_code == 200
         
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         
         print("✓ PDF download tracking working correctly")
 

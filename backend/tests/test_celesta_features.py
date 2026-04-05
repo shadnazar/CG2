@@ -229,7 +229,7 @@ class TestAdminAPI:
         assert response.status_code == 200
         
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         assert "token" in data
         print(f"✓ Admin login successful")
     

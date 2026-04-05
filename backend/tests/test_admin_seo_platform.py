@@ -48,7 +48,7 @@ class TestAdminLogin:
         })
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         assert "token" in data
         assert data["token"] == ADMIN_PASSWORD
         print("✓ Admin login successful with correct password")
@@ -186,7 +186,7 @@ class TestAdminBlogManagement:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         print(f"✓ Blog published successfully")
     
     def test_delete_blog(self, api_client, admin_token):
@@ -209,7 +209,7 @@ class TestAdminBlogManagement:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         print(f"✓ Blog deleted successfully")
 
 
@@ -316,7 +316,7 @@ class TestAdminLocationManagement:
         )
         assert response.status_code == 200
         data = response.json()
-        assert data["success"] == True
+        assert data["success"] is True
         print(f"✓ Location deleted successfully")
 
 
