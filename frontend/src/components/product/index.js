@@ -1,6 +1,38 @@
-// Product page components - modular and memoized for performance
-export { default as ProductHero, StarRating, PriceCard, AgeRegressionScore, BenefitsList, ClinicalResults } from './ProductHero';
-export { default as IngredientsList, INGREDIENTS, IngredientItem } from './IngredientsList';
-export { default as TrustBadges, VerifiedReviewsBadges, TRUST_BADGES, VERIFIED_BADGES } from './TrustBadges';
-export { default as ReviewsSection, ReviewCard, REVIEWS } from './ReviewsSection';
-export { default as FAQSection, FAQ_DATA } from './FAQSection';
+/**
+ * Product Components Index
+ * Export all product-related components from a single entry point
+ */
+
+// Product Page Sections
+export {
+  TrustBadgesGrid,
+  WhyChooseUsSection,
+  ProductDetailsAccordion,
+  FinalTrustSection,
+  TrustedBySection,
+  ExpertEndorsement,
+  MoneyBackGuarantee,
+  ActiveIngredientsSection,
+  ExitIntentPopup
+} from './ProductSections';
+
+// Checkout Components
+export {
+  PriceDisplay,
+  PaymentMethodSelector,
+  AddressFormFields,
+  CheckoutHeader,
+  OrderSummaryCard,
+  CheckoutTrustBadges
+} from './CheckoutComponents';
+
+// Product Hero Components
+export {
+  ProductImageGallery,
+  ProductInfoHeader,
+  AgeRegressionScore,
+  BenefitsList,
+  ClinicalResults,
+  IngredientsSection,
+  StickyBottomCTA
+} from './ProductHero';
