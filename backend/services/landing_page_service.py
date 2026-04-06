@@ -190,10 +190,65 @@ class LandingPageService:
             "skipped_slugs": skipped
         }
     
+    def _generate_dynamic_product_name(self, problem_title: str, category: str) -> dict:
+        """Generate a professional product name and tagline based on the problem category"""
+        # Map categories to professional skincare product naming
+        product_name_map = {
+            "early_aging": {
+                "name": "Celesta Glow Youth Revival Serum",
+                "tagline": "Advanced Age-Defense Formula",
+                "description": "Specifically formulated to combat early signs of aging with powerful youth-preserving ingredients."
+            },
+            "wrinkles": {
+                "name": "Celesta Glow Anti-Wrinkle Serum",
+                "tagline": "Deep Wrinkle Correction Complex",
+                "description": "Targets and reduces the appearance of fine lines and wrinkles with clinical-strength retinol."
+            },
+            "under_eye": {
+                "name": "Celesta Glow Eye Revitalizer Serum",
+                "tagline": "Tired Eye Rescue Formula",
+                "description": "Specially designed to brighten dark circles, reduce puffiness, and refresh tired-looking eyes."
+            },
+            "dry_skin": {
+                "name": "Celesta Glow Hydra-Glow Serum",
+                "tagline": "Intense Moisture Lock Technology",
+                "description": "Deep hydration serum that restores your skin's natural radiance and healthy glow."
+            },
+            "lifestyle": {
+                "name": "Celesta Glow Urban Shield Serum",
+                "tagline": "Lifestyle Damage Defense",
+                "description": "Protects your skin from stress, pollution, and screen damage while reversing lifestyle-induced aging."
+            },
+            "preventive": {
+                "name": "Celesta Glow Prevention Plus Serum",
+                "tagline": "Early Action Anti-Aging",
+                "description": "Start your anti-aging journey early with this proactive defense formula for lasting youth."
+            },
+            "results": {
+                "name": "Celesta Glow Fast-Action Serum",
+                "tagline": "Visible Results in 14 Days",
+                "description": "Our most powerful formula for those who want to see dramatic results quickly."
+            },
+            "psychological": {
+                "name": "Celesta Glow Confidence Boost Serum",
+                "tagline": "Look Young, Feel Confident",
+                "description": "Transform how you look and feel with our premium age-reversing formula."
+            }
+        }
+        
+        # Get the product details for this category
+        product_details = product_name_map.get(category, {
+            "name": "Celesta Glow Anti-Aging Serum",
+            "tagline": "4-in-1 Advanced Formula",
+            "description": "Premium anti-aging serum with clinically proven ingredients."
+        })
+        
+        return product_details
+    
     def _generate_default_content(self, problem_title: str, category: str) -> dict:
         """Generate default content based on problem title"""
-        # Extract key terms from title
-        title_lower = problem_title.lower()
+        # Get dynamic product details
+        product_details = self._generate_dynamic_product_name(problem_title, category)
         
         # Default problem points based on category
         problem_points_map = {
@@ -247,30 +302,94 @@ class LandingPageService:
             ]
         }
         
-        solution_benefits = [
-            "Reduces fine lines and wrinkles visibly",
-            "Boosts collagen production naturally",
-            "Restores skin's youthful glow",
-            "Clinically proven 4-in-1 formula",
-            "Safe for all Indian skin types",
-            "Results visible in 2-4 weeks"
-        ]
+        # Dynamic solution benefits based on category
+        solution_benefits_map = {
+            "early_aging": [
+                "Reverses early aging signs visibly",
+                "Boosts collagen production naturally",
+                "Restores youthful skin bounce",
+                "Clinically proven age-defense formula",
+                "Safe for all Indian skin types",
+                "Results visible in 2-3 weeks"
+            ],
+            "wrinkles": [
+                "Reduces fine lines and wrinkles by up to 40%",
+                "Fills and smooths deep wrinkles",
+                "Prevents new wrinkle formation",
+                "Retinol-powered correction formula",
+                "Gentle yet effective for daily use",
+                "See smoother skin in 14 days"
+            ],
+            "under_eye": [
+                "Brightens dark circles visibly",
+                "Reduces under-eye puffiness",
+                "Firms hollow under-eye area",
+                "Specialized eye-area formula",
+                "Safe for sensitive eye region",
+                "Wake up looking refreshed"
+            ],
+            "dry_skin": [
+                "Deep hydration that lasts 48 hours",
+                "Restores skin's natural glow",
+                "Locks in moisture at cellular level",
+                "Hyaluronic Acid powered formula",
+                "No more flaky or tight skin",
+                "See radiant skin in 1 week"
+            ],
+            "lifestyle": [
+                "Shields against stress damage",
+                "Reverses screen-time aging",
+                "Repairs environmental damage",
+                "Urban protection formula",
+                "Perfect for busy lifestyles",
+                "Combat modern-day aging"
+            ],
+            "preventive": [
+                "Prevents aging before it starts",
+                "Builds long-term skin resilience",
+                "Preserves youthful collagen",
+                "Early-action defense system",
+                "Investment in future skin health",
+                "Stay ahead of aging"
+            ],
+            "results": [
+                "Visible results in just 14 days",
+                "Clinically proven 40% wrinkle reduction",
+                "Fast-acting concentrated formula",
+                "Before-after proof from real users",
+                "High-performance ingredients",
+                "See dramatic transformation"
+            ],
+            "psychological": [
+                "Look younger, feel more confident",
+                "No more avoiding photos",
+                "Reclaim your youthful appearance",
+                "Boost self-confidence daily",
+                "Feel good about your skin",
+                "Transform how others see you"
+            ]
+        }
+        
+        solution_benefits = solution_benefits_map.get(category, solution_benefits_map["early_aging"])
         
         return {
             "hero_headline": problem_title,
-            "hero_subheadline": "India's #1 Anti-Aging Solution Is Here",
+            "hero_subheadline": f"{product_details['tagline']} — India's #1 Choice",
             "hero_problem_statement": f"If you're noticing {problem_title.lower().replace('?', '').replace('—', '-')}, you're not alone. Thousands of Indians face this every day.",
+            "product_name": product_details["name"],
+            "product_tagline": product_details["tagline"],
+            "product_description": product_details["description"],
             "problem_title": "Sound Familiar?",
             "problem_points": problem_points_map.get(category, problem_points_map["early_aging"]),
             "solution_title": "The Science-Backed Solution",
-            "solution_description": "Celesta Glow's 4-in-1 Anti-Aging Serum combines Retinol, Hyaluronic Acid, Niacinamide, and Vitamin E to target the root causes of aging.",
+            "solution_description": f"{product_details['name']} combines Retinol, Hyaluronic Acid, Niacinamide, and Vitamin E — {product_details['description'].lower()}",
             "solution_benefits": solution_benefits,
             "testimonials": [],
-            "cta_primary": "Get Your Solution Now",
+            "cta_primary": f"Get {product_details['name'].replace('Celesta Glow ', '')} Now",
             "cta_secondary": "Start Your Transformation Today",
-            "meta_title": f"{problem_title} | Celesta Glow Anti-Aging Serum",
-            "meta_description": f"{problem_title} Discover how Celesta Glow's clinically proven formula helps thousands of Indians reverse early aging. Free shipping. COD available.",
-            "meta_keywords": ["anti-aging", "serum", "wrinkles", "fine lines", category.replace("_", " "), "celesta glow"]
+            "meta_title": f"{problem_title} | {product_details['name']}",
+            "meta_description": f"{problem_title} Discover how {product_details['name']}'s clinically proven formula helps thousands of Indians. {product_details['tagline']}. Free shipping. COD available.",
+            "meta_keywords": ["anti-aging", "serum", "wrinkles", "fine lines", category.replace("_", " "), "celesta glow", product_details['name'].lower()]
         }
     
     def get_predefined_problems(self) -> dict:

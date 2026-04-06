@@ -221,13 +221,13 @@ function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 w-64 h-full bg-white border-r border-gray-200 z-40 hidden lg:block">
-        <div className="p-6">
+      <aside className="fixed left-0 top-0 w-64 h-full bg-white border-r border-gray-200 z-40 hidden lg:flex lg:flex-col">
+        <div className="p-6 flex-shrink-0">
           <h1 className="text-xl font-bold text-green-500">Celesta Glow</h1>
           <p className="text-sm text-gray-500">Admin Panel</p>
         </div>
 
-        <nav className="px-4 space-y-1">
+        <nav className="flex-1 px-4 space-y-1 overflow-y-auto pb-4">
           <Link to="/admin/dashboard" className="flex items-center gap-3 px-4 py-3 text-green-600 bg-green-50 rounded-xl font-medium" data-testid="nav-dashboard">
             <LayoutDashboard size={20} /> Dashboard
           </Link>
@@ -243,6 +243,12 @@ function AdminDashboard() {
           <Link to="/admin/ai-studio" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-ai">
             <Sparkles size={20} /> AI Studio
           </Link>
+          
+          {/* Landing Pages - After AI Studio */}
+          <Link to="/admin/landing-pages" className="flex items-center gap-3 px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-xl" data-testid="nav-landing-pages">
+            <Globe size={20} /> Landing Pages
+          </Link>
+          
           <Link to="/admin/consultations" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-consultations">
             <Stethoscope size={20} /> Consultations
           </Link>
@@ -255,12 +261,9 @@ function AdminDashboard() {
           <Link to="/admin/whatsapp" className="flex items-center gap-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-xl" data-testid="nav-whatsapp">
             <MessageSquare size={20} /> WhatsApp
           </Link>
-          <Link to="/admin/landing-pages" className="flex items-center gap-3 px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-xl" data-testid="nav-landing-pages">
-            <Globe size={20} /> Landing Pages
-          </Link>
         </nav>
 
-        <div className="absolute bottom-0 left-0 w-full p-4 border-t border-gray-200">
+        <div className="flex-shrink-0 p-4 border-t border-gray-200">
           <button 
             onClick={() => setShowPasswordModal(true)} 
             className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl w-full mb-2"
@@ -609,6 +612,13 @@ function AdminDashboard() {
                         <span className="font-medium text-purple-700">AI Content Studio</span>
                       </div>
                       <ChevronRight className="w-5 h-5 text-purple-600" />
+                    </Link>
+                    <Link to="/admin/landing-pages" className="flex items-center justify-between p-4 bg-pink-50 rounded-xl hover:bg-pink-100 transition-colors" data-testid="quick-landing-pages">
+                      <div className="flex items-center gap-3">
+                        <Globe className="w-5 h-5 text-pink-600" />
+                        <span className="font-medium text-pink-700">Landing Pages</span>
+                      </div>
+                      <ChevronRight className="w-5 h-5 text-pink-600" />
                     </Link>
                     <Link to="/admin/consultations" className="flex items-center justify-between p-4 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors" data-testid="quick-consultations">
                       <div className="flex items-center gap-3">

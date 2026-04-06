@@ -14,6 +14,11 @@ class LandingPageContent(BaseModel):
     hero_subheadline: str = ""
     hero_problem_statement: str = ""
     
+    # Dynamic Product Details (generated based on problem)
+    product_name: str = "Celesta Glow Anti-Aging Serum"
+    product_tagline: str = "4-in-1 Advanced Formula"
+    product_description: str = ""
+    
     # Problem Section
     problem_title: str = ""
     problem_points: List[str] = []

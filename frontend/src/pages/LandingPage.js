@@ -18,6 +18,13 @@ const MRP = 1499;
 
 const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_050b785b-bdfe-40d2-9088-b4c5bddc18c5/artifacts/f3fkk4tr_IMG_9115.png';
 
+// Default product details in case backend doesn't provide them
+const DEFAULT_PRODUCT = {
+  name: 'Celesta Glow Anti-Aging Serum',
+  tagline: '4-in-1 Advanced Formula',
+  description: 'Premium anti-aging serum with clinically proven ingredients.'
+};
+
 function LandingPage() {
   const { slug } = useParams();
   const navigate = useNavigate();
@@ -127,6 +134,11 @@ function LandingPage() {
   }
 
   const content = pageData.content || {};
+  
+  // Get dynamic product details from content or use defaults
+  const productName = content.product_name || DEFAULT_PRODUCT.name;
+  const productTagline = content.product_tagline || DEFAULT_PRODUCT.tagline;
+  const productDescription = content.product_description || DEFAULT_PRODUCT.description;
 
   return (
     <div className="min-h-screen bg-white pb-24">
@@ -154,12 +166,20 @@ function LandingPage() {
         <div className="relative max-w-xs mx-auto mb-6">
           <img 
             src={PRODUCT_IMAGE} 
-            alt="Celesta Glow Serum" 
+            alt={productName} 
             className="w-full h-auto"
           />
           <div className="absolute top-2 left-2 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full">
             53% OFF
           </div>
+        </div>
+        
+        {/* Dynamic Product Name Badge */}
+        <div className="text-center mb-4">
+          <span className="inline-block px-4 py-2 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full font-semibold text-sm border border-purple-200">
+            {productName}
+          </span>
+          <p className="text-sm text-gray-600 mt-2 italic">{productTagline}</p>
         </div>
         
         {/* Price */}
@@ -219,9 +239,14 @@ function LandingPage() {
           <h2 className="text-xl font-bold text-gray-900 mb-3">
             {content.solution_title || "The Science-Backed Solution"}
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-2">
             {content.solution_description}
           </p>
+          {productDescription && (
+            <p className="text-sm text-purple-600 font-medium mt-2">
+              {productDescription}
+            </p>
+          )}
         </div>
         
         <div className="space-y-3 max-w-md mx-auto mb-8">
