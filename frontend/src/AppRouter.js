@@ -34,7 +34,10 @@ const AdminWhatsApp = lazy(() => import('./pages/admin/AdminWhatsApp'));
 const AdminReferrals = lazy(() => import('./pages/admin/AdminReferrals'));
 const AdminLandingPages = lazy(() => import('./pages/admin/AdminLandingPages'));
 
-// Landing Page (problem-specific)
+// Landing Page Funnel (problem-specific)
+const LandingPageFunnel = lazy(() => import('./pages/landing/LandingPageFunnel'));
+
+// Legacy Landing Page (for backward compatibility with /lp/ URLs)
 const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 // Loading spinner for lazy loaded pages
@@ -109,7 +112,7 @@ function App() {
                 </PublicLayout>
               } />
               
-              {/* Landing Pages (problem-specific) */}
+              {/* Legacy Landing Pages (backward compatibility with /lp/ URLs) */}
               <Route path="/lp/:slug" element={
                 <Suspense fallback={<PageLoader />}>
                   <LandingPage />
@@ -144,10 +147,13 @@ function App() {
                   <Suspense fallback={<PageLoader />}><SearchResults /></Suspense>
                 </PublicLayout>
               } />
-              <Route path="/:state/:city?" element={
-                <PublicLayout>
-                  <Suspense fallback={<PageLoader />}><LocationPage /></Suspense>
-                </PublicLayout>
+              
+              {/* Landing Page Funnels - Must be BEFORE /:state/:city to avoid conflicts */}
+              {/* Problem-specific landing pages: /{slug}, /{slug}/product, /{slug}/order-success/:orderId */}
+              <Route path="/:slug/*" element={
+                <Suspense fallback={<PageLoader />}>
+                  <LandingPageFunnel />
+                </Suspense>
               } />
             </Routes>
           </TrackingProvider>

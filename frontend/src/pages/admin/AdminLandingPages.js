@@ -12,7 +12,6 @@ import {
 } from 'lucide-react';
 import { getAdminToken } from '../../utils/adminAuth';
 
-const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const APP_DOMAIN = 'https://celestaglow.com';
 
 // Category colors
@@ -165,13 +164,13 @@ function AdminLandingPages() {
   };
 
   const copyLink = (slug) => {
-    const link = `${APP_DOMAIN}/lp/${slug}`;
+    const link = `${APP_DOMAIN}/${slug}`;
     navigator.clipboard.writeText(link);
     setCopiedLink(slug);
     setTimeout(() => setCopiedLink(null), 2000);
   };
 
-  const getPageLink = (slug) => `${APP_DOMAIN}/lp/${slug}`;
+  const getPageLink = (slug) => `${APP_DOMAIN}/${slug}`;
 
   // Filter pages
   const filteredPages = landingPages.filter(page => {
@@ -392,7 +391,7 @@ function AdminLandingPages() {
                             <div className="flex items-center gap-3 mt-1">
                               <span className="text-sm text-gray-500 flex items-center gap-1">
                                 <Link2 size={12} />
-                                /lp/{page.problem_slug}
+                                /{page.problem_slug}
                               </span>
                               <span className={`text-xs px-2 py-0.5 rounded-full ${page.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
                                 {page.is_active ? 'Active' : 'Inactive'}

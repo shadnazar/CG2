@@ -131,3 +131,9 @@ async def track_conversion(slug: str):
     """Track a conversion from a landing page"""
     success = await landing_page_service.record_conversion(slug)
     return {"success": success}
+
+@router.post("/public/{slug}/convert")
+async def track_public_conversion(slug: str):
+    """Track a conversion from a landing page (public endpoint)"""
+    success = await landing_page_service.record_conversion(slug)
+    return {"success": success}

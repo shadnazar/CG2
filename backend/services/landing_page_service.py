@@ -192,45 +192,45 @@ class LandingPageService:
     
     def _generate_dynamic_product_name(self, problem_title: str, category: str) -> dict:
         """Generate a professional product name and tagline based on the problem category"""
-        # Map categories to professional skincare product naming
+        # Map categories to professional skincare product naming - ALL include "Anti-Aging"
         product_name_map = {
             "early_aging": {
-                "name": "Celesta Glow Youth Revival Serum",
+                "name": "Celesta Glow Anti-Aging Youth Revival Serum",
                 "tagline": "Advanced Age-Defense Formula",
                 "description": "Specifically formulated to combat early signs of aging with powerful youth-preserving ingredients."
             },
             "wrinkles": {
-                "name": "Celesta Glow Anti-Wrinkle Serum",
+                "name": "Celesta Glow Anti-Aging Wrinkle Repair Serum",
                 "tagline": "Deep Wrinkle Correction Complex",
                 "description": "Targets and reduces the appearance of fine lines and wrinkles with clinical-strength retinol."
             },
             "under_eye": {
-                "name": "Celesta Glow Eye Revitalizer Serum",
+                "name": "Celesta Glow Anti-Aging Eye Revitalizer Serum",
                 "tagline": "Tired Eye Rescue Formula",
                 "description": "Specially designed to brighten dark circles, reduce puffiness, and refresh tired-looking eyes."
             },
             "dry_skin": {
-                "name": "Celesta Glow Hydra-Glow Serum",
+                "name": "Celesta Glow Anti-Aging Hydra-Glow Serum",
                 "tagline": "Intense Moisture Lock Technology",
                 "description": "Deep hydration serum that restores your skin's natural radiance and healthy glow."
             },
             "lifestyle": {
-                "name": "Celesta Glow Urban Shield Serum",
+                "name": "Celesta Glow Anti-Aging Urban Shield Serum",
                 "tagline": "Lifestyle Damage Defense",
                 "description": "Protects your skin from stress, pollution, and screen damage while reversing lifestyle-induced aging."
             },
             "preventive": {
-                "name": "Celesta Glow Prevention Plus Serum",
-                "tagline": "Early Action Anti-Aging",
+                "name": "Celesta Glow Anti-Aging Prevention Serum",
+                "tagline": "Early Action Defense Formula",
                 "description": "Start your anti-aging journey early with this proactive defense formula for lasting youth."
             },
             "results": {
-                "name": "Celesta Glow Fast-Action Serum",
+                "name": "Celesta Glow Anti-Aging Fast-Action Serum",
                 "tagline": "Visible Results in 14 Days",
                 "description": "Our most powerful formula for those who want to see dramatic results quickly."
             },
             "psychological": {
-                "name": "Celesta Glow Confidence Boost Serum",
+                "name": "Celesta Glow Anti-Aging Confidence Serum",
                 "tagline": "Look Young, Feel Confident",
                 "description": "Transform how you look and feel with our premium age-reversing formula."
             }
