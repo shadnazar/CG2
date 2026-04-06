@@ -9,6 +9,7 @@ import {
   MousePointer, Route, MessageSquare, Bell, Volume2, Gift
 } from 'lucide-react';
 import { useOrderNotifications } from '../../utils/orderNotifications';
+import { getAdminToken, clearAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -48,7 +49,7 @@ function AdminDashboard() {
   const [blogStats, setBlogStats] = useState(null);
   
   const navigate = useNavigate();
-  const adminToken = sessionStorage.getItem('adminToken');
+  const adminToken = getAdminToken();
   
   // Order notification hook
   const { newOrders, clearNewOrders, testSound } = useOrderNotifications(
@@ -144,7 +145,7 @@ function AdminDashboard() {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem('adminToken');
+    clearAdminToken();
     navigate('/admin');
   };
 

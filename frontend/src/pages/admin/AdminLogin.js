@@ -7,9 +7,28 @@ const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 // Use sessionStorage for admin tokens (cleared when browser closes)
 // This is more secure than localStorage for admin sessions
-const getAdminToken = () => sessionStorage.getItem('adminToken');
-const setAdminToken = (token) => sessionStorage.setItem('adminToken', token);
-const clearAdminToken = () => sessionStorage.removeItem('adminToken');
+// Also check localStorage for backward compatibility during migration
+const getAdminToken = () => {
+  const sessionToken = sessionStorage.getItem('adminToken');
+  if (sessionToken) return sessionToken;
+  
+  // Backward compatibility: check localStorage and migrate
+  const localToken = localStorage.getItem('adminToken');
+  if (localToken) {
+    sessionStorage.setItem('adminToken', localToken);
+    localStorage.removeItem('adminToken'); // Clean up old storage
+    return localToken;
+  }
+  return null;
+};
+const setAdminToken = (token) => {
+  sessionStorage.setItem('adminToken', token);
+  localStorage.removeItem('adminToken'); // Ensure no duplicate
+};
+const clearAdminToken = () => {
+  sessionStorage.removeItem('adminToken');
+  localStorage.removeItem('adminToken'); // Clean both
+};
 
 function AdminLogin() {
   const [password, setPassword] = useState('');

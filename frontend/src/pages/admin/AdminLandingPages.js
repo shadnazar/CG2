@@ -10,6 +10,7 @@ import {
   BarChart3, ExternalLink, Loader2, Search, Filter, RefreshCw,
   Globe, TrendingUp, Zap, ChevronDown, ChevronUp, Link2
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const APP_DOMAIN = 'https://celestaglow.com';
@@ -39,7 +40,7 @@ const CATEGORY_NAMES = {
 
 function AdminLandingPages() {
   const navigate = useNavigate();
-  const adminToken = sessionStorage.getItem('adminToken');
+  const adminToken = getAdminToken();
   
   const [landingPages, setLandingPages] = useState([]);
   const [predefinedProblems, setPredefinedProblems] = useState(null);

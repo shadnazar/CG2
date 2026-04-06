@@ -1,18 +1,37 @@
 /**
  * Admin Authentication Utilities
- * Uses sessionStorage instead of localStorage for better security
- * - sessionStorage is cleared when browser closes
- * - Not accessible via XSS attacks on localStorage
+ * Uses sessionStorage with localStorage fallback for backward compatibility
  */
 
-// Get admin token from sessionStorage
-export const getAdminToken = () => sessionStorage.getItem('adminToken');
+// Get admin token from sessionStorage, with localStorage fallback
+export const getAdminToken = () => {
+  // First check sessionStorage (primary)
+  const sessionToken = sessionStorage.getItem('adminToken');
+  if (sessionToken) return sessionToken;
+  
+  // Backward compatibility: check localStorage and migrate
+  const localToken = localStorage.getItem('adminToken');
+  if (localToken) {
+    // Migrate to sessionStorage
+    sessionStorage.setItem('adminToken', localToken);
+    localStorage.removeItem('adminToken');
+    return localToken;
+  }
+  
+  return null;
+};
 
 // Set admin token in sessionStorage
-export const setAdminToken = (token) => sessionStorage.setItem('adminToken', token);
+export const setAdminToken = (token) => {
+  sessionStorage.setItem('adminToken', token);
+  localStorage.removeItem('adminToken'); // Clean up any old localStorage token
+};
 
-// Clear admin token (logout)
-export const clearAdminToken = () => sessionStorage.removeItem('adminToken');
+// Clear admin token from both storages
+export const clearAdminToken = () => {
+  sessionStorage.removeItem('adminToken');
+  localStorage.removeItem('adminToken');
+};
 
 // Check if admin is authenticated
 export const isAdminAuthenticated = () => {
@@ -23,13 +42,12 @@ export const isAdminAuthenticated = () => {
 // Admin logout helper
 export const adminLogout = async (navigate, apiUrl) => {
   try {
-    // Call backend logout endpoint to clear httpOnly cookie
     await fetch(`${apiUrl}/admin/logout`, {
       method: 'POST',
       credentials: 'include'
     });
   } catch (e) {
-    console.log('Logout cleanup failed, continuing...');
+    // Ignore errors during logout
   }
   clearAdminToken();
   if (navigate) {
