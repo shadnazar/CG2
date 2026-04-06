@@ -32,6 +32,10 @@ const AdminConsultations = lazy(() => import('./pages/admin/AdminConsultations')
 const AdminUserJourney = lazy(() => import('./pages/admin/AdminUserJourney'));
 const AdminWhatsApp = lazy(() => import('./pages/admin/AdminWhatsApp'));
 const AdminReferrals = lazy(() => import('./pages/admin/AdminReferrals'));
+const AdminLandingPages = lazy(() => import('./pages/admin/AdminLandingPages'));
+
+// Landing Page (problem-specific)
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 // Loading spinner for lazy loaded pages
 const PageLoader = () => (
@@ -80,6 +84,7 @@ function App() {
         <Route path="/admin/user-journey" element={<AdminLayout><AdminUserJourney /></AdminLayout>} />
         <Route path="/admin/whatsapp" element={<AdminLayout><AdminWhatsApp /></AdminLayout>} />
         <Route path="/admin/referrals" element={<AdminLayout><AdminReferrals /></AdminLayout>} />
+        <Route path="/admin/landing-pages" element={<AdminLayout><AdminLandingPages /></AdminLayout>} />
         
         {/* Public Routes - With tracking provider */}
         <Route path="/*" element={
@@ -102,6 +107,13 @@ function App() {
                 <PublicLayout>
                   <Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense>
                 </PublicLayout>
+              } />
+              
+              {/* Landing Pages (problem-specific) */}
+              <Route path="/lp/:slug" element={
+                <Suspense fallback={<PageLoader />}>
+                  <LandingPage />
+                </Suspense>
               } />
               
               {/* Track Order Page */}

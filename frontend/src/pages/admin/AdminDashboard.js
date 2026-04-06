@@ -254,6 +254,9 @@ function AdminDashboard() {
           <Link to="/admin/whatsapp" className="flex items-center gap-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-xl" data-testid="nav-whatsapp">
             <MessageSquare size={20} /> WhatsApp
           </Link>
+          <Link to="/admin/landing-pages" className="flex items-center gap-3 px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-xl" data-testid="nav-landing-pages">
+            <Globe size={20} /> Landing Pages
+          </Link>
         </nav>
 
         <div className="absolute bottom-0 left-0 w-full p-4 border-t border-gray-200">

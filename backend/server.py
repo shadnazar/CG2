@@ -30,6 +30,8 @@ from services.whatsapp_service import WhatsAppService
 from services.trending_news_generator import TrendingNewsBlogGenerator
 from services.referral_service import ReferralService
 from services.delhivery_service import init_delhivery_service
+from services.landing_page_service import LandingPageService
+from routes import landing_pages as landing_page_routes
 
 
 ROOT_DIR = Path(__file__).parent
@@ -50,9 +52,13 @@ whatsapp_service = WhatsAppService(db)
 trending_news_generator = TrendingNewsBlogGenerator(db)
 referral_service = ReferralService(db)
 delhivery_service = init_delhivery_service(db)
+landing_page_service = LandingPageService(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
+
+# Initialize landing page routes
+landing_page_routes.set_landing_page_service(landing_page_service)
 
 # Share admin_sessions with admin routes (will be set after admin_sessions is defined)
 # This is done later in the file after admin_sessions is created
@@ -2349,6 +2355,7 @@ app.include_router(api_router)
 app.include_router(admin_routes.router, prefix="/api")
 app.include_router(i18n_routes.router, prefix="/api")
 app.include_router(consultation_routes.router, prefix="/api")
+app.include_router(landing_page_routes.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
