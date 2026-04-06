@@ -13,6 +13,7 @@ import {
   Phone,
   AlertCircle
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -28,11 +29,11 @@ function AdminWhatsApp() {
   const [testPhone, setTestPhone] = useState('');
   const [sendStatus, setSendStatus] = useState(null);
 
-  const token = sessionStorage.getItem('adminToken');
+  const token = getAdminToken();
 
   useEffect(() => {
     if (!token) {
-      navigate('/admin/login');
+      navigate('/admin');
       return;
     }
     fetchData();

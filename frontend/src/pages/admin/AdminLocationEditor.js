@@ -4,6 +4,7 @@ import axios from 'axios';
 import { 
   ChevronLeft, Save, MapPin, X, Plus
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -21,7 +22,7 @@ function AdminLocationEditor() {
   const { id } = useParams();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
-  const adminToken = sessionStorage.getItem('adminToken');
+  const adminToken = getAdminToken();
 
   const [formData, setFormData] = useState({
     state: '',

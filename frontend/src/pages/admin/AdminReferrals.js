@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Users, DollarSign, MousePointer, ShoppingBag, 
   ArrowLeft, Copy, CheckCircle, RefreshCw, Gift,
   TrendingUp, Clock, ExternalLink, CreditCard, Eye, X
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function AdminReferrals() {
+  const navigate = useNavigate();
   const [referrals, setReferrals] = useState([]);
   const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(true);
@@ -18,11 +20,15 @@ function AdminReferrals() {
   const [copiedCode, setCopiedCode] = useState(null);
   const [selectedReferral, setSelectedReferral] = useState(null);
   const [processingPayment, setProcessingPayment] = useState(null);
-  const adminToken = sessionStorage.getItem('adminToken') || 'celestaglow2024';
+  const adminToken = getAdminToken();
 
   useEffect(() => {
+    if (!adminToken) {
+      navigate('/admin');
+      return;
+    }
     fetchReferrals();
-  }, []);
+  }, [adminToken, navigate]);
 
   const fetchReferrals = async () => {
     setLoading(true);

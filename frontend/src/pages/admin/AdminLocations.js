@@ -5,6 +5,7 @@ import {
   MapPin, Plus, Edit, Trash2, Eye, Search,
   ChevronLeft, Globe
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -14,7 +15,7 @@ function AdminLocations() {
   const [searchTerm, setSearchTerm] = useState('');
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const navigate = useNavigate();
-  const adminToken = sessionStorage.getItem('adminToken');
+  const adminToken = getAdminToken();
 
   useEffect(() => {
     if (!adminToken) {

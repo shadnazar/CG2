@@ -7,12 +7,13 @@ import {
   Loader2, Check, AlertCircle, Copy, Save, Zap, Clock, History, Globe, Tag,
   TrendingUp, Newspaper, Share2, Timer, RefreshCw
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function AdminAIStudio() {
   const navigate = useNavigate();
-  const adminToken = sessionStorage.getItem('adminToken');
+  const adminToken = getAdminToken();
   
   const [activeMode, setActiveMode] = useState('auto');
   const [loading, setLoading] = useState(false);

@@ -5,6 +5,7 @@ import {
   Package, ChevronLeft, Search, Filter, Download,
   Phone, MapPin, Calendar, IndianRupee, Truck, CheckCircle, X, Edit2, Save, ExternalLink
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -18,7 +19,7 @@ function AdminOrders() {
   const [editingEmail, setEditingEmail] = useState(false);
   const [newEmail, setNewEmail] = useState('');
   const navigate = useNavigate();
-  const adminToken = sessionStorage.getItem('adminToken');
+  const adminToken = getAdminToken();
 
   useEffect(() => {
     if (!adminToken) {

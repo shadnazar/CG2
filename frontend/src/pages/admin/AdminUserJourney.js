@@ -9,12 +9,13 @@ import {
   AlertTriangle, Lightbulb, Phone, Mail, CreditCard, ArrowRight,
   LogOut, Scroll, Target, BarChart3
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function AdminUserJourney() {
   const navigate = useNavigate();
-  const adminToken = sessionStorage.getItem('adminToken');
+  const adminToken = getAdminToken();
   
   const [visitors, setVisitors] = useState([]);
   const [stats, setStats] = useState(null);

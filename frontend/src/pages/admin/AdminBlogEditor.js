@@ -4,6 +4,7 @@ import axios from 'axios';
 import { 
   ChevronLeft, Save, Eye, Globe, Tag, X, FileText
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -11,7 +12,7 @@ function AdminBlogEditor() {
   const { id } = useParams();
   const isEditing = Boolean(id);
   const navigate = useNavigate();
-  const adminToken = sessionStorage.getItem('adminToken');
+  const adminToken = getAdminToken();
 
   const [formData, setFormData] = useState({
     title: '',

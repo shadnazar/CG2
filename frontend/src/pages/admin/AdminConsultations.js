@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { 
   ArrowLeft, Users, TrendingUp, Download, Phone, MapPin, 
   Clock, ChevronDown, ChevronUp, Eye, FileText, AlertCircle,
   BarChart3, Target, Zap
 } from 'lucide-react';
+import { getAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -15,14 +16,18 @@ function AdminConsultations() {
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState(null);
   const [activeTab, setActiveTab] = useState('list'); // list, stats
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
-    const token = sessionStorage.getItem('adminToken');
-    if (!token) return;
+    const token = getAdminToken();
+    if (!token) {
+      navigate('/admin');
+      return;
+    }
 
     try {
       const [consultRes, statsRes] = await Promise.all([
@@ -38,6 +43,9 @@ function AdminConsultations() {
       setStats(statsRes.data);
     } catch (err) {
       console.error('Failed to fetch consultation data');
+      if (err.response?.status === 403 || err.response?.status === 401) {
+        navigate('/admin');
+      }
     } finally {
       setLoading(false);
     }
