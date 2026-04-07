@@ -53,6 +53,8 @@ function AdminLandingPages() {
   const [copiedLink, setCopiedLink] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProblems, setSelectedProblems] = useState([]);
+  const [showCustomModal, setShowCustomModal] = useState(false);
+  const [customTopic, setCustomTopic] = useState({ title: '', slug: '', category: 'early_aging' });
 
   const fetchData = useCallback(async () => {
     if (!adminToken) return;
@@ -134,6 +136,53 @@ function AdminLandingPages() {
     } finally {
       setGenerating(false);
     }
+  };
+
+  const handleCreateCustom = async () => {
+    if (!customTopic.title || !customTopic.slug) {
+      alert('Please enter both title and slug');
+      return;
+    }
+    
+    // Validate slug format
+    const slugRegex = /^[a-z0-9-]+$/;
+    if (!slugRegex.test(customTopic.slug)) {
+      alert('Slug must contain only lowercase letters, numbers, and hyphens');
+      return;
+    }
+    
+    setGenerating(true);
+    try {
+      await axios.post(
+        `${API}/landing-pages/admin/create`,
+        {
+          problem_title: customTopic.title,
+          problem_slug: customTopic.slug,
+          category: customTopic.category,
+          is_active: true
+        },
+        { headers: { 'X-Admin-Token': adminToken } }
+      );
+      
+      alert(`Custom landing page created successfully!\nURL: ${APP_DOMAIN}/${customTopic.slug}`);
+      setCustomTopic({ title: '', slug: '', category: 'early_aging' });
+      setShowCustomModal(false);
+      fetchData();
+    } catch (err) {
+      alert('Failed to create: ' + (err.response?.data?.detail || err.message));
+    } finally {
+      setGenerating(false);
+    }
+  };
+
+  // Auto-generate slug from title
+  const generateSlug = (title) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .substring(0, 50);
   };
 
   const handleToggle = async (pageId, currentStatus) => {
@@ -221,10 +270,16 @@ function AdminLandingPages() {
               <RefreshCw size={20} />
             </button>
             <button
+              onClick={() => setShowCustomModal(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600"
+            >
+              <Plus size={18} /> Custom Topic
+            </button>
+            <button
               onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-2 px-4 py-2 bg-purple-500 text-white rounded-xl hover:bg-purple-600"
             >
-              <Plus size={18} /> Create Pages
+              <Plus size={18} /> From Presets
             </button>
           </div>
         </div>
@@ -545,6 +600,105 @@ function AdminLandingPages() {
                     )}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Topic Modal */}
+      {showCustomModal && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl w-full max-w-lg max-h-[90vh] overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-gray-200">
+              <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <Plus className="text-green-500" size={24} />
+                Create Custom Landing Page
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Enter your own topic to generate a unique landing page
+              </p>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Topic / Problem Title *
+                </label>
+                <input
+                  type="text"
+                  value={customTopic.title}
+                  onChange={(e) => {
+                    const title = e.target.value;
+                    setCustomTopic({
+                      ...customTopic,
+                      title,
+                      slug: generateSlug(title)
+                    });
+                  }}
+                  placeholder="e.g., How to reduce forehead wrinkles naturally"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  URL Slug *
+                </label>
+                <div className="flex items-center">
+                  <span className="text-gray-400 text-sm mr-2">celestaglow.com/</span>
+                  <input
+                    type="text"
+                    value={customTopic.slug}
+                    onChange={(e) => setCustomTopic({ ...customTopic, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '') })}
+                    placeholder="forehead-wrinkles"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Category
+                </label>
+                <select
+                  value={customTopic.category}
+                  onChange={(e) => setCustomTopic({ ...customTopic, category: e.target.value })}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                >
+                  {Object.entries(CATEGORY_NAMES).map(([key, name]) => (
+                    <option key={key} value={key}>{name}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">Category determines product name styling and content focus</p>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t border-gray-200 bg-gray-50">
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => { setShowCustomModal(false); setCustomTopic({ title: '', slug: '', category: 'early_aging' }); }}
+                  className="px-4 py-2 text-gray-700 hover:bg-gray-200 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleCreateCustom}
+                  disabled={generating || !customTopic.title || !customTopic.slug}
+                  className="flex items-center gap-2 px-6 py-2 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 disabled:opacity-50"
+                >
+                  {generating ? (
+                    <>
+                      <Loader2 className="animate-spin" size={18} />
+                      Creating...
+                    </>
+                  ) : (
+                    <>
+                      <Plus size={18} />
+                      Create Page
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           </div>

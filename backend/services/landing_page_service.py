@@ -195,43 +195,43 @@ class LandingPageService:
         # Map categories to professional skincare product naming - ALL include "Anti-Aging"
         product_name_map = {
             "early_aging": {
-                "name": "Celesta Glow Anti-Aging Youth Revival Serum",
-                "tagline": "Advanced Age-Defense Formula",
+                "name": "Celesta Glow Youth Revival Serum",
+                "tagline": "Advanced Anti-Aging Formula",
                 "description": "Specifically formulated to combat early signs of aging with powerful youth-preserving ingredients."
             },
             "wrinkles": {
-                "name": "Celesta Glow Anti-Aging Wrinkle Repair Serum",
-                "tagline": "Deep Wrinkle Correction Complex",
+                "name": "Celesta Glow Wrinkle Repair Serum",
+                "tagline": "Deep Anti-Aging Correction Complex",
                 "description": "Targets and reduces the appearance of fine lines and wrinkles with clinical-strength retinol."
             },
             "under_eye": {
-                "name": "Celesta Glow Anti-Aging Eye Revitalizer Serum",
-                "tagline": "Tired Eye Rescue Formula",
+                "name": "Celesta Glow Eye Revitalizer Serum",
+                "tagline": "Anti-Aging Eye Rescue Formula",
                 "description": "Specially designed to brighten dark circles, reduce puffiness, and refresh tired-looking eyes."
             },
             "dry_skin": {
-                "name": "Celesta Glow Anti-Aging Hydra-Glow Serum",
-                "tagline": "Intense Moisture Lock Technology",
+                "name": "Celesta Glow Hydra-Glow Serum",
+                "tagline": "Anti-Aging Moisture Lock Technology",
                 "description": "Deep hydration serum that restores your skin's natural radiance and healthy glow."
             },
             "lifestyle": {
-                "name": "Celesta Glow Anti-Aging Urban Shield Serum",
-                "tagline": "Lifestyle Damage Defense",
+                "name": "Celesta Glow Urban Shield Serum",
+                "tagline": "Anti-Aging Lifestyle Defense",
                 "description": "Protects your skin from stress, pollution, and screen damage while reversing lifestyle-induced aging."
             },
             "preventive": {
-                "name": "Celesta Glow Anti-Aging Prevention Serum",
-                "tagline": "Early Action Defense Formula",
+                "name": "Celesta Glow Prevention Serum",
+                "tagline": "Early Action Anti-Aging Formula",
                 "description": "Start your anti-aging journey early with this proactive defense formula for lasting youth."
             },
             "results": {
-                "name": "Celesta Glow Anti-Aging Fast-Action Serum",
-                "tagline": "Visible Results in 14 Days",
+                "name": "Celesta Glow Fast-Action Serum",
+                "tagline": "Anti-Aging Results in 14 Days",
                 "description": "Our most powerful formula for those who want to see dramatic results quickly."
             },
             "psychological": {
-                "name": "Celesta Glow Anti-Aging Confidence Serum",
-                "tagline": "Look Young, Feel Confident",
+                "name": "Celesta Glow Confidence Serum",
+                "tagline": "Anti-Aging for Confidence",
                 "description": "Transform how you look and feel with our premium age-reversing formula."
             }
         }
@@ -244,6 +244,22 @@ class LandingPageService:
         })
         
         return product_details
+    
+    def _generate_hero_problem_statement(self, problem_title: str, category: str) -> str:
+        """Generate a grammatically correct hero problem statement based on the category"""
+        # Create proper, grammatically correct problem statements
+        problem_statement_map = {
+            "early_aging": "If you're noticing early signs of aging appearing sooner than expected, you're not alone",
+            "wrinkles": "If fine lines and wrinkles are becoming more visible, you're not alone",
+            "under_eye": "If dark circles and tired eyes are making you look older, you're not alone",
+            "dry_skin": "If your skin feels dry, dull, and has lost its natural glow, you're not alone",
+            "lifestyle": "If your busy lifestyle is taking a toll on your skin, you're not alone",
+            "preventive": "If you want to prevent aging before it becomes visible, you're making the right choice",
+            "results": "If you want visible anti-aging results fast, you've come to the right place",
+            "psychological": "If people think you look older than your actual age, you're not alone"
+        }
+        
+        return problem_statement_map.get(category, f"If you're dealing with {problem_title.lower().replace('?', '')}, you're not alone")
     
     def _generate_default_content(self, problem_title: str, category: str) -> dict:
         """Generate default content based on problem title"""
@@ -375,7 +391,7 @@ class LandingPageService:
         return {
             "hero_headline": problem_title,
             "hero_subheadline": f"{product_details['tagline']} — India's #1 Choice",
-            "hero_problem_statement": f"If you're noticing {problem_title.lower().replace('?', '').replace('—', '-')}, you're not alone. Thousands of Indians face this every day.",
+            "hero_problem_statement": self._generate_hero_problem_statement(problem_title, category),
             "product_name": product_details["name"],
             "product_tagline": product_details["tagline"],
             "product_description": product_details["description"],

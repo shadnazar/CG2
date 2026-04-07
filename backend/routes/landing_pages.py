@@ -169,3 +169,50 @@ async def track_public_conversion(slug: str):
     """Track a conversion from a landing page (public endpoint)"""
     success = await landing_page_service.record_conversion(slug)
     return {"success": success}
+
+
+@router.post("/admin/{page_id}/regenerate")
+async def regenerate_landing_page_content(
+    page_id: str,
+    admin: bool = Depends(verify_admin)
+):
+    """Regenerate content for an existing landing page with updated formatting"""
+    page = await landing_page_service.get_landing_page_by_id(page_id)
+    if not page:
+        raise HTTPException(status_code=404, detail="Landing page not found")
+    
+    # Regenerate content using the current problem_title and category
+    new_content = landing_page_service._generate_default_content(
+        page.get("problem_title", ""),
+        page.get("category", "early_aging")
+    )
+    
+    # Update the page with new content
+    result = await landing_page_service.update_landing_page(page_id, {"content": new_content})
+    return {"success": True, "message": "Content regenerated", "content": new_content}
+
+@router.post("/admin/regenerate-all")
+async def regenerate_all_landing_pages(
+    admin: bool = Depends(verify_admin)
+):
+    """Regenerate content for ALL landing pages with updated formatting"""
+    pages = await landing_page_service.get_all_landing_pages(include_inactive=True)
+    updated_count = 0
+    
+    for page in pages:
+        # The service converts _id to id already
+        page_id = page.get("id")
+        if not page_id:
+            continue
+            
+        # Regenerate content using the current problem_title and category
+        new_content = landing_page_service._generate_default_content(
+            page.get("problem_title", ""),
+            page.get("category", "early_aging")
+        )
+        
+        # Update the page with new content
+        await landing_page_service.update_landing_page(page_id, {"content": new_content})
+        updated_count += 1
+    
+    return {"success": True, "message": f"Regenerated content for {updated_count} landing pages"}

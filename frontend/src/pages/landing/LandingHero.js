@@ -380,7 +380,7 @@ function LandingHero() {
         </div>
         
         <div className="testimonial-scroll-container overflow-hidden">
-          <div className="testimonial-scroll-track flex" style={{ animation: 'scroll-testimonials 30s linear infinite' }}>
+          <div className="testimonial-scroll-track flex">
             {[...testimonials, ...testimonials].map((t, i) => (
               <div key={i} className="testimonial-card min-w-[280px] flex-shrink-0 mx-2 bg-white rounded-xl p-4 shadow-sm border border-gray-100">
                 <div className="flex gap-1 mb-3">
@@ -492,6 +492,9 @@ function LandingHero() {
         @keyframes scroll-testimonials {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
+        }
+        .testimonial-scroll-track {
+          animation: scroll-testimonials 15s linear infinite;
         }
         .testimonial-scroll-track:hover {
           animation-play-state: paused;
