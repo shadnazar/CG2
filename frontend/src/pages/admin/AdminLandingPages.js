@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { getAdminToken } from '../../utils/adminAuth';
 
+const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const APP_DOMAIN = 'https://celestaglow.com';
 
 // Category colors
