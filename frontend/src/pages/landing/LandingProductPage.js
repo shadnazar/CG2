@@ -1,12 +1,13 @@
 /**
  * LandingProductPage.js
- * Product page within landing page funnel - has ALL features from main ProductPage
+ * Product page that looks EXACTLY like the main ProductPage
+ * But uses dynamic content from landing page context
  * URL: /{slug}/product
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, ChevronLeft, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift, X, CreditCard, BadgeCheck, Phone, ArrowLeft } from 'lucide-react';
+import { Star, Check, Truck, Shield, ChevronDown, ChevronUp, ChevronRight, Clock, Users, Flame, ShieldCheck, Award, Sparkles, TrendingUp, Gift, CreditCard, BadgeCheck, Verified, Phone, ArrowLeft } from 'lucide-react';
 import DermatologistSection from '../../components/DermatologistSection';
 import { useTracking } from '../../providers/TrackingProvider';
 import { useLandingPage } from './LandingPageContext';
@@ -18,7 +19,6 @@ const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 const PREPAID_PRICE = 699;
 const COD_PRICE = 749;
 const COD_ADVANCE = 49;
-const COD_BALANCE = 700;
 const MRP = 1499;
 const DISCOUNT_AMOUNT = 50;
 const EXIT_DISCOUNT_AMOUNT = 100;
@@ -26,28 +26,13 @@ const REFERRAL_DISCOUNT = 50;
 
 const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_050b785b-bdfe-40d2-9088-b4c5bddc18c5/artifacts/f3fkk4tr_IMG_9115.png';
 
-// FAQ data
-const FAQ_DATA = [
-  { q: "How long until I see results?", a: "Most customers see visible improvement in 2-4 weeks with consistent use." },
-  { q: "Is it safe for sensitive skin?", a: "Yes! Our formula is dermatologist-tested and suitable for all Indian skin types." },
-  { q: "How do I use it?", a: "Apply 3-4 drops on clean skin every night before moisturizer." },
-  { q: "What's your return policy?", a: "We offer a 30-day money-back guarantee if you're not satisfied." },
-];
-
-// Reviews data
-const REVIEWS = [
-  { name: "Priya M.", location: "Mumbai", rating: 5, text: "Saw visible results in just 2 weeks! My fine lines have reduced significantly.", verified: true },
-  { name: "Anita S.", location: "Delhi", rating: 5, text: "Finally found something that actually works. My skin feels so smooth!", verified: true },
-  { name: "Rekha K.", location: "Bangalore", rating: 5, text: "Best anti-aging product I've tried. Everyone asks about my skincare secret!", verified: true },
-];
-
 function LandingProductPage() {
   const navigate = useNavigate();
-  const { trackPageVisit, trackViewContent, trackInitiateCheckout, trackAction, getVisitorId, getSessionId } = useTracking();
-  const { slug, pageData, loading: pageLoading, error: pageError, productName, productTagline, productDescription, getHeroUrl, getCheckoutUrl } = useLandingPage();
+  const { trackPageVisit, trackViewContent, trackInitiateCheckout, trackPurchase, trackAction, getVisitorId } = useTracking();
+  const { slug, pageData, loading: pageLoading, error: pageError, productName, productTagline, productDescription, content, getHeroUrl } = useLandingPage();
   
   const [step, setStep] = useState('product');
-  const [expandedFaq, setExpandedFaq] = useState(null);
+  const [expandedSection, setExpandedSection] = useState(null);
   const [formData, setFormData] = useState({ name: '', phone: '', email: '', house_number: '', area: '', pincode: '', state: '' });
   const [errors, setErrors] = useState({});
   const [paymentMethod, setPaymentMethod] = useState('prepaid');
@@ -86,7 +71,6 @@ function LandingProductPage() {
     }
   };
 
-  // Track page visits
   useEffect(() => {
     trackPageVisit(`landing_${slug}_product`);
     trackViewContent(productName, PREPAID_PRICE);
@@ -104,10 +88,12 @@ function LandingProductPage() {
     }, 1000);
 
     const viewerInterval = setInterval(() => {
+      const delta = Math.floor(Math.random() * 5) - 2;
       const stats = getSharedStats();
-      setViewingNow(stats.viewingNow);
-      setSoldToday(stats.soldToday);
-    }, 2000);
+      const newValue = Math.max(15, Math.min(50, stats.viewingNow + delta));
+      updateSharedStats({ viewingNow: newValue });
+      setViewingNow(newValue);
+    }, 5000);
 
     return () => { 
       clearInterval(timer);
@@ -115,7 +101,6 @@ function LandingProductPage() {
     };
   }, [slug, productName, trackPageVisit, trackViewContent]);
 
-  // Track checkout step
   useEffect(() => {
     if (step === 'checkout') {
       trackPageVisit(`landing_${slug}_checkout`);
@@ -127,16 +112,8 @@ function LandingProductPage() {
   const checkDiscountStatus = () => {
     const exitDiscountClaimed = localStorage.getItem('exitDiscountClaimed');
     const regularDiscountClaimed = localStorage.getItem('discountClaimed');
-    
-    if (exitDiscountClaimed) {
-      setHasDiscount(true);
-      setDiscountApplied(true);
-      setDiscountAmount(EXIT_DISCOUNT_AMOUNT);
-    } else if (regularDiscountClaimed) {
-      setHasDiscount(true);
-      setDiscountApplied(true);
-      setDiscountAmount(DISCOUNT_AMOUNT);
-    }
+    if (exitDiscountClaimed) { setHasDiscount(true); setDiscountApplied(true); setDiscountAmount(EXIT_DISCOUNT_AMOUNT); }
+    else if (regularDiscountClaimed) { setHasDiscount(true); setDiscountApplied(true); setDiscountAmount(DISCOUNT_AMOUNT); }
   };
 
   const getFinalPrepaidPrice = () => {
@@ -228,16 +205,11 @@ function LandingProductPage() {
               discount_applied: discountApplied ? discountAmount : 0,
               referral_code: referralCode || null,
               referral_discount: referralDiscount || 0,
-              landing_page_slug: slug // Track which landing page
+              landing_page_slug: slug
             });
             
-            // Track conversion for landing page
             trackAction('landing_conversion', { slug, order_id: order.data.order_id });
-            
-            // Record conversion in backend
             axios.post(`${API}/landing-pages/public/${slug}/convert`).catch(() => {});
-            
-            // Navigate to order success within landing page funnel
             navigate(`/${slug}/order-success/${order.data.order_id}`);
           } catch (error) {
             alert('Order creation failed. Please contact support.');
@@ -270,13 +242,12 @@ function LandingProductPage() {
       <div className="min-h-screen bg-white flex items-center justify-center p-4">
         <div className="text-center">
           <h1 className="text-xl font-bold text-gray-900 mb-2">Page Not Found</h1>
-          <Link to="/" className="text-purple-600 underline">Go to Homepage</Link>
         </div>
       </div>
     );
   }
 
-  // CHECKOUT VIEW
+  // CHECKOUT VIEW - Matches main ProductPage checkout
   if (step === 'checkout') {
     return (
       <div className="min-h-screen bg-gray-50 pb-8">
@@ -307,8 +278,6 @@ function LandingProductPage() {
                 </div>
               </div>
             </div>
-            
-            {/* Discount Applied */}
             {getTotalDiscount() > 0 && (
               <div className="mt-3 pt-3 border-t border-dashed flex items-center justify-between text-green-600 text-sm font-medium">
                 <span className="flex items-center gap-1"><Gift size={16} /> Discount Applied</span>
@@ -341,108 +310,62 @@ function LandingProductPage() {
             </div>
           </div>
 
-          {/* Delivery Address Form */}
+          {/* Delivery Address */}
           <div className="bg-white rounded-2xl p-4 shadow-sm">
             <h3 className="font-semibold text-gray-900 mb-3">Delivery Address</h3>
             <div className="space-y-3">
               <div>
-                <input
-                  type="text"
-                  placeholder="Full Name *"
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className={`w-full px-4 py-3 rounded-xl border ${errors.name ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none`}
-                />
+                <input type="text" placeholder="Full Name *" value={formData.name} onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.name ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none`} />
                 {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
               </div>
-              
               <div>
                 <div className="flex">
                   <span className="px-4 py-3 bg-gray-100 border border-r-0 border-gray-200 rounded-l-xl text-gray-500">+91</span>
-                  <input
-                    type="tel"
-                    placeholder="Phone Number *"
-                    value={formData.phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
-                    className={`flex-1 px-4 py-3 rounded-r-xl border ${errors.phone ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none`}
-                  />
+                  <input type="tel" placeholder="Phone Number *" value={formData.phone} onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '').slice(0, 10) }))}
+                    className={`flex-1 px-4 py-3 rounded-r-xl border ${errors.phone ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none`} />
                 </div>
                 {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
               </div>
-              
-              <input
-                type="email"
-                placeholder="Email (Optional)"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none"
-              />
-              
+              <input type="email" placeholder="Email (Optional)" value={formData.email} onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none" />
               <div>
-                <input
-                  type="text"
-                  placeholder="House/Flat/Building No. *"
-                  value={formData.house_number}
-                  onChange={(e) => setFormData(prev => ({ ...prev, house_number: e.target.value }))}
-                  className={`w-full px-4 py-3 rounded-xl border ${errors.house_number ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none`}
-                />
+                <input type="text" placeholder="House/Flat/Building No. *" value={formData.house_number} onChange={(e) => setFormData(prev => ({ ...prev, house_number: e.target.value }))}
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.house_number ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 outline-none`} />
                 {errors.house_number && <p className="text-red-500 text-xs mt-1">{errors.house_number}</p>}
               </div>
-              
               <div>
-                <input
-                  type="text"
-                  placeholder="Area/Locality/Street *"
-                  value={formData.area}
-                  onChange={(e) => setFormData(prev => ({ ...prev, area: e.target.value }))}
-                  className={`w-full px-4 py-3 rounded-xl border ${errors.area ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none`}
-                />
+                <input type="text" placeholder="Area/Locality/Street *" value={formData.area} onChange={(e) => setFormData(prev => ({ ...prev, area: e.target.value }))}
+                  className={`w-full px-4 py-3 rounded-xl border ${errors.area ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 outline-none`} />
                 {errors.area && <p className="text-red-500 text-xs mt-1">{errors.area}</p>}
               </div>
-              
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <input
-                    type="text"
-                    placeholder="Pincode *"
-                    value={formData.pincode}
-                    onChange={(e) => handlePincodeChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                    className={`w-full px-4 py-3 rounded-xl border ${errors.pincode ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none`}
-                  />
+                  <input type="text" placeholder="Pincode *" value={formData.pincode} onChange={(e) => handlePincodeChange(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    className={`w-full px-4 py-3 rounded-xl border ${errors.pincode ? 'border-red-500' : 'border-gray-200'} focus:border-green-500 outline-none`} />
                   {errors.pincode && <p className="text-red-500 text-xs mt-1">{errors.pincode}</p>}
                 </div>
-                <input
-                  type="text"
-                  placeholder="State"
-                  value={formData.state}
-                  readOnly
-                  className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-600"
-                />
+                <input type="text" placeholder="State" value={formData.state} readOnly className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-gray-50 text-gray-600" />
               </div>
             </div>
           </div>
 
-          {/* Trust Badges */}
+          {/* Trust */}
           <div className="flex items-center justify-center gap-6 text-xs text-gray-500">
-            <span className="flex items-center gap-1"><Shield size={16} /> Secure Payment</span>
-            <span className="flex items-center gap-1"><Truck size={16} /> Free Shipping</span>
+            <span className="flex items-center gap-1"><Shield size={16} /> Secure</span>
+            <span className="flex items-center gap-1"><Truck size={16} /> Free Ship</span>
           </div>
 
           {/* Pay Button */}
-          <button
-            onClick={handlePayment}
-            disabled={loading}
-            className="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl shadow-lg disabled:opacity-50 text-lg"
-          >
+          <button onClick={handlePayment} disabled={loading}
+            className="w-full py-4 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl shadow-lg disabled:opacity-50 text-lg">
             {loading ? (
               <span className="flex items-center justify-center gap-2">
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                 Processing...
               </span>
             ) : (
-              paymentMethod === 'prepaid' 
-                ? `Pay ₹${getFinalPrepaidPrice()} Now` 
-                : `Pay ₹${COD_ADVANCE} Now (₹${getFinalCodPrice() - COD_ADVANCE} at delivery)`
+              paymentMethod === 'prepaid' ? `Pay ₹${getFinalPrepaidPrice()} Now` : `Pay ₹${COD_ADVANCE} Now (₹${getFinalCodPrice() - COD_ADVANCE} at delivery)`
             )}
           </button>
         </div>
@@ -450,24 +373,11 @@ function LandingProductPage() {
     );
   }
 
-  // PRODUCT VIEW
+  // PRODUCT VIEW - Matches main ProductPage exactly
   return (
     <div className="min-h-screen bg-white pb-24">
-      {/* Back to Landing */}
-      <div className="bg-white border-b sticky top-0 z-30 px-4 py-3">
-        <div className="max-w-lg mx-auto flex items-center gap-3">
-          <button onClick={() => navigate(getHeroUrl())} className="p-2 -ml-2 text-gray-600">
-            <ArrowLeft size={24} />
-          </button>
-          <div>
-            <h1 className="font-bold text-gray-900">{productName}</h1>
-            <p className="text-xs text-gray-500">{productTagline}</p>
-          </div>
-        </div>
-      </div>
-
       {/* Urgency Banner */}
-      <div className="bg-red-500 text-white py-2 px-4 flex items-center justify-center gap-2 text-sm">
+      <div className="bg-red-500 text-white py-2 px-4 flex items-center justify-center gap-3 text-sm">
         <Flame size={16} className="animate-pulse" />
         <span className="font-semibold">FLASH SALE:</span>
         <div className="flex gap-1 font-mono font-bold">
@@ -493,9 +403,7 @@ function LandingProductPage() {
       <div className="p-4">
         <div className="relative aspect-square max-w-sm mx-auto rounded-2xl overflow-hidden bg-gradient-to-b from-purple-50 to-white">
           <img src={PRODUCT_IMAGE} alt={productName} className="w-full h-full object-contain" />
-          <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">
-            53% OFF
-          </div>
+          <div className="absolute top-4 left-4 bg-red-500 text-white text-sm font-bold px-3 py-1 rounded-full">53% OFF</div>
         </div>
       </div>
 
@@ -503,14 +411,10 @@ function LandingProductPage() {
       <div className="px-4 space-y-4">
         {/* Title & Rating */}
         <div>
-          <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium mb-2">
-            {productTagline}
-          </span>
+          <span className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium mb-2">{productTagline}</span>
           <h1 className="text-2xl font-bold text-gray-900">{productName}</h1>
           <div className="flex items-center gap-2 mt-2">
-            <div className="flex">
-              {[1,2,3,4,5].map(i => <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />)}
-            </div>
+            <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />)}</div>
             <span className="text-sm text-gray-600">4.9 (2,847 reviews)</span>
           </div>
         </div>
@@ -523,10 +427,7 @@ function LandingProductPage() {
             <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">SAVE ₹{MRP - getFinalPrepaidPrice()}</span>
           </div>
           {getTotalDiscount() > 0 && (
-            <div className="flex items-center gap-2 text-green-700 text-sm">
-              <Gift size={16} />
-              <span>₹{getTotalDiscount()} discount applied!</span>
-            </div>
+            <div className="flex items-center gap-2 text-green-700 text-sm"><Gift size={16} /><span>₹{getTotalDiscount()} discount applied!</span></div>
           )}
           <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
             <span className="flex items-center gap-1"><Truck size={16} className="text-green-600" /> Free Delivery</span>
@@ -534,90 +435,173 @@ function LandingProductPage() {
           </div>
         </div>
 
-        {/* Key Benefits */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { icon: Sparkles, text: "0.3% Retinol", sub: "Anti-wrinkle" },
-            { icon: Shield, text: "Hyaluronic Acid", sub: "Deep hydration" },
-            { icon: Award, text: "5% Niacinamide", sub: "Brightening" },
-            { icon: ShieldCheck, text: "Vitamin E", sub: "Protection" },
-          ].map((item, idx) => (
-            <div key={idx} className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
-              <item.icon size={24} className="text-purple-600" />
-              <div>
-                <p className="font-semibold text-gray-900 text-sm">{item.text}</p>
-                <p className="text-xs text-gray-500">{item.sub}</p>
+        {/* Why #1 */}
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-5">
+          <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+            <Sparkles size={18} className="text-green-500" /> Why {productName} is #1
+          </h3>
+          <div className="space-y-2.5">
+            {(content.solution_benefits || ['Reduces wrinkles by 47% in 4 weeks', 'Boosts collagen production by 89%', 'Improves skin elasticity in 14 days', '10,000+ happy customers']).slice(0, 4).map((benefit, idx) => (
+              <div key={idx} className="check-item flex items-center gap-3">
+                <div className="check-icon w-5 h-5 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                  <Check size={12} className="text-white" />
+                </div>
+                <span className="text-gray-700 text-sm">{benefit}</span>
               </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Clinical Results */}
+        <div className="bg-gray-900 text-white rounded-2xl p-5">
+          <p className="text-xs text-green-400 font-medium mb-2">CLINICAL STUDY RESULTS</p>
+          <h3 className="text-lg font-bold mb-4">Proven Anti-Aging Results</h3>
+          <div className="grid grid-cols-3 gap-3 text-center">
+            <div><p className="text-2xl font-bold text-green-400">94%</p><p className="text-xs text-gray-400">Reduced Fine Lines</p></div>
+            <div><p className="text-2xl font-bold text-green-400">89%</p><p className="text-xs text-gray-400">Firmer Skin</p></div>
+            <div><p className="text-2xl font-bold text-green-400">96%</p><p className="text-xs text-gray-400">More Radiant</p></div>
+          </div>
+          <p className="text-xs text-gray-500 mt-3 text-center">*Based on 8-week clinical trial</p>
+        </div>
+
+        {/* Ingredients */}
+        <div className="mb-6">
+          <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+            <span className="w-8 h-8 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center">
+              <Sparkles size={16} className="text-white" />
+            </span>
+            Powerful Active Ingredients
+          </h3>
+          <div className="space-y-3">
+            {[
+              { name: '0.3% Retinol', benefit: 'Gold standard for wrinkle reduction', gradient: 'from-purple-500 to-indigo-600', bgGradient: 'from-purple-50 to-indigo-50' },
+              { name: 'Hyaluronic Acid', benefit: '72-hour deep hydration', gradient: 'from-blue-500 to-cyan-500', bgGradient: 'from-blue-50 to-cyan-50' },
+              { name: '5% Niacinamide', benefit: 'Brightens & evens skin tone', gradient: 'from-amber-500 to-orange-500', bgGradient: 'from-amber-50 to-orange-50' },
+              { name: 'Vitamin E Complex', benefit: 'Protects against damage', gradient: 'from-green-500 to-emerald-500', bgGradient: 'from-green-50 to-emerald-50' },
+            ].map((item, idx) => (
+              <div key={idx} className={`relative overflow-hidden rounded-2xl bg-gradient-to-r ${item.bgGradient} border border-gray-100`}>
+                <div className="p-4 flex items-start gap-3">
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center shadow-lg`}>
+                    <Sparkles size={20} className="text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-bold text-gray-900">{item.name}</p>
+                    <p className="text-sm text-gray-700">{item.benefit}</p>
+                  </div>
+                  <Check size={20} className="text-green-500" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dermatologist */}
+        <DermatologistSection />
+
+        {/* Trust Badges */}
+        <div className="grid grid-cols-3 gap-2 py-5 border-y border-gray-100">
+          {[
+            { icon: Truck, label: 'Free Delivery', sublabel: 'All India' },
+            { icon: ShieldCheck, label: '100% Genuine', sublabel: 'Authentic' },
+            { icon: Clock, label: 'Fast Shipping', sublabel: '2-3 Days' },
+          ].map((item, idx) => (
+            <div key={idx} className="text-center">
+              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-1">
+                <item.icon size={18} className="text-green-600" />
+              </div>
+              <p className="text-xs font-semibold text-gray-900">{item.label}</p>
+              <p className="text-[10px] text-gray-500">{item.sublabel}</p>
             </div>
           ))}
         </div>
 
-        {/* Product Description */}
-        <div className="bg-purple-50 rounded-2xl p-4">
-          <h3 className="font-semibold text-gray-900 mb-2">About This Product</h3>
-          <p className="text-gray-700 text-sm leading-relaxed">{productDescription}</p>
+        {/* Buy Button */}
+        <button onClick={() => { trackAction('cta_click', { button: 'buy_now', page: 'landing_product' }); trackInitiateCheckout(PREPAID_PRICE); setStep('checkout'); }}
+          className="btn-cg-primary w-full py-4 bg-green-500 text-white font-bold rounded-xl flex items-center justify-center gap-2">
+          Order Now ₹{getFinalPrepaidPrice()} <ChevronRight size={20} />
+        </button>
+
+        <p className="text-center text-xs text-gray-500">COD Available • Easy Returns • Secure Payment</p>
+
+        {/* Money Back */}
+        <div className="p-4 bg-green-50 border border-green-100 rounded-xl text-center">
+          <p className="text-green-700 font-semibold text-sm">100% Money Back Guarantee</p>
+          <p className="text-green-600 text-xs mt-1">Not satisfied? Full refund within 7 days</p>
         </div>
 
-        {/* FAQs */}
-        <div>
-          <h3 className="font-semibold text-gray-900 mb-3">Frequently Asked Questions</h3>
-          <div className="space-y-2">
-            {FAQ_DATA.map((faq, idx) => (
-              <div key={idx} className="border border-gray-200 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setExpandedFaq(expandedFaq === idx ? null : idx)}
-                  className="w-full px-4 py-3 flex items-center justify-between text-left"
-                >
-                  <span className="font-medium text-gray-900">{faq.q}</span>
-                  {expandedFaq === idx ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </button>
-                {expandedFaq === idx && (
-                  <div className="px-4 pb-3 text-gray-600 text-sm">{faq.a}</div>
-                )}
+        {/* Why Choose */}
+        <div className="p-5 bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl">
+          <h3 className="font-bold mb-4 text-center flex items-center justify-center gap-2 text-white">
+            <Award className="text-green-400" size={20} />
+            <span>Why 10,000+ Choose {productName.split(' ').slice(0, 3).join(' ')}</span>
+          </h3>
+          <div className="space-y-3">
+            {[
+              { icon: TrendingUp, title: 'Visible Results', desc: 'See younger skin in 2-4 weeks', stat: '94%' },
+              { icon: Shield, title: 'Safe Formula', desc: 'Dermatologist tested', stat: '100%' },
+              { icon: Award, title: 'Award Winning', desc: "India's #1 rated serum", stat: '#1' },
+            ].map((item, idx) => (
+              <div key={idx} className="flex items-center gap-3 bg-white/15 backdrop-blur p-3 rounded-xl">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-400 to-emerald-500 flex items-center justify-center flex-shrink-0 shadow-lg">
+                  <item.icon size={20} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-white text-sm">{item.title}</p>
+                  <p className="text-xs text-gray-200">{item.desc}</p>
+                </div>
+                <p className="text-xl font-bold text-green-400">{item.stat}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Reviews */}
-        <div>
-          <h3 className="font-semibold text-gray-900 mb-3">Customer Reviews</h3>
-          <div className="space-y-3">
-            {REVIEWS.map((review, idx) => (
-              <div key={idx} className="bg-gray-50 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center text-purple-700 font-bold">
-                    {review.name[0]}
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900 text-sm flex items-center gap-1">
-                      {review.name}
-                      {review.verified && <BadgeCheck size={14} className="text-green-500" />}
-                    </p>
-                    <p className="text-xs text-gray-500">{review.location}</p>
-                  </div>
-                  <div className="ml-auto flex">
-                    {[...Array(review.rating)].map((_, i) => <Star key={i} size={12} className="text-yellow-400 fill-yellow-400" />)}
-                  </div>
+        {/* Accordion */}
+        <div className="space-y-3">
+          <h3 className="font-bold text-gray-900 mb-2">Product Details</h3>
+          {[
+            { id: 'ingredients', title: 'Key Ingredients', content: productDescription || '0.3% Retinol, Niacinamide, Hyaluronic Acid, Vitamin E', highlight: '4-in-1' },
+            { id: 'usage', title: 'How to Use', content: 'Cleanse face, apply 2-3 drops to face and neck, follow with moisturizer. Use sunscreen during day.', highlight: 'Night Use' },
+            { id: 'clinical', title: 'Clinical Results', content: '94% saw improved hydration. 89% noticed reduced fine lines. 91% reported brighter skin.', highlight: '8-Week' },
+          ].map((section) => (
+            <div key={section.id} className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+              <button onClick={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
+                className="w-full p-4 flex items-center justify-between text-left hover:bg-gray-50">
+                <div className="flex items-center gap-3">
+                  <span className="text-sm font-semibold text-gray-900">{section.title}</span>
+                  <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">{section.highlight}</span>
                 </div>
-                <p className="text-gray-700 text-sm">"{review.text}"</p>
-              </div>
-            ))}
+                {expandedSection === section.id ? <ChevronUp size={18} className="text-green-500" /> : <ChevronDown size={18} className="text-gray-400" />}
+              </button>
+              {expandedSection === section.id && (
+                <div className="px-4 pb-4"><div className="p-3 bg-gray-50 rounded-xl"><p className="text-sm text-gray-600">{section.content}</p></div></div>
+              )}
+            </div>
+          ))}
+        </div>
+
+        {/* Final Trust */}
+        <div className="text-center pb-6">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            {[...Array(5)].map((_, i) => <Star key={i} size={16} className="text-yellow-400 fill-yellow-400" />)}
+          </div>
+          <p className="text-sm text-gray-600">Rated 4.8/5 by 2,340+ customers</p>
+          <div className="flex items-center justify-center gap-4 mt-3 text-xs text-gray-500">
+            <span>FDA Approved</span>
+            <span>Cruelty Free</span>
+            <span>Made in India</span>
           </div>
         </div>
       </div>
 
-      {/* Sticky Buy Button */}
+      {/* Sticky Bottom */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 border-green-500 p-3 z-50 shadow-2xl">
         <div className="max-w-lg mx-auto flex items-center gap-3">
           <div className="flex-1">
             <p className="font-bold text-gray-900 text-lg">₹{getFinalPrepaidPrice()} <span className="text-sm text-gray-400 line-through">₹{MRP}</span></p>
             <p className="text-xs text-green-600">Free Shipping • COD Available</p>
           </div>
-          <button
-            onClick={() => setStep('checkout')}
-            className="py-3 px-8 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl text-lg shadow-lg"
-          >
+          <button onClick={() => { trackInitiateCheckout(PREPAID_PRICE); setStep('checkout'); }}
+            className="py-3 px-8 bg-gradient-to-r from-green-500 to-green-600 text-white font-bold rounded-xl text-lg shadow-lg">
             Buy Now
           </button>
         </div>
