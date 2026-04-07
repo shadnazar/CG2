@@ -17,6 +17,29 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 - **Content**: AI-generated location and topic-based SEO blogs
 - **Security**: sessionStorage-based admin tokens, httpOnly cookies, SHA-256 hashing
 
+## Recent Updates (April 7, 2026)
+
+### Admin Panel Navigation & Auth Bug Fixes - COMPLETED ✅
+
+**Issues Fixed:**
+1. **Admin Sidebar Navigation Broken** - Clicking Landing Pages/Consultations/User Journey only reloaded Dashboard
+   - **Root Cause (Frontend):** AdminUserJourney.js referenced undefined variables `authLoading` and `isAuthenticated` without importing `useAdminAuth` hook
+   - **Root Cause (Backend):** `landing_pages.py` and `consultation.py` had their own `verify_admin` functions that only accepted plain password, not session tokens
+   - **Fix:** 
+     - Frontend: Properly imported and used `useAdminAuth(navigate)` hook in AdminUserJourney.js and AdminLandingPages.js
+     - Backend: Shared `admin_sessions` dict from server.py to landing_pages and consultation routes for proper session token validation
+
+2. **User Journey White Screen** - Page rendered blank
+   - **Root Cause:** Missing `useAdminAuth` hook import causing undefined variable errors in useEffect
+   - **Fix:** Added proper hook import and usage
+
+**Files Updated:**
+- `/app/frontend/src/pages/admin/AdminUserJourney.js` - Added useAdminAuth hook
+- `/app/frontend/src/pages/admin/AdminLandingPages.js` - Added useAdminAuth hook for consistency
+- `/app/backend/routes/landing_pages.py` - Added set_admin_sessions() and session token validation
+- `/app/backend/routes/consultation.py` - Added set_admin_sessions() and session token validation
+- `/app/backend/server.py` - Added calls to share admin_sessions with sub-routes
+
 ## Current Pricing (Updated April 1, 2026)
 - **Prepaid Price**: ₹699 (was ₹599)
 - **COD Price**: ₹799 (was ₹699)
