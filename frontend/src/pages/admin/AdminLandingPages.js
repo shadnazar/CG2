@@ -54,6 +54,13 @@ function AdminLandingPages() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProblems, setSelectedProblems] = useState([]);
 
+  // Auth check on mount
+  useEffect(() => {
+    if (!adminToken) {
+      navigate('/admin');
+    }
+  }, [adminToken, navigate]);
+
   const fetchData = useCallback(async () => {
     if (!adminToken) return;
     

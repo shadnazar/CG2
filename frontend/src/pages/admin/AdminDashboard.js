@@ -51,6 +51,13 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const adminToken = getAdminToken();
   
+  // Auth check - redirect to login if no token
+  useEffect(() => {
+    if (!adminToken) {
+      navigate('/admin');
+    }
+  }, [adminToken, navigate]);
+  
   // Order notification hook
   const { newOrders, clearNewOrders, testSound } = useOrderNotifications(
     adminToken, 
