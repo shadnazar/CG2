@@ -208,6 +208,13 @@ function LandingProductPage() {
               landing_page_slug: slug
             });
             
+            // Track order completion for conversion analytics
+            trackAction('order_complete', { 
+              order_id: order.data.order_id,
+              payment_method: paymentMethod,
+              amount: finalPrice,
+              from_landing: slug
+            });
             trackAction('landing_conversion', { slug, order_id: order.data.order_id });
             axios.post(`${API}/landing-pages/public/${slug}/convert`).catch(() => {});
             navigate(`/${slug}/order-success/${order.data.order_id}`);

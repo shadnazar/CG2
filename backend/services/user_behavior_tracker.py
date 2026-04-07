@@ -293,6 +293,12 @@ class UserBehaviorTracker:
                 "address_entered": True
             })
             
+            # Conversions (order_completed) from visitor_profiles
+            conversions = await self.db.visitor_profiles.count_documents({
+                "visitor_id": {"$in": all_visitor_ids},
+                "order_completed": True
+            })
+            
             # Average time spent (from profiles)
             pipeline = [
                 {"$match": {"visitor_id": {"$in": all_visitor_ids}}},
@@ -307,6 +313,8 @@ class UserBehaviorTracker:
                 "new_visitors": new_visitors,
                 "reached_checkout": reached_checkout,
                 "address_entered": address_entered,
+                "conversions": conversions,
+                "conversion_rate": round((conversions / max(total_visitors, 1)) * 100, 1),
                 "avg_time_spent": round(avg_time or 0, 1),
                 "checkout_rate": round((reached_checkout / max(total_visitors, 1)) * 100, 1),
                 "period_days": days,
@@ -328,6 +336,10 @@ class UserBehaviorTracker:
         address_query = {"$and": [query, {"address_entered": True}]}
         address_entered = await self.db.visitor_profiles.count_documents(address_query)
         
+        # Count conversions (order_completed)
+        conversion_query = {"$and": [query, {"order_completed": True}]}
+        conversions = await self.db.visitor_profiles.count_documents(conversion_query)
+        
         # Average time spent
         pipeline = [
             {"$match": query},
@@ -342,6 +354,8 @@ class UserBehaviorTracker:
             "new_visitors": total_visitors - returning_visitors,
             "reached_checkout": reached_checkout,
             "address_entered": address_entered,
+            "conversions": conversions,
+            "conversion_rate": round((conversions / max(total_visitors, 1)) * 100, 1),
             "avg_time_spent": round(avg_time or 0, 1),
             "checkout_rate": round((reached_checkout / max(total_visitors, 1)) * 100, 1),
             "period_days": days,

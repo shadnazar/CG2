@@ -462,6 +462,13 @@ function ProductPage() {
               referral_discount: referralDiscount || 0
             });
             
+            // Track order completion for conversion analytics
+            trackAction('order_complete', { 
+              order_id: order.data.order_id,
+              payment_method: paymentMethod,
+              amount: finalPrice
+            });
+            
             // REDIRECT to Order Success Page - Meta Pixel will fire Purchase there
             // This creates a real URL change that Meta can track properly
             navigate(`/order-success/${order.data.order_id}`);
