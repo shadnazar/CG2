@@ -10,7 +10,7 @@ import {
   BarChart3, ExternalLink, Loader2, Search, Filter, RefreshCw,
   Globe, TrendingUp, Zap, ChevronDown, ChevronUp, Link2
 } from 'lucide-react';
-import { getAdminToken } from '../../utils/adminAuth';
+import { useAdminAuth } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const APP_DOMAIN = 'https://celestaglow.com';
@@ -24,7 +24,7 @@ const CATEGORY_COLORS = {
   lifestyle: 'bg-green-100 text-green-700 border-green-200',
   preventive: 'bg-cyan-100 text-cyan-700 border-cyan-200',
   results: 'bg-orange-100 text-orange-700 border-orange-200',
-  psychological: 'bg-pink-100 text-pink-700 border-pink-200',
+  psychological: 'bg-pink-100 text-pink-700 border-pink-700',
 };
 
 const CATEGORY_NAMES = {
@@ -40,7 +40,7 @@ const CATEGORY_NAMES = {
 
 function AdminLandingPages() {
   const navigate = useNavigate();
-  const adminToken = getAdminToken();
+  const { adminToken, isLoading: authLoading, isAuthenticated } = useAdminAuth(navigate);
   
   const [landingPages, setLandingPages] = useState([]);
   const [predefinedProblems, setPredefinedProblems] = useState(null);
@@ -53,13 +53,6 @@ function AdminLandingPages() {
   const [copiedLink, setCopiedLink] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [selectedProblems, setSelectedProblems] = useState([]);
-
-  // Auth check on mount
-  useEffect(() => {
-    if (!adminToken) {
-      navigate('/admin');
-    }
-  }, [adminToken, navigate]);
 
   const fetchData = useCallback(async () => {
     if (!adminToken) return;
@@ -79,7 +72,7 @@ function AdminLandingPages() {
       setAnalytics(analyticsRes.data);
     } catch (err) {
       console.error('Failed to fetch data:', err);
-      if (err.response?.status === 403) {
+      if (err.response?.status === 403 || err.response?.status === 401) {
         navigate('/admin');
       }
     } finally {
@@ -88,8 +81,10 @@ function AdminLandingPages() {
   }, [adminToken, navigate]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (!authLoading && isAuthenticated) {
+      fetchData();
+    }
+  }, [fetchData, authLoading, isAuthenticated]);
 
   const handleBulkCreate = async (categories = null) => {
     setGenerating(true);

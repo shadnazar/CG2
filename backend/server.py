@@ -1138,6 +1138,12 @@ admin_sessions: dict = {}
 # Share admin_sessions with admin routes for token verification
 admin_routes.set_admin_sessions(admin_sessions)
 
+# Share admin_sessions with landing pages routes for token verification
+landing_page_routes.set_admin_sessions(admin_sessions)
+
+# Share admin_sessions with consultation routes for token verification
+consultation_routes.set_admin_sessions(admin_sessions)
+
 @api_router.post("/admin/login")
 async def admin_login(request: AdminLoginRequest, response: Response):
     """Admin login endpoint - sets httpOnly cookie for security"""

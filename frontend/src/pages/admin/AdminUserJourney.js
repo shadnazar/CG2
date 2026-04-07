@@ -9,13 +9,13 @@ import {
   AlertTriangle, Lightbulb, Phone, Mail, CreditCard, ArrowRight,
   LogOut, Scroll, Target, BarChart3
 } from 'lucide-react';
-import { getAdminToken } from '../../utils/adminAuth';
+import { useAdminAuth } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function AdminUserJourney() {
   const navigate = useNavigate();
-  const adminToken = getAdminToken();
+  const { adminToken, isLoading: authLoading, isAuthenticated } = useAdminAuth(navigate);
   
   const [visitors, setVisitors] = useState([]);
   const [stats, setStats] = useState(null);
@@ -69,7 +69,7 @@ function AdminUserJourney() {
     if (!authLoading && isAuthenticated) {
       fetchData();
     }
-  }, [fetchData, adminToken]);
+  }, [fetchData, authLoading, isAuthenticated]);
 
   const calculateFunnelData = useCallback((visitorsData) => {
     const total = visitorsData.length;

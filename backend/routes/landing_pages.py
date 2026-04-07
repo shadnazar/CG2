@@ -15,15 +15,47 @@ router = APIRouter(prefix="/landing-pages", tags=["Landing Pages"])
 landing_page_service: LandingPageService = None
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'celestaglow2024')
 
+# Reference to admin_sessions from server.py (will be set via set_admin_sessions)
+admin_sessions = {}
+
 def set_landing_page_service(service: LandingPageService):
     global landing_page_service
     landing_page_service = service
 
+def set_admin_sessions(sessions_dict):
+    """Set reference to admin_sessions from server.py"""
+    global admin_sessions
+    admin_sessions = sessions_dict
+
 def verify_admin(x_admin_token: str = Header(None)):
-    """Verify admin token"""
-    if not x_admin_token or x_admin_token != ADMIN_PASSWORD:
-        raise HTTPException(status_code=403, detail="Invalid admin token")
-    return True
+    """Verify admin token - checks session tokens and plain password"""
+    from datetime import datetime, timezone
+    import hashlib
+    
+    if not x_admin_token:
+        raise HTTPException(status_code=403, detail="Admin token required")
+    
+    # First check if it's a valid session token
+    if x_admin_token in admin_sessions:
+        session = admin_sessions[x_admin_token]
+        expires_at = datetime.fromisoformat(session["expires_at"].replace("Z", "+00:00"))
+        if datetime.now(timezone.utc) < expires_at:
+            return True
+        else:
+            # Remove expired session
+            del admin_sessions[x_admin_token]
+    
+    # Check if it's the plain password
+    if x_admin_token == ADMIN_PASSWORD:
+        return True
+    
+    # Check if it's the hashed password
+    ADMIN_PASSWORD_HASH = hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest()
+    token_hash = hashlib.sha256(x_admin_token.encode()).hexdigest()
+    if token_hash == ADMIN_PASSWORD_HASH:
+        return True
+    
+    raise HTTPException(status_code=403, detail="Invalid admin token")
 
 # ==================
 # PUBLIC ROUTES

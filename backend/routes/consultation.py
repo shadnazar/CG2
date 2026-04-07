@@ -396,15 +396,44 @@ async def track_consultation_event(event: EventTrack):
 
 # ==================== ADMIN ENDPOINTS ====================
 
+# Reference to admin_sessions from server.py (will be set via set_admin_sessions)
+admin_sessions = {}
+ADMIN_PASSWORD = "celestaglow2024"
+
+def set_admin_sessions(sessions_dict):
+    """Set reference to admin_sessions from server.py"""
+    global admin_sessions
+    admin_sessions = sessions_dict
+
 def verify_admin_token(x_admin_token: str = Header(None)):
-    """Verify admin token"""
+    """Verify admin token - checks session tokens and plain password"""
     import hashlib
-    ADMIN_PASSWORD_HASH = hashlib.sha256("celestaglow2024".encode()).hexdigest()
+    from datetime import datetime, timezone
+    
+    ADMIN_PASSWORD_HASH = hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest()
+    
     if not x_admin_token:
         raise HTTPException(status_code=401, detail="Admin token required")
-    if hashlib.sha256(x_admin_token.encode()).hexdigest() != ADMIN_PASSWORD_HASH:
-        raise HTTPException(status_code=403, detail="Invalid admin token")
-    return True
+    
+    # First check if it's a valid session token
+    if x_admin_token in admin_sessions:
+        session = admin_sessions[x_admin_token]
+        expires_at = datetime.fromisoformat(session["expires_at"].replace("Z", "+00:00"))
+        if datetime.now(timezone.utc) < expires_at:
+            return True
+        else:
+            # Remove expired session
+            del admin_sessions[x_admin_token]
+    
+    # Check if it's the plain password
+    if x_admin_token == ADMIN_PASSWORD:
+        return True
+    
+    # Check if it's the hashed password
+    if hashlib.sha256(x_admin_token.encode()).hexdigest() == ADMIN_PASSWORD_HASH:
+        return True
+    
+    raise HTTPException(status_code=403, detail="Invalid admin token")
 
 
 @router.get("/admin/all")
