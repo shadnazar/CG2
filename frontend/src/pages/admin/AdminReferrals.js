@@ -6,12 +6,13 @@ import {
   ArrowLeft, Copy, CheckCircle, RefreshCw, Gift,
   TrendingUp, Clock, ExternalLink, CreditCard, Eye, X
 } from 'lucide-react';
-import { getAdminToken } from '../../utils/adminAuth';
+import { useAdminAuth } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function AdminReferrals() {
   const navigate = useNavigate();
+  const { adminToken, isLoading: authLoading, isAuthenticated } = useAdminAuth(navigate);
   const [referrals, setReferrals] = useState([]);
   const [summary, setSummary] = useState({});
   const [loading, setLoading] = useState(true);
@@ -20,12 +21,12 @@ function AdminReferrals() {
   const [copiedCode, setCopiedCode] = useState(null);
   const [selectedReferral, setSelectedReferral] = useState(null);
   const [processingPayment, setProcessingPayment] = useState(null);
-  const adminToken = getAdminToken();
 
   useEffect(() => {
-    if (!adminToken) return;
-    fetchReferrals();
-  }, [adminToken]);
+    if (!authLoading && isAuthenticated && adminToken) {
+      fetchReferrals();
+    }
+  }, [authLoading, isAuthenticated, adminToken]);
 
   const fetchReferrals = async () => {
     setLoading(true);
