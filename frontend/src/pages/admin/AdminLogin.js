@@ -11,27 +11,16 @@ function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
 
-  // Check if already logged in
+  // Check if already logged in on mount
   useEffect(() => {
-    const checkToken = async () => {
-      const token = getAdminToken();
-      if (token) {
-        try {
-          // Verify token is still valid
-          await axios.get(`${API}/admin/analytics/live`, { headers: { 'X-Admin-Token': token } });
-          navigate('/admin/dashboard');
-          return;
-        } catch (err) {
-          // Token invalid, clear it
-          clearAdminToken();
-        }
-      }
-      setCheckingAuth(false);
-    };
-    checkToken();
+    const token = getAdminToken();
+    if (token) {
+      // Token exists, redirect to dashboard
+      // The dashboard will validate if token is still valid
+      navigate('/admin/dashboard', { replace: true });
+    }
   }, [navigate]);
 
   const handleSubmit = async (e) => {
@@ -43,9 +32,7 @@ function AdminLogin() {
       const res = await axios.post(`${API}/admin/login`, { password });
       if (res.data.success) {
         setAdminToken(res.data.token);
-        // Force a small delay to ensure token is stored
-        await new Promise(resolve => setTimeout(resolve, 100));
-        navigate('/admin/dashboard');
+        navigate('/admin/dashboard', { replace: true });
       }
     } catch (err) {
       setError('Invalid password. Please try again.');
@@ -53,15 +40,6 @@ function AdminLogin() {
       setLoading(false);
     }
   };
-
-  // Show loading while checking auth
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
