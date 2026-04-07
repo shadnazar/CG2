@@ -18,11 +18,19 @@ const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 
 const PREPAID_PRICE = 699;
 const COD_PRICE = 749;
-const COD_ADVANCE = 49;
+const COD_ADVANCE = 49; // Fixed regardless of quantity
 const MRP = 1499;
 const DISCOUNT_AMOUNT = 50;
 const EXIT_DISCOUNT_AMOUNT = 100;
 const REFERRAL_DISCOUNT = 50;
+
+// Bundle pricing - quantity based discounts (same as main page)
+const BUNDLE_PRICES = {
+  1: { prepaid: 699, cod: 749, mrp: 1499, label: '1 Bottle', savings: '53% OFF' },
+  2: { prepaid: 999, cod: 1049, mrp: 2998, label: '2 Bottles', savings: '67% OFF', badge: 'POPULAR' },
+  3: { prepaid: 1399, cod: 1449, mrp: 4497, label: '3 Bottles', savings: '69% OFF', badge: 'BEST VALUE' },
+  4: { prepaid: 1699, cod: 1749, mrp: 5996, label: '4 Bottles', savings: '72% OFF', badge: 'FAMILY PACK' }
+};
 
 const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_050b785b-bdfe-40d2-9088-b4c5bddc18c5/artifacts/f3fkk4tr_IMG_9115.png';
 
@@ -45,6 +53,9 @@ function LandingProductPage() {
   const [hasDiscount, setHasDiscount] = useState(false);
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(DISCOUNT_AMOUNT);
+  
+  // Quantity state for bundle pricing
+  const [quantity, setQuantity] = useState(1);
   
   // Referral state
   const [referralCode, setReferralCode] = useState(null);
@@ -117,17 +128,25 @@ function LandingProductPage() {
   };
 
   const getFinalPrepaidPrice = () => {
-    let price = PREPAID_PRICE;
+    let price = BUNDLE_PRICES[quantity]?.prepaid || PREPAID_PRICE;
     if (hasDiscount) price -= discountAmount;
     if (referralDiscount > 0) price -= referralDiscount;
     return Math.max(price, 0);
   };
 
   const getFinalCodPrice = () => {
-    let price = COD_PRICE;
+    let price = BUNDLE_PRICES[quantity]?.cod || COD_PRICE;
     if (hasDiscount) price -= discountAmount;
     if (referralDiscount > 0) price -= referralDiscount;
     return Math.max(price, 0);
+  };
+  
+  const getCodBalance = () => {
+    return getFinalCodPrice() - COD_ADVANCE;
+  };
+
+  const getCurrentMrp = () => {
+    return BUNDLE_PRICES[quantity]?.mrp || MRP;
   };
 
   const getTotalDiscount = () => {
@@ -202,6 +221,7 @@ function LandingProductPage() {
               ...formData,
               payment_method: paymentMethod === 'prepaid' ? 'Prepaid' : 'COD (Advance Paid)',
               amount: finalPrice,
+              quantity: quantity,
               discount_applied: discountApplied ? discountAmount : 0,
               referral_code: referralCode || null,
               referral_discount: referralDiscount || 0,
@@ -213,6 +233,7 @@ function LandingProductPage() {
               order_id: order.data.order_id,
               payment_method: paymentMethod,
               amount: finalPrice,
+              quantity: quantity,
               from_landing: slug
             });
             trackAction('landing_conversion', { slug, order_id: order.data.order_id });
@@ -278,10 +299,10 @@ function LandingProductPage() {
               <img src={PRODUCT_IMAGE} alt={productName} className="w-20 h-20 object-contain rounded-xl bg-gray-50" />
               <div className="flex-1">
                 <h3 className="font-semibold text-gray-900">{productName}</h3>
-                <p className="text-sm text-gray-500">{productTagline}</p>
+                <p className="text-sm text-gray-500">30ml × {quantity} • {productTagline}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-lg font-bold text-green-600">₹{paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice()}</span>
-                  <span className="text-sm text-gray-400 line-through">₹{MRP}</span>
+                  <span className="text-lg font-bold text-green-600">₹{paymentMethod === 'prepaid' ? getFinalPrepaidPrice().toLocaleString('en-IN') : getFinalCodPrice().toLocaleString('en-IN')}</span>
+                  <span className="text-sm text-gray-400 line-through">₹{getCurrentMrp().toLocaleString('en-IN')}</span>
                 </div>
               </div>
             </div>
@@ -293,6 +314,60 @@ function LandingProductPage() {
             )}
           </div>
 
+          {/* Bundle Quantity Selector */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm">
+            <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+              <Gift className="text-green-500" size={18} />
+              Select Quantity & Save More
+            </h3>
+            <div className="grid grid-cols-2 gap-3">
+              {Object.entries(BUNDLE_PRICES).map(([qty, bundle]) => (
+                <button
+                  key={qty}
+                  onClick={() => setQuantity(parseInt(qty))}
+                  className={`relative p-3 rounded-xl border-2 transition-all ${
+                    quantity === parseInt(qty) 
+                      ? 'border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 shadow-md' 
+                      : 'border-gray-200 bg-white hover:border-green-300'
+                  }`}
+                >
+                  {bundle.badge && (
+                    <span className={`absolute -top-2 -right-2 text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                      bundle.badge === 'BEST VALUE' ? 'bg-green-500 text-white' :
+                      bundle.badge === 'POPULAR' ? 'bg-orange-500 text-white' :
+                      'bg-purple-500 text-white'
+                    }`}>
+                      {bundle.badge}
+                    </span>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                      quantity === parseInt(qty) ? 'border-green-500 bg-green-500' : 'border-gray-300'
+                    }`}>
+                      {quantity === parseInt(qty) && <Check size={12} className="text-white" />}
+                    </div>
+                    <span className="font-semibold text-gray-900 text-sm">{bundle.label}</span>
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-lg font-bold text-green-600">₹{bundle.prepaid}</span>
+                    <span className="text-xs text-gray-400 line-through">₹{bundle.mrp}</span>
+                  </div>
+                  <div className="mt-1 text-xs font-semibold text-green-600 bg-green-100 rounded px-2 py-0.5 inline-block">
+                    {bundle.savings}
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            {/* COD Note */}
+            <div className="mt-3 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-700 flex items-center gap-1.5">
+                <Truck size={14} />
+                <span><strong>COD:</strong> Pay only ₹49 now. Balance ₹{getCodBalance().toLocaleString('en-IN')} at delivery.</span>
+              </p>
+            </div>
+          </div>
+
           {/* Payment Method */}
           <div className="bg-white rounded-2xl p-4 shadow-sm">
             <h3 className="font-semibold text-gray-900 mb-3">Payment Method</h3>
@@ -300,8 +375,8 @@ function LandingProductPage() {
               <label className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'prepaid' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
                 <input type="radio" name="payment" checked={paymentMethod === 'prepaid'} onChange={() => setPaymentMethod('prepaid')} className="sr-only" />
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900">Pay Online ₹{getFinalPrepaidPrice()}</p>
-                  <p className="text-xs text-gray-500">UPI, Cards, Net Banking</p>
+                  <p className="font-semibold text-gray-900">Pay Online <span className="line-through text-gray-400">₹{getCurrentMrp().toLocaleString('en-IN')}</span> ₹{getFinalPrepaidPrice().toLocaleString('en-IN')}</p>
+                  <p className="text-xs text-green-600">💰 Save {BUNDLE_PRICES[quantity]?.savings || '53% OFF'}</p>
                 </div>
                 {paymentMethod === 'prepaid' && <Check className="text-green-500" size={24} />}
               </label>
@@ -309,8 +384,8 @@ function LandingProductPage() {
               <label className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
                 <input type="radio" name="payment" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="sr-only" />
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900">Cash on Delivery ₹{getFinalCodPrice()}</p>
-                  <p className="text-xs text-gray-500">Pay ₹{COD_ADVANCE} now, ₹{getFinalCodPrice() - COD_ADVANCE} at delivery</p>
+                  <p className="font-semibold text-gray-900">Cash on Delivery ₹{getFinalCodPrice().toLocaleString('en-IN')}</p>
+                  <p className="text-xs text-gray-500">Pay ₹{COD_ADVANCE} now, ₹{getCodBalance().toLocaleString('en-IN')} at delivery</p>
                 </div>
                 {paymentMethod === 'cod' && <Check className="text-green-500" size={24} />}
               </label>

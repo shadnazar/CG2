@@ -11,12 +11,20 @@ const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 
 const PREPAID_PRICE = 699;
 const COD_PRICE = 749;  // Total COD price
-const COD_ADVANCE = 49; // Booking amount for COD
+const COD_ADVANCE = 49; // Booking amount for COD - FIXED regardless of quantity
 const COD_BALANCE = 700; // Balance to pay at delivery (749 - 49)
 const MRP = 1499;
 const DISCOUNT_AMOUNT = 50;
 const EXIT_DISCOUNT_AMOUNT = 100;
 const REFERRAL_DISCOUNT = 50; // Referred customer gets ₹50 off
+
+// Bundle pricing - quantity based discounts
+const BUNDLE_PRICES = {
+  1: { prepaid: 699, cod: 749, mrp: 1499, label: '1 Bottle', savings: '53% OFF' },
+  2: { prepaid: 999, cod: 1049, mrp: 2998, label: '2 Bottles', savings: '67% OFF', badge: 'POPULAR' },
+  3: { prepaid: 1399, cod: 1449, mrp: 4497, label: '3 Bottles', savings: '69% OFF', badge: 'BEST VALUE' },
+  4: { prepaid: 1699, cod: 1749, mrp: 5996, label: '4 Bottles', savings: '72% OFF', badge: 'FAMILY PACK' }
+};
 
 // User uploaded bottle product image - with packaging
 const PRODUCT_IMAGE = 'https://customer-assets.emergentagent.com/job_050b785b-bdfe-40d2-9088-b4c5bddc18c5/artifacts/f3fkk4tr_IMG_9115.png';
@@ -43,6 +51,9 @@ function ProductPage() {
   const [hasDiscount, setHasDiscount] = useState(false);
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(DISCOUNT_AMOUNT);
+  
+  // Quantity state for bundle pricing
+  const [quantity, setQuantity] = useState(1);
   
   // Referral state
   const [referralCode, setReferralCode] = useState(null);
@@ -270,13 +281,13 @@ function ProductPage() {
     }
   };
 
-  // Calculate prices with discount - ALWAYS apply if has discount
+  // Calculate prices with discount - Uses bundle pricing based on quantity
   const getFinalPrepaidPrice = () => {
-    let price = PREPAID_PRICE;
+    let price = BUNDLE_PRICES[quantity]?.prepaid || PREPAID_PRICE;
     if (hasDiscount) {
       price -= discountAmount;
     }
-    // Apply referral discount (₹100)
+    // Apply referral discount (₹50)
     if (referralDiscount > 0) {
       price -= referralDiscount;
     }
@@ -284,15 +295,25 @@ function ProductPage() {
   };
 
   const getFinalCodPrice = () => {
-    let price = COD_PRICE;
+    let price = BUNDLE_PRICES[quantity]?.cod || COD_PRICE;
     if (hasDiscount) {
       price -= discountAmount;
     }
-    // Apply referral discount (₹100)
+    // Apply referral discount (₹50)
     if (referralDiscount > 0) {
       price -= referralDiscount;
     }
     return Math.max(price, 0);
+  };
+  
+  // Get COD balance to pay at delivery (total - advance)
+  const getCodBalance = () => {
+    return getFinalCodPrice() - COD_ADVANCE;
+  };
+
+  // Get MRP for current quantity
+  const getCurrentMrp = () => {
+    return BUNDLE_PRICES[quantity]?.mrp || MRP;
   };
 
   // Get total discount amount for display
@@ -457,6 +478,7 @@ function ProductPage() {
               ...formData,
               payment_method: paymentMethod === 'prepaid' ? 'Prepaid' : 'COD (Advance Paid)',
               amount: finalPrice,
+              quantity: quantity,
               discount_applied: discountApplied ? discountAmount : 0,
               referral_code: referralCode || null,
               referral_discount: referralDiscount || 0
@@ -466,7 +488,8 @@ function ProductPage() {
             trackAction('order_complete', { 
               order_id: order.data.order_id,
               payment_method: paymentMethod,
-              amount: finalPrice
+              amount: finalPrice,
+              quantity: quantity
             });
             
             // REDIRECT to Order Success Page - Meta Pixel will fire Purchase there
@@ -1093,11 +1116,11 @@ function ProductPage() {
             <img src={PRODUCT_IMAGE} alt="Product" className="w-14 h-14 object-contain" />
             <div className="flex-1">
               <p className="font-semibold text-gray-900 text-sm">Super Anti-Aging Serum</p>
-              <p className="text-gray-500 text-xs">30ml • 4-in-1 Formula</p>
+              <p className="text-gray-500 text-xs">30ml × {quantity} • 4-in-1 Formula</p>
             </div>
             <div className="text-right">
-              {discountApplied && (
-                <p className="text-xs text-gray-400 line-through">₹{paymentMethod === 'prepaid' ? PREPAID_PRICE : COD_PRICE}</p>
+              {(discountApplied || quantity > 1) && (
+                <p className="text-xs text-gray-400 line-through">₹{getCurrentMrp()}</p>
               )}
               <p className="font-bold text-green-600">₹{paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice()}</p>
             </div>
@@ -1143,22 +1166,85 @@ function ProductPage() {
             </div>
           )}
 
+          {/* Bundle Quantity Selector - Matching Brand Theme */}
+          <div className="mb-5">
+            <p className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+              <Gift className="text-green-500" size={18} />
+              Select Quantity & Save More
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {Object.entries(BUNDLE_PRICES).map(([qty, bundle]) => (
+                <button
+                  key={qty}
+                  onClick={() => setQuantity(parseInt(qty))}
+                  className={`relative p-3 rounded-xl border-2 transition-all ${
+                    quantity === parseInt(qty) 
+                      ? 'border-green-500 bg-gradient-to-br from-green-50 to-emerald-50 shadow-md' 
+                      : 'border-gray-200 bg-white hover:border-green-300'
+                  }`}
+                  data-testid={`quantity-${qty}`}
+                >
+                  {bundle.badge && (
+                    <span className={`absolute -top-2 -right-2 text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                      bundle.badge === 'BEST VALUE' ? 'bg-green-500 text-white' :
+                      bundle.badge === 'POPULAR' ? 'bg-orange-500 text-white' :
+                      'bg-purple-500 text-white'
+                    }`}>
+                      {bundle.badge}
+                    </span>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                        quantity === parseInt(qty) ? 'border-green-500 bg-green-500' : 'border-gray-300'
+                      }`}>
+                        {quantity === parseInt(qty) && <Check size={12} className="text-white" />}
+                      </div>
+                      <span className="font-semibold text-gray-900">{bundle.label}</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 flex items-baseline gap-2">
+                    <span className="text-lg font-bold text-green-600">₹{bundle.prepaid}</span>
+                    <span className="text-xs text-gray-400 line-through">₹{bundle.mrp}</span>
+                  </div>
+                  <div className="mt-1 text-xs font-semibold text-green-600 bg-green-100 rounded px-2 py-0.5 inline-block">
+                    {bundle.savings}
+                  </div>
+                </button>
+              ))}
+            </div>
+            
+            {/* COD Note */}
+            <div className="mt-3 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-xs text-blue-700 flex items-center gap-1.5">
+                <Truck size={14} />
+                <span><strong>COD:</strong> Pay only ₹49 now. Balance ₹{getCodBalance()} at delivery.</span>
+              </p>
+            </div>
+          </div>
+
           {/* Savings Summary Box */}
           <div className="mb-5 p-4 bg-yellow-50 border border-yellow-200 rounded-xl">
             <p className="font-bold text-gray-900 mb-2">💰 Your Savings Today</p>
             <div className="space-y-1 text-sm">
               <div className="flex justify-between">
-                <span className="text-gray-600">MRP</span>
-                <span className="text-gray-400 line-through">₹{MRP}</span>
+                <span className="text-gray-600">MRP ({quantity} {quantity === 1 ? 'bottle' : 'bottles'})</span>
+                <span className="text-gray-400 line-through">₹{getCurrentMrp()}</span>
               </div>
               <div className="flex justify-between text-green-600">
-                <span>Festive Discount (53%)</span>
-                <span>-₹{MRP - PREPAID_PRICE}</span>
+                <span>Bundle Discount</span>
+                <span>-₹{getCurrentMrp() - (BUNDLE_PRICES[quantity]?.prepaid || PREPAID_PRICE)}</span>
               </div>
               {hasDiscount && (
                 <div className="flex justify-between text-green-600">
                   <span>Welcome Offer</span>
-                  <span>-₹{DISCOUNT_AMOUNT}</span>
+                  <span>-₹{discountAmount}</span>
+                </div>
+              )}
+              {referralDiscount > 0 && (
+                <div className="flex justify-between text-purple-600">
+                  <span>Referral Bonus</span>
+                  <span>-₹{referralDiscount}</span>
                 </div>
               )}
               <div className="flex justify-between text-green-600">
@@ -1167,7 +1253,7 @@ function ProductPage() {
               </div>
               <div className="border-t border-yellow-300 pt-2 mt-2 flex justify-between font-bold">
                 <span className="text-gray-900">Total Savings</span>
-                <span className="text-green-600">₹{MRP - getFinalPrepaidPrice()} ({Math.round((1 - getFinalPrepaidPrice()/MRP) * 100)}% OFF)</span>
+                <span className="text-green-600">₹{getCurrentMrp() - getFinalPrepaidPrice()} ({Math.round((1 - getFinalPrepaidPrice()/getCurrentMrp()) * 100)}% OFF)</span>
               </div>
             </div>
           </div>
@@ -1308,12 +1394,12 @@ function ProductPage() {
             {/* Price Breakdown */}
             <div className="mb-4 p-3 bg-gray-50 rounded-xl text-sm space-y-1.5">
               <div className="flex justify-between text-gray-600">
-                <span>Product Price</span>
-                <span className="line-through text-gray-400">₹1,499</span>
+                <span>MRP ({quantity} {quantity === 1 ? 'bottle' : 'bottles'})</span>
+                <span className="line-through text-gray-400">₹{getCurrentMrp().toLocaleString('en-IN')}</span>
               </div>
               <div className="flex justify-between text-green-600">
-                <span>Sale Discount</span>
-                <span>- ₹{1499 - PREPAID_PRICE}</span>
+                <span>Bundle Discount</span>
+                <span>- ₹{(getCurrentMrp() - (BUNDLE_PRICES[quantity]?.prepaid || PREPAID_PRICE)).toLocaleString('en-IN')}</span>
               </div>
               {discountApplied && (
                 <div className="flex justify-between text-green-600">
@@ -1334,11 +1420,14 @@ function ProductPage() {
               <div className="h-px bg-gray-200 my-2"></div>
               <div className="flex justify-between font-bold text-gray-900 text-base">
                 <span>Total</span>
-                <span className="text-green-600">₹{paymentMethod === 'prepaid' ? getFinalPrepaidPrice() : getFinalCodPrice()}</span>
+                <span className="text-green-600">₹{paymentMethod === 'prepaid' ? getFinalPrepaidPrice().toLocaleString('en-IN') : getFinalCodPrice().toLocaleString('en-IN')}</span>
               </div>
-              {getTotalDiscount() > 0 && (
-                <p className="text-xs text-green-600 text-center mt-1">You're saving ₹{MRP - getFinalPrepaidPrice()} on this order!</p>
+              {paymentMethod === 'cod' && (
+                <div className="text-xs text-blue-600 text-center mt-1 bg-blue-50 p-2 rounded-lg">
+                  💳 Pay ₹49 now → Balance ₹{getCodBalance().toLocaleString('en-IN')} at delivery
+                </div>
               )}
+              <p className="text-xs text-green-600 text-center mt-1">You're saving ₹{(getCurrentMrp() - getFinalPrepaidPrice()).toLocaleString('en-IN')} on this order!</p>
             </div>
             
             {/* Referral Earnings Social Proof - Dynamic based on days */}
@@ -1427,9 +1516,9 @@ function ProductPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900 text-sm">
-                    Pay Online  {discountApplied && <span className="line-through text-gray-400">₹{PREPAID_PRICE}</span>} ₹{getFinalPrepaidPrice()}
+                    Pay Online  <span className="line-through text-gray-400">₹{getCurrentMrp().toLocaleString('en-IN')}</span> ₹{getFinalPrepaidPrice().toLocaleString('en-IN')}
                   </p>
-                  <p className="text-green-600 text-xs">💰 {discountApplied ? 'Extra ₹50 discount applied!' : `Save ₹${COD_PRICE - PREPAID_PRICE} + Fast Delivery`}</p>
+                  <p className="text-green-600 text-xs">💰 {discountApplied ? 'Extra ₹50 discount applied!' : `Save up to ${BUNDLE_PRICES[quantity]?.savings || '53% OFF'}`}</p>
                 </div>
                 <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded">BEST</span>
               </label>
@@ -1450,11 +1539,11 @@ function ProductPage() {
                 </div>
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900 text-sm">
-                    Cash on Delivery  {discountApplied && <span className="line-through text-gray-400">₹{COD_PRICE}</span>} ₹{getFinalCodPrice()}
+                    Cash on Delivery  <span className="line-through text-gray-400">₹{getCurrentMrp().toLocaleString('en-IN')}</span> ₹{getFinalCodPrice().toLocaleString('en-IN')}
                   </p>
-                  <p className="text-gray-500 text-xs">Pay ₹{COD_ADVANCE} now + ₹{getFinalCodPrice() - COD_ADVANCE} on delivery</p>
+                  <p className="text-gray-500 text-xs">Pay ₹{COD_ADVANCE} now + ₹{getCodBalance().toLocaleString('en-IN')} on delivery</p>
                 </div>
-                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">50% OFF</span>
+                <span className="text-xs bg-gray-200 text-gray-600 px-2 py-0.5 rounded">{BUNDLE_PRICES[quantity]?.savings || '50% OFF'}</span>
               </label>
             </div>
           </div>
