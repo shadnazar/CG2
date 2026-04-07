@@ -18,12 +18,9 @@ function AdminLocations() {
   const adminToken = getAdminToken();
 
   useEffect(() => {
-    if (!adminToken) {
-      navigate('/admin');
-      return;
-    }
+    if (!adminToken) return;
     fetchLocations();
-  }, [adminToken, navigate]);
+  }, [adminToken]);
 
   const fetchLocations = async () => {
     try {

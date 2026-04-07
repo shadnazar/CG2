@@ -13,12 +13,13 @@ import {
   Phone,
   AlertCircle
 } from 'lucide-react';
-import { getAdminToken } from '../../utils/adminAuth';
+import { useAdminAuth } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
 function AdminWhatsApp() {
   const navigate = useNavigate();
+  const { adminToken, isLoading: authLoading, isAuthenticated } = useAdminAuth(navigate);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -29,24 +30,20 @@ function AdminWhatsApp() {
   const [testPhone, setTestPhone] = useState('');
   const [sendStatus, setSendStatus] = useState(null);
 
-  const token = getAdminToken();
-
   useEffect(() => {
-    if (!token) {
-      navigate('/admin');
-      return;
-    }
+    if (authLoading || !isAuthenticated) return;
     fetchData();
-  }, [token, navigate]);
+  }, [authLoading, isAuthenticated]);
 
   const fetchData = async () => {
+    if (!adminToken) return;
     setLoading(true);
     try {
       const [statsRes, logsRes, ordersRes, consultRes] = await Promise.all([
-        axios.get(`${API}/admin/whatsapp/stats`, { headers: { 'x-admin-token': token } }),
-        axios.get(`${API}/admin/whatsapp/logs?limit=20`, { headers: { 'x-admin-token': token } }),
+        axios.get(`${API}/admin/whatsapp/stats`, { headers: { 'x-admin-token': adminToken } }),
+        axios.get(`${API}/admin/whatsapp/logs?limit=20`, { headers: { 'x-admin-token': adminToken } }),
         axios.get(`${API}/orders`),
-        axios.get(`${API}/consultations`, { headers: { 'x-admin-token': token } }).catch(() => ({ data: [] }))
+        axios.get(`${API}/consultations`, { headers: { 'x-admin-token': adminToken } }).catch(() => ({ data: [] }))
       ]);
       
       setStats(statsRes.data);
@@ -94,7 +91,7 @@ function AdminWhatsApp() {
       const response = await axios.post(
         `${API}/admin/whatsapp/send`,
         { phone: sendForm.phone, message: sendForm.message },
-        { headers: { 'x-admin-token': token } }
+        { headers: { 'x-admin-token': adminToken } }
       );
       
       if (response.data.success) {
@@ -124,7 +121,7 @@ function AdminWhatsApp() {
       const response = await axios.post(
         `${API}/admin/whatsapp/test?phone=${encodeURIComponent(testPhone)}`,
         {},
-        { headers: { 'x-admin-token': token } }
+        { headers: { 'x-admin-token': adminToken } }
       );
       
       if (response.data.success) {
@@ -149,7 +146,7 @@ function AdminWhatsApp() {
       await axios.post(
         `${API}/admin/whatsapp/notify-order`,
         { order_id: orderId },
-        { headers: { 'x-admin-token': token } }
+        { headers: { 'x-admin-token': adminToken } }
       );
       alert('Order notification sent via WhatsApp!');
       fetchData();
@@ -165,7 +162,7 @@ function AdminWhatsApp() {
       await axios.post(
         `${API}/admin/whatsapp/notify-consultation`,
         { consultation_id: consultationId },
-        { headers: { 'x-admin-token': token } }
+        { headers: { 'x-admin-token': adminToken } }
       );
       alert('Consultation results sent via WhatsApp!');
       fetchData();

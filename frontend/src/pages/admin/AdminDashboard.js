@@ -58,10 +58,7 @@ function AdminDashboard() {
   );
 
   const fetchAllData = useCallback(async () => {
-    if (!adminToken) {
-      navigate('/admin');
-      return;
-    }
+    if (!adminToken) return;
 
     try {
       const headers = { 'X-Admin-Token': adminToken };
@@ -112,8 +109,10 @@ function AdminDashboard() {
   }, [adminToken]);
 
   useEffect(() => {
-    fetchAllData();
-    fetchDayWiseData(selectedDays);
+    if (adminToken) {
+      fetchAllData();
+      fetchDayWiseData(selectedDays);
+    }
     
     // Refresh live data every 30 seconds
     const interval = setInterval(() => {

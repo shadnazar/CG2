@@ -23,12 +23,9 @@ function AdminReferrals() {
   const adminToken = getAdminToken();
 
   useEffect(() => {
-    if (!adminToken) {
-      navigate('/admin');
-      return;
-    }
+    if (!adminToken) return;
     fetchReferrals();
-  }, [adminToken, navigate]);
+  }, [adminToken]);
 
   const fetchReferrals = async () => {
     setLoading(true);

@@ -22,12 +22,9 @@ function AdminOrders() {
   const adminToken = getAdminToken();
 
   useEffect(() => {
-    if (!adminToken) {
-      navigate('/admin');
-      return;
-    }
+    if (!adminToken) return;
     fetchOrders();
-  }, [adminToken, navigate]);
+  }, [adminToken]);
 
   const fetchOrders = async () => {
     try {

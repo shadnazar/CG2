@@ -2,50 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { getAdminToken, setAdminToken, clearAdminToken } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
-
-// Use sessionStorage for admin tokens (cleared when browser closes)
-// This is more secure than localStorage for admin sessions
-// Also check localStorage for backward compatibility during migration
-const getAdminToken = () => {
-  const sessionToken = sessionStorage.getItem('adminToken');
-  if (sessionToken) return sessionToken;
-  
-  // Backward compatibility: check localStorage and migrate
-  const localToken = localStorage.getItem('adminToken');
-  if (localToken) {
-    sessionStorage.setItem('adminToken', localToken);
-    localStorage.removeItem('adminToken'); // Clean up old storage
-    return localToken;
-  }
-  return null;
-};
-const setAdminToken = (token) => {
-  sessionStorage.setItem('adminToken', token);
-  localStorage.removeItem('adminToken'); // Ensure no duplicate
-};
-const clearAdminToken = () => {
-  sessionStorage.removeItem('adminToken');
-  localStorage.removeItem('adminToken'); // Clean both
-};
 
 function AdminLogin() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const navigate = useNavigate();
 
   // Check if already logged in
   useEffect(() => {
-    const token = getAdminToken();
-    if (token) {
-      // Verify token is still valid
-      axios.get(`${API}/admin/analytics/live`, { headers: { 'X-Admin-Token': token } })
-        .then(() => navigate('/admin/dashboard'))
-        .catch(() => clearAdminToken());
-    }
+    const checkToken = async () => {
+      const token = getAdminToken();
+      if (token) {
+        try {
+          // Verify token is still valid
+          await axios.get(`${API}/admin/analytics/live`, { headers: { 'X-Admin-Token': token } });
+          navigate('/admin/dashboard');
+          return;
+        } catch (err) {
+          // Token invalid, clear it
+          clearAdminToken();
+        }
+      }
+      setCheckingAuth(false);
+    };
+    checkToken();
   }, [navigate]);
 
   const handleSubmit = async (e) => {
@@ -57,6 +43,8 @@ function AdminLogin() {
       const res = await axios.post(`${API}/admin/login`, { password });
       if (res.data.success) {
         setAdminToken(res.data.token);
+        // Force a small delay to ensure token is stored
+        await new Promise(resolve => setTimeout(resolve, 100));
         navigate('/admin/dashboard');
       }
     } catch (err) {
@@ -65,6 +53,15 @@ function AdminLogin() {
       setLoading(false);
     }
   };
+
+  // Show loading while checking auth
+  if (checkingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">

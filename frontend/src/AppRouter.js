@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
 import { TrackingProvider } from './providers/TrackingProvider';
 import PublicLayout from './layouts/PublicLayout';
+import AdminAuthWrapper from './components/AdminAuthWrapper';
 
 // Eagerly loaded pages (critical for first paint)
 import Homepage from './pages/Homepage';
@@ -74,20 +75,20 @@ function App() {
       <Routes>
         {/* Admin Routes - No tracking provider, lazy loaded */}
         <Route path="/admin" element={<AdminLayout><AdminLogin /></AdminLayout>} />
-        <Route path="/admin/dashboard" element={<AdminLayout><AdminDashboard /></AdminLayout>} />
-        <Route path="/admin/blogs" element={<AdminLayout><AdminBlogs /></AdminLayout>} />
-        <Route path="/admin/blogs/new" element={<AdminLayout><AdminBlogEditor /></AdminLayout>} />
-        <Route path="/admin/blogs/edit/:id" element={<AdminLayout><AdminBlogEditor /></AdminLayout>} />
-        <Route path="/admin/locations" element={<AdminLayout><AdminLocations /></AdminLayout>} />
-        <Route path="/admin/locations/new" element={<AdminLayout><AdminLocationEditor /></AdminLayout>} />
-        <Route path="/admin/locations/edit/:id" element={<AdminLayout><AdminLocationEditor /></AdminLayout>} />
-        <Route path="/admin/orders" element={<AdminLayout><AdminOrders /></AdminLayout>} />
-        <Route path="/admin/ai-studio" element={<AdminLayout><AdminAIStudio /></AdminLayout>} />
-        <Route path="/admin/consultations" element={<AdminLayout><AdminConsultations /></AdminLayout>} />
-        <Route path="/admin/user-journey" element={<AdminLayout><AdminUserJourney /></AdminLayout>} />
-        <Route path="/admin/whatsapp" element={<AdminLayout><AdminWhatsApp /></AdminLayout>} />
-        <Route path="/admin/referrals" element={<AdminLayout><AdminReferrals /></AdminLayout>} />
-        <Route path="/admin/landing-pages" element={<AdminLayout><AdminLandingPages /></AdminLayout>} />
+        <Route path="/admin/dashboard" element={<AdminAuthWrapper><AdminLayout><AdminDashboard /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/blogs" element={<AdminAuthWrapper><AdminLayout><AdminBlogs /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/blogs/new" element={<AdminAuthWrapper><AdminLayout><AdminBlogEditor /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/blogs/edit/:id" element={<AdminAuthWrapper><AdminLayout><AdminBlogEditor /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/locations" element={<AdminAuthWrapper><AdminLayout><AdminLocations /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/locations/new" element={<AdminAuthWrapper><AdminLayout><AdminLocationEditor /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/locations/edit/:id" element={<AdminAuthWrapper><AdminLayout><AdminLocationEditor /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/orders" element={<AdminAuthWrapper><AdminLayout><AdminOrders /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/ai-studio" element={<AdminAuthWrapper><AdminLayout><AdminAIStudio /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/consultations" element={<AdminAuthWrapper><AdminLayout><AdminConsultations /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/user-journey" element={<AdminAuthWrapper><AdminLayout><AdminUserJourney /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/whatsapp" element={<AdminAuthWrapper><AdminLayout><AdminWhatsApp /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/referrals" element={<AdminAuthWrapper><AdminLayout><AdminReferrals /></AdminLayout></AdminAuthWrapper>} />
+        <Route path="/admin/landing-pages" element={<AdminAuthWrapper><AdminLayout><AdminLandingPages /></AdminLayout></AdminAuthWrapper>} />
         
         {/* Public Routes - With tracking provider */}
         <Route path="/*" element={

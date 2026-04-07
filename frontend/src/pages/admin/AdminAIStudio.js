@@ -82,10 +82,8 @@ function AdminAIStudio() {
   }, [adminToken]);
 
   useEffect(() => {
-    if (!adminToken) {
-      navigate('/admin');
-      return;
-    }
+    if (!adminToken) return;
+    
     fetchGenerationHistory();
     fetchCronStatus();
     fetchTrendingStats();

@@ -55,10 +55,7 @@ function AdminLandingPages() {
   const [selectedProblems, setSelectedProblems] = useState([]);
 
   const fetchData = useCallback(async () => {
-    if (!adminToken) {
-      navigate('/admin');
-      return;
-    }
+    if (!adminToken) return;
     
     setLoading(true);
     try {

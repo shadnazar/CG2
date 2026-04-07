@@ -31,10 +31,7 @@ function AdminUserJourney() {
   const itemsPerPage = 50; // Increased from 20 to 50 per page
 
   const fetchData = useCallback(async () => {
-    if (!adminToken) {
-      navigate('/admin');
-      return;
-    }
+    if (!adminToken) return;
 
     setLoading(true);
     try {
@@ -69,8 +66,10 @@ function AdminUserJourney() {
   }, [adminToken, navigate, selectedDays, selectedDate]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    if (!authLoading && isAuthenticated) {
+      fetchData();
+    }
+  }, [fetchData, adminToken]);
 
   const calculateFunnelData = useCallback((visitorsData) => {
     const total = visitorsData.length;

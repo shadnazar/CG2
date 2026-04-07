@@ -19,12 +19,9 @@ function AdminBlogs() {
   const adminToken = getAdminToken();
 
   useEffect(() => {
-    if (!adminToken) {
-      navigate('/admin');
-      return;
-    }
+    if (!adminToken) return;
     fetchBlogs();
-  }, [adminToken, navigate]);
+  }, [adminToken]);
 
   const fetchBlogs = async () => {
     try {

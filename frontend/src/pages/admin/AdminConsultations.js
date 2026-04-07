@@ -6,7 +6,7 @@ import {
   Clock, ChevronDown, ChevronUp, Eye, FileText, AlertCircle,
   BarChart3, Target, Zap
 } from 'lucide-react';
-import { getAdminToken } from '../../utils/adminAuth';
+import { useAdminAuth } from '../../utils/adminAuth';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -17,25 +17,23 @@ function AdminConsultations() {
   const [expandedId, setExpandedId] = useState(null);
   const [activeTab, setActiveTab] = useState('list'); // list, stats
   const navigate = useNavigate();
+  const { adminToken, isLoading: authLoading, isAuthenticated } = useAdminAuth(navigate);
 
   useEffect(() => {
+    if (authLoading || !isAuthenticated) return;
     fetchData();
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   const fetchData = async () => {
-    const token = getAdminToken();
-    if (!token) {
-      navigate('/admin');
-      return;
-    }
+    if (!adminToken) return;
 
     try {
       const [consultRes, statsRes] = await Promise.all([
         axios.get(`${API}/consultation/admin/all`, {
-          headers: { 'X-Admin-Token': token }
+          headers: { 'X-Admin-Token': adminToken }
         }),
         axios.get(`${API}/consultation/admin/stats`, {
-          headers: { 'X-Admin-Token': token }
+          headers: { 'X-Admin-Token': adminToken }
         })
       ]);
 
