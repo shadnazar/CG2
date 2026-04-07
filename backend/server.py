@@ -2146,8 +2146,7 @@ async def get_all_referrals(
     limit: int = Query(100)
 ):
     """Get all referrals for admin panel"""
-    if x_admin_token != "celestaglow2024":
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    verify_admin_token(x_admin_token)
     
     referrals = await referral_service.get_all_referrals(limit)
     summary = await referral_service.get_referral_summary()
@@ -2165,8 +2164,7 @@ async def mark_referral_paid(
     x_admin_token: str = Header(None, alias="X-Admin-Token")
 ):
     """Mark referral earnings as paid"""
-    if x_admin_token != "celestaglow2024":
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    verify_admin_token(x_admin_token)
     
     success = await referral_service.mark_earnings_paid(referral_code, amount)
     return {"success": success}
@@ -2179,8 +2177,7 @@ async def mark_order_cashback_paid(
     x_admin_token: str = Header(None, alias="X-Admin-Token")
 ):
     """Mark a specific referred order's cashback as paid"""
-    if x_admin_token != "celestaglow2024":
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    verify_admin_token(x_admin_token)
     
     success = await referral_service.mark_order_cashback_paid(referral_code, order_id)
     return {"success": success, "message": f"Cashback for order {order_id} marked as paid" if success else "Failed to mark as paid"}
@@ -2192,8 +2189,7 @@ async def get_referral_details(
     x_admin_token: str = Header(None, alias="X-Admin-Token")
 ):
     """Get detailed referral info including all referred orders"""
-    if x_admin_token != "celestaglow2024":
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    verify_admin_token(x_admin_token)
     
     referral = await referral_service.get_referral_with_orders(referral_code)
     if not referral:
@@ -2207,8 +2203,7 @@ async def test_referral_purchase(
     x_admin_token: str = Header(None, alias="X-Admin-Token")
 ):
     """Simulate a referral purchase for testing"""
-    if x_admin_token != "celestaglow2024":
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    verify_admin_token(x_admin_token)
     
     # Create a test order
     test_order = {

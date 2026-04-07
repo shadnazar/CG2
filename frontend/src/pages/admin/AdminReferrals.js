@@ -22,17 +22,12 @@ function AdminReferrals() {
   const [selectedReferral, setSelectedReferral] = useState(null);
   const [processingPayment, setProcessingPayment] = useState(null);
 
-  useEffect(() => {
-    if (!authLoading && isAuthenticated && adminToken) {
-      fetchReferrals();
-    }
-  }, [authLoading, isAuthenticated, adminToken]);
-
-  const fetchReferrals = async () => {
+  const fetchReferrals = async (token) => {
+    if (!token) return;
     setLoading(true);
     try {
       const res = await axios.get(`${API}/admin/referrals`, {
-        headers: { 'X-Admin-Token': adminToken }
+        headers: { 'X-Admin-Token': token }
       });
       setReferrals(res.data.referrals || []);
       setSummary(res.data.summary || {});
@@ -42,6 +37,12 @@ function AdminReferrals() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (!authLoading && isAuthenticated && adminToken) {
+      fetchReferrals(adminToken);
+    }
+  }, [authLoading, isAuthenticated, adminToken]);
 
   const handleTestPurchase = async () => {
     if (!testReferralCode) return;
@@ -54,7 +55,7 @@ function AdminReferrals() {
       );
       setTestResult(res.data);
       if (res.data.success) {
-        fetchReferrals(); // Refresh data
+        fetchReferrals(adminToken); // Refresh data
       }
     } catch (err) {
       setTestResult({ success: false, error: 'Test failed' });
@@ -88,7 +89,7 @@ function AdminReferrals() {
       );
       // Refresh both the selected referral and the main list
       await viewReferralDetails(referralCode);
-      await fetchReferrals();
+      await fetchReferrals(adminToken);
     } catch (err) {
       console.error('Failed to mark as paid:', err);
     } finally {
@@ -104,7 +105,7 @@ function AdminReferrals() {
         {},
         { headers: { 'X-Admin-Token': adminToken } }
       );
-      await fetchReferrals();
+      await fetchReferrals(adminToken);
       if (selectedReferral) {
         await viewReferralDetails(referralCode);
       }
@@ -139,7 +140,7 @@ function AdminReferrals() {
             </div>
           </div>
           <button
-            onClick={fetchReferrals}
+            onClick={() => fetchReferrals(adminToken)}
             className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm font-medium"
           >
             <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />

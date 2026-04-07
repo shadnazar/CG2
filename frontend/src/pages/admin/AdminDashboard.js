@@ -6,7 +6,7 @@ import {
   TrendingUp, Package, Eye, IndianRupee, ChevronRight, Plus,
   Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope,
   Home, ShoppingCart, Lock, Settings, Calendar, Filter, ChevronDown,
-  MousePointer, Route, MessageSquare, Bell, Volume2, Gift
+  MousePointer, Route, MessageSquare, Bell, Volume2, Gift, CreditCard, CheckCircle
 } from 'lucide-react';
 import { useOrderNotifications } from '../../utils/orderNotifications';
 import { getAdminToken, clearAdminToken } from '../../utils/adminAuth';
@@ -533,7 +533,7 @@ function AdminDashboard() {
               </div>
 
               {/* Stats Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
                 <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 overflow-hidden" data-testid="stat-orders">
                   <div className="flex items-center justify-between mb-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -555,6 +555,18 @@ function AdminDashboard() {
                   <p className="text-xl sm:text-2xl font-bold text-gray-900 truncate">₹{analytics?.total_revenue?.toLocaleString() || 0}</p>
                   <p className="text-xs sm:text-sm text-gray-500">Revenue</p>
                 </div>
+
+                {/* Purchased/Conversions Card - NEW */}
+                <Link to="/admin/user-journey" className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-2xl p-4 sm:p-5 border border-green-200 overflow-hidden hover:shadow-md transition-shadow" data-testid="stat-purchased">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="w-10 h-10 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <CreditCard className="w-5 h-5 text-white" />
+                    </div>
+                    <CheckCircle className="w-4 h-4 text-green-500" />
+                  </div>
+                  <p className="text-xl sm:text-2xl font-bold text-green-600 truncate">{analytics?.conversions || liveAnalytics?.conversions || 0}</p>
+                  <p className="text-xs sm:text-sm text-green-700 font-medium">Purchased</p>
+                </Link>
 
                 <div className="bg-white rounded-2xl p-4 sm:p-5 border border-gray-100 overflow-hidden" data-testid="stat-leads">
                   <div className="flex items-center justify-between mb-3">

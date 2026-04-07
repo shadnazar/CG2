@@ -334,7 +334,7 @@ function AdminUserJourney() {
           <>
             {/* Stats Cards */}
             {stats && (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4 mb-6">
                 <div className="bg-white rounded-xl p-4 border border-gray-100">
                   <div className="flex items-center gap-2 mb-2">
                     <Users className="w-5 h-5 text-blue-500" />
@@ -370,6 +370,17 @@ function AdminUserJourney() {
                   </div>
                   <p className="text-2xl font-bold text-gray-900">{stats.address_entered}</p>
                 </div>
+                {/* Purchased/Conversions Card - NEW */}
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-200" data-testid="stat-purchased">
+                  <div className="flex items-center gap-2 mb-2">
+                    <CreditCard className="w-5 h-5 text-green-600" />
+                    <span className="text-xs text-green-700 font-medium">Purchased</span>
+                  </div>
+                  <p className="text-2xl font-bold text-green-600">{stats.conversions || 0}</p>
+                  {stats.conversion_rate > 0 && (
+                    <p className="text-xs text-green-600 mt-1">{stats.conversion_rate.toFixed(1)}% rate</p>
+                  )}
+                </div>
                 <div className="bg-white rounded-xl p-4 border border-gray-100">
                   <div className="flex items-center gap-2 mb-2">
                     <Clock className="w-5 h-5 text-cyan-500" />
@@ -392,7 +403,8 @@ function AdminUserJourney() {
                     { label: 'Total Visitors', value: funnelData.total, color: 'bg-blue-500' },
                     { label: 'Viewed Product', value: funnelData.viewedProduct, color: 'bg-purple-500' },
                     { label: 'Reached Checkout', value: funnelData.reachedCheckout, color: 'bg-orange-500' },
-                    { label: 'Entered Address', value: funnelData.enteredAddress, color: 'bg-green-500' },
+                    { label: 'Entered Address', value: funnelData.enteredAddress, color: 'bg-amber-500' },
+                    { label: 'Purchased', value: stats?.conversions || 0, color: 'bg-green-500' },
                   ].map((stage, i) => (
                     <div key={stage.label} className="relative">
                       <div className="flex items-center justify-between mb-1">

@@ -19,7 +19,32 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 
 ## Recent Updates (April 7, 2026)
 
-### Admin Panel Navigation & Auth Bug Fixes - COMPLETED ✅
+### Session 2 - Admin Panel Fixes - COMPLETED ✅
+
+**Issues Fixed:**
+1. **Admin Referrals Data Not Loading** (P0)
+   - **Root Cause (Backend):** Referral endpoints (`/api/admin/referrals/*`) were hardcoded to check for plain password `"celestaglow2024"` instead of using the shared `verify_admin_token()` function that accepts session tokens
+   - **Root Cause (Frontend):** `fetchReferrals()` function used stale closure reference to `adminToken`
+   - **Fix (Backend):** Updated all 5 referral endpoints in `server.py` to use `verify_admin_token()` for consistent auth
+   - **Fix (Frontend):** Updated `fetchReferrals(token)` to accept token as parameter, ensuring fresh token is always used
+
+2. **"Purchased" Section Missing from User Journey UI** (P1)
+   - Added new "Purchased" stat card to AdminUserJourney.js stats grid (7 cards now)
+   - Added "Purchased" step to Conversion Funnel visualization (5 steps now)
+   - Added "Purchased" clickable stat card to AdminDashboard.js (links to User Journey)
+
+3. **Meta Pixel Verification on Landing Pages** (P1)
+   - Verified Meta Pixel is properly integrated via TrackingProvider
+   - `LandingProductPage.js` correctly fires: trackPageVisit, trackViewContent, trackInitiateCheckout
+   - `order_complete` action tracked for conversion analytics
+
+**Files Updated:**
+- `/app/backend/server.py` - Fixed 5 referral endpoints to use verify_admin_token()
+- `/app/frontend/src/pages/admin/AdminReferrals.js` - Fixed token passing in fetchReferrals()
+- `/app/frontend/src/pages/admin/AdminUserJourney.js` - Added "Purchased" stat card and funnel step
+- `/app/frontend/src/pages/admin/AdminDashboard.js` - Added "Purchased" stat card (clickable)
+
+### Session 1 - Admin Panel Navigation & Auth Bug Fixes - COMPLETED ✅
 
 **Issues Fixed:**
 1. **Admin Sidebar Navigation Broken** - Clicking Landing Pages/Consultations/User Journey only reloaded Dashboard
