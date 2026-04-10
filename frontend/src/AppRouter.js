@@ -18,6 +18,10 @@ const ConsultationPage = lazy(() => import('./pages/ConsultationPage'));
 const TermsPage = lazy(() => import('./pages/TermsPage'));
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
+const ContactPage = lazy(() => import('./pages/ContactPage'));
+const AboutPage = lazy(() => import('./pages/AboutPage'));
+const RefundPolicyPage = lazy(() => import('./pages/RefundPolicyPage'));
+const ShippingPolicyPage = lazy(() => import('./pages/ShippingPolicyPage'));
 
 // Lazy loaded admin pages (separate chunk, only loaded when visiting admin)
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
@@ -109,6 +113,26 @@ function App() {
               <Route path="/privacy" element={
                 <PublicLayout>
                   <Suspense fallback={<PageLoader />}><PrivacyPage /></Suspense>
+                </PublicLayout>
+              } />
+              <Route path="/refund-policy" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><RefundPolicyPage /></Suspense>
+                </PublicLayout>
+              } />
+              <Route path="/shipping-policy" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><ShippingPolicyPage /></Suspense>
+                </PublicLayout>
+              } />
+              <Route path="/contact" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><ContactPage /></Suspense>
+                </PublicLayout>
+              } />
+              <Route path="/about" element={
+                <PublicLayout>
+                  <Suspense fallback={<PageLoader />}><AboutPage /></Suspense>
                 </PublicLayout>
               } />
               

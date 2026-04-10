@@ -1,5 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import Navigation from '../components/Navigation';
+import Footer from '../components/Footer';
 import WhatsAppButton from '../components/WhatsAppButton';
 import { useTracking } from '../providers/TrackingProvider';
 
@@ -48,6 +49,9 @@ function PublicLayout({ children }) {
       <main>
         {children}
       </main>
+      
+      {/* Footer - site-wide */}
+      <Footer />
       
       {/* WhatsApp floating button - always visible */}
       <WhatsAppButton phoneNumber="919446125745" />

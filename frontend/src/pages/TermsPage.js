@@ -94,8 +94,16 @@ function TermsPage() {
             </p>
             <ul className="list-none text-gray-600 mb-4 space-y-1">
               <li>Email: support@celestaglow.com</li>
-              <li>Phone: +91 XXXXX XXXXX</li>
+              <li>Phone: +91 94461 25745</li>
+              <li>WhatsApp: <a href="https://wa.me/919446125745" className="text-green-600 hover:underline">+91 94461 25745</a></li>
             </ul>
+            
+            <h2 className="text-lg font-semibold text-gray-900 mt-6 mb-3">10. Company Information</h2>
+            <p className="text-gray-600 mb-4">
+              <strong>Veegal Enterprises LLP</strong><br />
+              1st Floor, 38, Booth No. 62, Ashwini Layout, 2nd Main, Egipura,<br />
+              Bengaluru, Karnataka – 560047, India
+            </p>
 
             <div className="mt-8 p-4 bg-green-50 rounded-xl">
               <p className="text-green-700 text-sm">

@@ -2218,6 +2218,35 @@ async def test_referral_purchase(
 
 
 
+# ==================== CONTACT FORM ====================
+
+class ContactFormRequest(BaseModel):
+    name: str
+    email: str
+    phone: Optional[str] = None
+    subject: str = "general"
+    message: str
+
+@api_router.post("/contact")
+async def submit_contact_form(request: ContactFormRequest):
+    """Handle contact form submissions"""
+    from datetime import datetime, timezone
+    
+    contact_entry = {
+        "name": request.name,
+        "email": request.email,
+        "phone": request.phone,
+        "subject": request.subject,
+        "message": request.message,
+        "status": "new",
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.contact_submissions.insert_one(contact_entry)
+    
+    return {"success": True, "message": "Your message has been received. We'll get back to you within 24 hours."}
+
+
 # ==================== DELHIVERY SHIPPING INTEGRATION ====================
 
 class TrackOrderRequest(BaseModel):
