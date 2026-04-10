@@ -92,7 +92,7 @@ export const PaymentMethodSelector = ({ selected, onChange, prepaidPrice, codPri
           <p className="font-semibold text-gray-900 text-sm">
             Cash on Delivery {discountApplied && <span className="line-through text-gray-400">₹{codPrice}</span>} ₹{getFinalCodPrice()}
           </p>
-          <p className="text-gray-500 text-xs">Pay ₹{Math.max(codAdvance - (discountApplied ? discountAmount : 0), 49)} now + ₹{getFinalCodPrice() - Math.max(codAdvance - (discountApplied ? discountAmount : 0), 49)} on delivery</p>
+          <p className="text-gray-500 text-xs">Pay ₹{Math.max(codAdvance - (discountApplied ? discountAmount : 0), 29)} now + ₹{getFinalCodPrice() - Math.max(codAdvance - (discountApplied ? discountAmount : 0), 29)} on delivery</p>
         </div>
       </label>
     </div>

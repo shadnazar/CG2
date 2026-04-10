@@ -221,7 +221,7 @@ function OrderSuccessPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-500">Advance Paid</span>
-                <span className="text-green-600 font-bold">₹49</span>
+                <span className="text-green-600 font-bold">₹29</span>
               </div>
               <div className="flex justify-between bg-yellow-50 -mx-5 px-5 py-2">
                 <span className="text-yellow-700 font-medium">Balance at Delivery</span>

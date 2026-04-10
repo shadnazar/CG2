@@ -11,8 +11,8 @@ const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 
 const PREPAID_PRICE = 699;
 const COD_PRICE = 749;  // Total COD price
-const COD_ADVANCE = 49; // Booking amount for COD - FIXED regardless of quantity
-const COD_BALANCE = 700; // Balance to pay at delivery (749 - 49)
+const COD_ADVANCE = 29; // Booking amount for COD - FIXED regardless of quantity
+const COD_BALANCE = 720; // Balance to pay at delivery (749 - 29)
 const MRP = 1499;
 const DISCOUNT_AMOUNT = 50;
 const EXIT_DISCOUNT_AMOUNT = 100;
@@ -1218,7 +1218,7 @@ function ProductPage() {
             <div className="mt-3 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-xs text-blue-700 flex items-center gap-1.5">
                 <Truck size={14} />
-                <span><strong>COD:</strong> Pay only ₹49 now. Balance ₹{getCodBalance()} at delivery.</span>
+                <span><strong>COD:</strong> Pay only ₹29 now. Balance ₹{getCodBalance()} at delivery.</span>
               </p>
             </div>
           </div>
@@ -1424,7 +1424,7 @@ function ProductPage() {
               </div>
               {paymentMethod === 'cod' && (
                 <div className="text-xs text-blue-600 text-center mt-1 bg-blue-50 p-2 rounded-lg">
-                  💳 Pay ₹49 now → Balance ₹{getCodBalance().toLocaleString('en-IN')} at delivery
+                  💳 Pay ₹29 now → Balance ₹{getCodBalance().toLocaleString('en-IN')} at delivery
                 </div>
               )}
               <p className="text-xs text-green-600 text-center mt-1">You're saving ₹{(getCurrentMrp() - getFinalPrepaidPrice()).toLocaleString('en-IN')} on this order!</p>
@@ -1518,7 +1518,7 @@ function ProductPage() {
                   <p className="font-semibold text-gray-900 text-sm">
                     Pay Online  <span className="line-through text-gray-400">₹{getCurrentMrp().toLocaleString('en-IN')}</span> ₹{getFinalPrepaidPrice().toLocaleString('en-IN')}
                   </p>
-                  <p className="text-green-600 text-xs">💰 {discountApplied ? 'Extra ₹50 discount applied!' : `Save up to ${BUNDLE_PRICES[quantity]?.savings || '53% OFF'}`}</p>
+                  <p className="text-green-600 text-xs">🚀 FASTER DELIVERY (1-2 days) + Save ₹{getFinalCodPrice() - getFinalPrepaidPrice()}</p>
                 </div>
                 <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded">BEST</span>
               </label>

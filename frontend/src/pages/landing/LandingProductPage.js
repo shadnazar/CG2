@@ -18,7 +18,7 @@ const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 
 const PREPAID_PRICE = 699;
 const COD_PRICE = 749;
-const COD_ADVANCE = 49; // Fixed regardless of quantity
+const COD_ADVANCE = 29; // Fixed regardless of quantity
 const MRP = 1499;
 const DISCOUNT_AMOUNT = 50;
 const EXIT_DISCOUNT_AMOUNT = 100;
@@ -363,7 +363,7 @@ function LandingProductPage() {
             <div className="mt-3 p-2.5 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-xs text-blue-700 flex items-center gap-1.5">
                 <Truck size={14} />
-                <span><strong>COD:</strong> Pay only ₹49 now. Balance ₹{getCodBalance().toLocaleString('en-IN')} at delivery.</span>
+                <span><strong>COD:</strong> Pay only ₹29 now. Balance ₹{getCodBalance().toLocaleString('en-IN')} at delivery.</span>
               </p>
             </div>
           </div>
@@ -376,16 +376,17 @@ function LandingProductPage() {
                 <input type="radio" name="payment" checked={paymentMethod === 'prepaid'} onChange={() => setPaymentMethod('prepaid')} className="sr-only" />
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900">Pay Online <span className="line-through text-gray-400">₹{getCurrentMrp().toLocaleString('en-IN')}</span> ₹{getFinalPrepaidPrice().toLocaleString('en-IN')}</p>
-                  <p className="text-xs text-green-600">💰 Save {BUNDLE_PRICES[quantity]?.savings || '53% OFF'}</p>
+                  <p className="text-xs text-green-600">🚀 FASTER DELIVERY (1-2 days) + Save ₹{getFinalCodPrice() - getFinalPrepaidPrice()}</p>
                 </div>
                 {paymentMethod === 'prepaid' && <Check className="text-green-500" size={24} />}
+                <span className="text-xs bg-green-500 text-white px-2 py-0.5 rounded ml-2">BEST</span>
               </label>
               
               <label className={`flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'cod' ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
                 <input type="radio" name="payment" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="sr-only" />
                 <div className="flex-1">
                   <p className="font-semibold text-gray-900">Cash on Delivery ₹{getFinalCodPrice().toLocaleString('en-IN')}</p>
-                  <p className="text-xs text-gray-500">Pay ₹{COD_ADVANCE} now, ₹{getCodBalance().toLocaleString('en-IN')} at delivery</p>
+                  <p className="text-xs text-gray-500">Pay ₹{COD_ADVANCE} now, ₹{getCodBalance().toLocaleString('en-IN')} at delivery (3-5 days)</p>
                 </div>
                 {paymentMethod === 'cod' && <Check className="text-green-500" size={24} />}
               </label>

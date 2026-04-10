@@ -112,7 +112,7 @@ function LandingOrderSuccess() {
                 {order.payment_method?.includes('COD') && (
                   <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 text-sm text-yellow-800">
                     <p className="font-medium">Balance at Delivery: ₹{order.amount - 49}</p>
-                    <p className="text-xs mt-1">₹49 advance paid • Balance due on delivery</p>
+                    <p className="text-xs mt-1">₹29 advance paid • Balance due on delivery</p>
                   </div>
                 )}
               </>

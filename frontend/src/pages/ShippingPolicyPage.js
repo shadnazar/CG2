@@ -115,7 +115,7 @@ function ShippingPolicyPage() {
                 <p className="font-semibold text-gray-900 mb-2">Cash on Delivery (COD)</p>
                 <ul className="text-sm text-gray-600 space-y-1">
                   <li>• Available across India</li>
-                  <li>• ₹49 COD advance required</li>
+                  <li>• ₹29 COD advance required</li>
                   <li>• Pay remaining on delivery</li>
                   <li>• Cash/UPI accepted</li>
                 </ul>

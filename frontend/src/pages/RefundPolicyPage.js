@@ -112,7 +112,7 @@ function RefundPolicyPage() {
             <ul className="list-disc list-inside text-gray-600 mb-4 space-y-2">
               <li><strong>Before Shipping:</strong> Full refund within 24 hours</li>
               <li><strong>After Shipping:</strong> Product will be delivered; you can then request a return</li>
-              <li><strong>Prepaid Orders:</strong> ₹49 COD advance is non-refundable if order is cancelled after shipping</li>
+              <li><strong>Prepaid Orders:</strong> ₹29 COD advance is non-refundable if order is cancelled after shipping</li>
             </ul>
 
             <div className="mt-8 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
