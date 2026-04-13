@@ -40,6 +40,10 @@ const AdminLandingPages = lazy(() => import('./pages/admin/AdminLandingPages'));
 const AdminEmployees = lazy(() => import('./pages/admin/AdminEmployees'));
 const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'));
 
+// Employee Pages
+const EmployeeLogin = lazy(() => import('./pages/employee/EmployeeLogin'));
+const EmployeeDashboard = lazy(() => import('./pages/employee/EmployeeDashboard'));
+
 // Landing Page Funnel (problem-specific)
 const LandingPageFunnel = lazy(() => import('./pages/landing/LandingPageFunnel'));
 
@@ -96,6 +100,17 @@ function App() {
         <Route path="/admin/landing-pages" element={<AdminLayout><AdminLandingPages /></AdminLayout>} />
         <Route path="/admin/employees" element={<AdminLayout><AdminEmployees /></AdminLayout>} />
         <Route path="/admin/customers" element={<AdminLayout><AdminCustomers /></AdminLayout>} />
+        
+        {/* Employee Routes */}
+        <Route path="/employee/login" element={
+          <Suspense fallback={<PageLoader />}><EmployeeLogin /></Suspense>
+        } />
+        <Route path="/employee/dashboard" element={
+          <Suspense fallback={<PageLoader />}><EmployeeDashboard /></Suspense>
+        } />
+        <Route path="/employee/*" element={
+          <Suspense fallback={<PageLoader />}><EmployeeDashboard /></Suspense>
+        } />
         
         {/* Public Routes - With tracking provider */}
         <Route path="/*" element={
