@@ -6,7 +6,7 @@ import {
   TrendingUp, Package, Eye, IndianRupee, ChevronRight, Plus,
   Activity, Phone, Globe, Clock, Zap, RefreshCw, Sparkles, Stethoscope,
   Home, ShoppingCart, Lock, Settings, Calendar, Filter, ChevronDown,
-  MousePointer, Route, MessageSquare, Bell, Volume2, Gift, CreditCard, CheckCircle
+  MousePointer, Route, MessageSquare, Bell, Volume2, Gift, CreditCard, CheckCircle, Shield
 } from 'lucide-react';
 import { useOrderNotifications } from '../../utils/orderNotifications';
 import { getAdminToken, clearAdminToken } from '../../utils/adminAuth';
@@ -258,11 +258,17 @@ function AdminDashboard() {
           <Link to="/admin/consultations" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-consultations">
             <Stethoscope size={20} /> Consultations
           </Link>
+          <Link to="/admin/customers" className="flex items-center gap-3 px-4 py-3 text-blue-600 hover:bg-blue-50 rounded-xl" data-testid="nav-customers">
+            <Users size={20} /> Customers
+          </Link>
           <Link to="/admin/user-journey" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-user-journey">
             <Route size={20} /> User Journey
           </Link>
           <Link to="/admin/referrals" className="flex items-center gap-3 px-4 py-3 text-purple-600 hover:bg-purple-50 rounded-xl" data-testid="nav-referrals">
             <Gift size={20} /> Referrals
+          </Link>
+          <Link to="/admin/employees" className="flex items-center gap-3 px-4 py-3 text-orange-600 hover:bg-orange-50 rounded-xl" data-testid="nav-employees">
+            <Shield size={20} /> Employees
           </Link>
           <Link to="/admin/whatsapp" className="flex items-center gap-3 px-4 py-3 text-green-600 hover:bg-green-50 rounded-xl" data-testid="nav-whatsapp">
             <MessageSquare size={20} /> WhatsApp

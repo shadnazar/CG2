@@ -37,6 +37,8 @@ const AdminUserJourney = lazy(() => import('./pages/admin/AdminUserJourney'));
 const AdminWhatsApp = lazy(() => import('./pages/admin/AdminWhatsApp'));
 const AdminReferrals = lazy(() => import('./pages/admin/AdminReferrals'));
 const AdminLandingPages = lazy(() => import('./pages/admin/AdminLandingPages'));
+const AdminEmployees = lazy(() => import('./pages/admin/AdminEmployees'));
+const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'));
 
 // Landing Page Funnel (problem-specific)
 const LandingPageFunnel = lazy(() => import('./pages/landing/LandingPageFunnel'));
@@ -92,6 +94,8 @@ function App() {
         <Route path="/admin/whatsapp" element={<AdminLayout><AdminWhatsApp /></AdminLayout>} />
         <Route path="/admin/referrals" element={<AdminLayout><AdminReferrals /></AdminLayout>} />
         <Route path="/admin/landing-pages" element={<AdminLayout><AdminLandingPages /></AdminLayout>} />
+        <Route path="/admin/employees" element={<AdminLayout><AdminEmployees /></AdminLayout>} />
+        <Route path="/admin/customers" element={<AdminLayout><AdminCustomers /></AdminLayout>} />
         
         {/* Public Routes - With tracking provider */}
         <Route path="/*" element={

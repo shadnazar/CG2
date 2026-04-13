@@ -54,6 +54,12 @@ referral_service = ReferralService(db)
 delhivery_service = init_delhivery_service(db)
 landing_page_service = LandingPageService(db)
 
+# Employee and Customer services
+from services.employee_service import EmployeeService
+from services.customer_service import CustomerService
+employee_service = EmployeeService(db)
+customer_service = CustomerService(db)
+
 # Initialize admin routes with database
 admin_routes.set_db(db)
 
@@ -2245,6 +2251,182 @@ async def submit_contact_form(request: ContactFormRequest):
     await db.contact_submissions.insert_one(contact_entry)
     
     return {"success": True, "message": "Your message has been received. We'll get back to you within 24 hours."}
+
+
+# ==================== EMPLOYEE MANAGEMENT ====================
+
+# Store employee sessions
+employee_sessions = {}
+
+class CreateEmployeeRequest(BaseModel):
+    username: str
+    name: str
+    password: Optional[str] = None
+    permissions: Dict[str, bool]
+
+class EmployeeLoginRequest(BaseModel):
+    username: str
+    password: str
+
+class UpdatePasswordRequest(BaseModel):
+    username: str
+    new_password: str
+
+class UpdatePermissionsRequest(BaseModel):
+    username: str
+    permissions: Dict[str, bool]
+
+
+@api_router.post("/admin/employees")
+async def create_employee(request: CreateEmployeeRequest, x_admin_token: str = Header(None, alias="X-Admin-Token")):
+    """Create a new employee account (Admin only)"""
+    verify_admin_token(x_admin_token)
+    result = await employee_service.create_employee(
+        username=request.username,
+        name=request.name,
+        permissions=request.permissions,
+        password=request.password
+    )
+    return result
+
+
+@api_router.get("/admin/employees")
+async def get_all_employees(x_admin_token: str = Header(None, alias="X-Admin-Token")):
+    """Get all employees (Admin only)"""
+    verify_admin_token(x_admin_token)
+    employees = await employee_service.get_all_employees()
+    return {"employees": employees}
+
+
+@api_router.post("/admin/employees/update-password")
+async def update_employee_password(request: UpdatePasswordRequest, x_admin_token: str = Header(None, alias="X-Admin-Token")):
+    """Update employee password (Admin only)"""
+    verify_admin_token(x_admin_token)
+    success = await employee_service.update_password(request.username, request.new_password)
+    return {"success": success}
+
+
+@api_router.post("/admin/employees/update-permissions")
+async def update_employee_permissions(request: UpdatePermissionsRequest, x_admin_token: str = Header(None, alias="X-Admin-Token")):
+    """Update employee permissions (Admin only)"""
+    verify_admin_token(x_admin_token)
+    success = await employee_service.update_permissions(request.username, request.permissions)
+    return {"success": success}
+
+
+@api_router.delete("/admin/employees/{username}")
+async def delete_employee(username: str, x_admin_token: str = Header(None, alias="X-Admin-Token")):
+    """Delete/deactivate employee (Admin only)"""
+    verify_admin_token(x_admin_token)
+    success = await employee_service.delete_employee(username)
+    return {"success": success}
+
+
+@api_router.post("/employee/login")
+async def employee_login(request: EmployeeLoginRequest):
+    """Employee login endpoint"""
+    employee = await employee_service.authenticate(request.username, request.password)
+    if not employee:
+        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Generate session token
+    token = secrets.token_hex(32)
+    employee_sessions[token] = {
+        "username": employee["username"],
+        "permissions": employee["permissions"],
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    return {
+        "success": True,
+        "token": token,
+        "employee": employee
+    }
+
+
+def verify_employee_token(token: str) -> Dict:
+    """Verify employee token and return session data"""
+    if not token:
+        raise HTTPException(status_code=401, detail="No token provided")
+    
+    session = employee_sessions.get(token)
+    if not session:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+    
+    return session
+
+
+@api_router.get("/employee/verify")
+async def verify_employee(x_employee_token: str = Header(None, alias="X-Employee-Token")):
+    """Verify employee token and return permissions"""
+    session = verify_employee_token(x_employee_token)
+    return {"valid": True, "permissions": session["permissions"], "username": session["username"]}
+
+
+# ==================== CUSTOMER MANAGEMENT ====================
+
+@api_router.get("/admin/customers")
+async def get_all_customers(
+    limit: int = Query(100),
+    skip: int = Query(0),
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    x_employee_token: str = Header(None, alias="X-Employee-Token")
+):
+    """Get all customers with order status"""
+    # Allow admin or employee with customers permission
+    if x_admin_token:
+        verify_admin_token(x_admin_token)
+    elif x_employee_token:
+        session = verify_employee_token(x_employee_token)
+        if not session["permissions"].get("customers"):
+            raise HTTPException(status_code=403, detail="No permission to view customers")
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    result = await customer_service.get_all_customers(limit=limit, skip=skip)
+    return result
+
+
+@api_router.get("/admin/customers/search")
+async def search_customers(
+    q: str = Query(...),
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    x_employee_token: str = Header(None, alias="X-Employee-Token")
+):
+    """Search customers by name, phone, or email"""
+    if x_admin_token:
+        verify_admin_token(x_admin_token)
+    elif x_employee_token:
+        session = verify_employee_token(x_employee_token)
+        if not session["permissions"].get("customers"):
+            raise HTTPException(status_code=403, detail="No permission to view customers")
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    customers = await customer_service.search_customers(q)
+    return {"customers": customers}
+
+
+@api_router.get("/admin/customers/{phone}")
+async def get_customer_by_phone(
+    phone: str,
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    x_employee_token: str = Header(None, alias="X-Employee-Token")
+):
+    """Get customer details by phone"""
+    if x_admin_token:
+        verify_admin_token(x_admin_token)
+    elif x_employee_token:
+        session = verify_employee_token(x_employee_token)
+        if not session["permissions"].get("customers"):
+            raise HTTPException(status_code=403, detail="No permission to view customers")
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    customer = await customer_service.get_customer_by_phone(phone)
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return customer
 
 
 # ==================== DELHIVERY SHIPPING INTEGRATION ====================

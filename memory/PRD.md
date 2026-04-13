@@ -17,6 +17,63 @@ Build a comprehensive e-commerce platform for an anti-aging serum ("Celesta Glow
 - **Content**: AI-generated location and topic-based SEO blogs
 - **Security**: sessionStorage-based admin tokens, httpOnly cookies, SHA-256 hashing
 
+## Recent Updates (April 13, 2026)
+
+### Session 4 - Employee Access & Customer Management - COMPLETED ✅
+
+**New Features Implemented:**
+
+1. **Employee Management System** (`/admin/employees`)
+   - Create employee accounts with username/password
+   - Auto-generate secure passwords or set custom
+   - Role-based permissions: Orders, Customers, Blogs, AI Studio, Analytics, Landing Pages, Consultations
+   - Toggle permissions by clicking permission badges
+   - Update employee passwords
+   - Delete/deactivate employees
+   - Track last login
+
+2. **Customer Section** (`/admin/customers`)
+   - View all customers with order status
+   - Stats: Total Customers, Purchased, Leads, Total Revenue
+   - Customer details: Name, Phone, Email, Location (City/State)
+   - Order history with status and amounts
+   - Filter by: All, Purchased, Leads
+   - Search by name, phone, or email
+   - Click customer to see full details and delivery address
+
+3. **Employee Login System**
+   - Separate login endpoint for employees: `POST /api/employee/login`
+   - Session token management
+   - Permission-based API access
+
+4. **COD Advance Price Update**
+   - Changed from ₹49 to ₹29 across all pages
+   - Updated ProductPage.js, LandingProductPage.js, and all related files
+   - Added "FASTER DELIVERY (1-2 days)" messaging for prepaid orders
+
+**Files Created:**
+- `/app/backend/services/employee_service.py`
+- `/app/backend/services/customer_service.py`
+- `/app/frontend/src/pages/admin/AdminEmployees.js`
+- `/app/frontend/src/pages/admin/AdminCustomers.js`
+
+**Files Updated:**
+- `/app/backend/server.py` - Added employee & customer API endpoints
+- `/app/frontend/src/AppRouter.js` - Added new admin routes
+- `/app/frontend/src/pages/admin/AdminDashboard.js` - Added sidebar links
+
+**API Endpoints Added:**
+- `POST /api/admin/employees` - Create employee
+- `GET /api/admin/employees` - List all employees
+- `POST /api/admin/employees/update-password` - Update password
+- `POST /api/admin/employees/update-permissions` - Update permissions
+- `DELETE /api/admin/employees/{username}` - Delete employee
+- `POST /api/employee/login` - Employee login
+- `GET /api/employee/verify` - Verify employee token
+- `GET /api/admin/customers` - List all customers
+- `GET /api/admin/customers/search` - Search customers
+- `GET /api/admin/customers/{phone}` - Get customer by phone
+
 ## Recent Updates (April 10, 2026)
 
 ### Session 3 - SEO Trust & Google Trust Pages - COMPLETED ✅
