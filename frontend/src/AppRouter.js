@@ -43,6 +43,9 @@ const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'));
 // Employee Pages
 const EmployeeLogin = lazy(() => import('./pages/employee/EmployeeLogin'));
 const EmployeeDashboard = lazy(() => import('./pages/employee/EmployeeDashboard'));
+const EmployeeLayout = lazy(() => import('./layouts/EmployeeLayout'));
+const EmployeeOrders = lazy(() => import('./pages/employee/EmployeeOrders'));
+const EmployeeCustomers = lazy(() => import('./pages/employee/EmployeeCustomers'));
 
 // Landing Page Funnel (problem-specific)
 const LandingPageFunnel = lazy(() => import('./pages/landing/LandingPageFunnel'));
@@ -107,6 +110,16 @@ function App() {
         } />
         <Route path="/employee/dashboard" element={
           <Suspense fallback={<PageLoader />}><EmployeeDashboard /></Suspense>
+        } />
+        <Route path="/employee/orders" element={
+          <Suspense fallback={<PageLoader />}>
+            <EmployeeLayout requiredPermission="orders"><EmployeeOrders /></EmployeeLayout>
+          </Suspense>
+        } />
+        <Route path="/employee/customers" element={
+          <Suspense fallback={<PageLoader />}>
+            <EmployeeLayout requiredPermission="customers"><EmployeeCustomers /></EmployeeLayout>
+          </Suspense>
         } />
         <Route path="/employee/*" element={
           <Suspense fallback={<PageLoader />}><EmployeeDashboard /></Suspense>

@@ -406,7 +406,20 @@ async def get_order(order_id: str):
 
 
 @api_router.get("/orders", response_model=List[Order])
-async def get_all_orders():
+async def get_all_orders(
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    x_employee_token: str = Header(None, alias="X-Employee-Token")
+):
+    # Allow admin or employee with orders permission
+    if x_admin_token:
+        verify_admin_token(x_admin_token)
+    elif x_employee_token:
+        session = verify_employee_token(x_employee_token)
+        if not session["permissions"].get("orders"):
+            raise HTTPException(status_code=403, detail="No permission to view orders")
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
     orders = await db.orders.find({}, {"_id": 0}).to_list(1000)
     
     for order in orders:
