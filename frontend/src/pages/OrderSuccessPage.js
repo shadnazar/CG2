@@ -42,6 +42,36 @@ function OrderSuccessPage() {
             console.log('[Meta Pixel] Purchase fired on order success page - order_id:', orderData.order_id, 'value:', orderData.amount);
           }
 
+          // Google Ads conversion tracking
+          if (typeof window !== 'undefined' && window.gtag) {
+            window.gtag('event', 'conversion', {
+              send_to: 'AW-16928253164/purchase',
+              value: orderData.amount,
+              currency: 'INR',
+              transaction_id: orderData.order_id
+            });
+            console.log('[Google Ads] Conversion fired - order_id:', orderData.order_id);
+          }
+
+          // Track order_complete to backend analytics
+          try {
+            const visitorId = sessionStorage.getItem('visitor_id') || localStorage.getItem('visitor_id') || 'unknown';
+            const sessionId = sessionStorage.getItem('session_id') || 'unknown';
+            await axios.post(`${API}/track-action`, {
+              visitor_id: visitorId,
+              session_id: sessionId,
+              action: 'order_complete',
+              details: {
+                order_id: orderData.order_id,
+                amount: orderData.amount,
+                payment_method: orderData.payment_method
+              }
+            });
+            console.log('[Backend Analytics] order_complete tracked for:', orderData.order_id);
+          } catch (trackErr) {
+            console.error('[Backend Analytics] Failed to track order_complete:', trackErr);
+          }
+
           setPixelFired(true);
         }
       } catch (error) {

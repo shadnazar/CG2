@@ -42,6 +42,16 @@ function LandingOrderSuccess() {
             landing_page: slug
           });
         }
+
+        // Google Ads conversion tracking
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'conversion', {
+            send_to: 'AW-16928253164/purchase',
+            value: res.data.amount,
+            currency: 'INR',
+            transaction_id: orderId
+          });
+        }
       } catch (err) {
         console.error('Failed to fetch order:', err);
       } finally {

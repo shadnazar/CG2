@@ -1153,6 +1153,7 @@ def generate_admin_session_token() -> str:
 # In-memory store for valid admin sessions (for single-server deployments)
 # In production, use Redis or database-backed sessions
 admin_sessions: dict = {}
+employee_sessions: dict = {}
 
 # Share admin_sessions with admin routes for token verification
 admin_routes.set_admin_sessions(admin_sessions)
@@ -2316,8 +2317,7 @@ async def submit_contact_form(request: ContactFormRequest):
 
 # ==================== EMPLOYEE MANAGEMENT ====================
 
-# Store employee sessions
-employee_sessions = {}
+# employee_sessions is declared earlier near admin_sessions
 
 class CreateEmployeeRequest(BaseModel):
     username: str

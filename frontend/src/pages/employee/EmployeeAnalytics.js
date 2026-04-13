@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
   BarChart3, Users, ShoppingCart, TrendingUp, Eye, Clock,
-  RefreshCw, Calendar, Package, CreditCard
+  RefreshCw, Calendar, Package, CreditCard, ChevronLeft
 } from 'lucide-react';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -11,7 +11,7 @@ const API = process.env.REACT_APP_BACKEND_URL;
 function EmployeeAnalytics() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
-  const [analytics, setAnalytics] = useState(null);
+  const [liveData, setLiveData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [days, setDays] = useState(7);
 
@@ -20,16 +20,16 @@ function EmployeeAnalytics() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [statsRes, analyticsRes] = await Promise.all([
+      const [statsRes, liveRes] = await Promise.all([
         axios.get(`${API}/api/admin/user-tracking/stats?days=${days}`, {
           headers: { 'X-Employee-Token': employeeToken }
         }),
-        axios.get(`${API}/api/admin/analytics`, {
+        axios.get(`${API}/api/admin/analytics/live`, {
           headers: { 'X-Employee-Token': employeeToken }
         })
       ]);
       setStats(statsRes.data);
-      setAnalytics(analyticsRes.data);
+      setLiveData(liveRes.data);
     } catch (err) {
       console.error('Failed to fetch analytics:', err);
     } finally {
@@ -51,6 +51,12 @@ function EmployeeAnalytics() {
 
   return (
     <div className="space-y-6">
+      {/* Back Button */}
+      <Link to="/employee/dashboard" data-testid="back-to-dashboard" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-2">
+        <ChevronLeft size={20} />
+        <span>Back to Dashboard</span>
+      </Link>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
@@ -95,18 +101,18 @@ function EmployeeAnalytics() {
               <Package className="w-5 h-5 text-green-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">{analytics?.total_orders || 0}</p>
-          <p className="text-sm text-gray-500">Total Orders</p>
+          <p className="text-2xl font-bold text-gray-900">{stats?.conversions || 0}</p>
+          <p className="text-sm text-gray-500">Purchases</p>
         </div>
 
         <div className="bg-white rounded-2xl p-5 border border-gray-200">
           <div className="flex items-center gap-2 mb-3">
             <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
-              <CreditCard className="w-5 h-5 text-purple-600" />
+              <Eye className="w-5 h-5 text-purple-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">₹{(analytics?.total_revenue || 0).toLocaleString()}</p>
-          <p className="text-sm text-gray-500">Total Revenue</p>
+          <p className="text-2xl font-bold text-gray-900">{liveData?.live_visitors?.total || 0}</p>
+          <p className="text-sm text-gray-500">Live Visitors</p>
         </div>
 
         <div className="bg-white rounded-2xl p-5 border border-gray-200">
