@@ -46,6 +46,10 @@ const EmployeeDashboard = lazy(() => import('./pages/employee/EmployeeDashboard'
 const EmployeeLayout = lazy(() => import('./layouts/EmployeeLayout'));
 const EmployeeOrders = lazy(() => import('./pages/employee/EmployeeOrders'));
 const EmployeeCustomers = lazy(() => import('./pages/employee/EmployeeCustomers'));
+const EmployeeBlogs = lazy(() => import('./pages/employee/EmployeeBlogs'));
+const EmployeeAnalytics = lazy(() => import('./pages/employee/EmployeeAnalytics'));
+const EmployeeLandingPages = lazy(() => import('./pages/employee/EmployeeLandingPages'));
+const EmployeeConsultations = lazy(() => import('./pages/employee/EmployeeConsultations'));
 
 // Landing Page Funnel (problem-specific)
 const LandingPageFunnel = lazy(() => import('./pages/landing/LandingPageFunnel'));
@@ -119,6 +123,26 @@ function App() {
         <Route path="/employee/customers" element={
           <Suspense fallback={<PageLoader />}>
             <EmployeeLayout requiredPermission="customers"><EmployeeCustomers /></EmployeeLayout>
+          </Suspense>
+        } />
+        <Route path="/employee/blogs" element={
+          <Suspense fallback={<PageLoader />}>
+            <EmployeeLayout requiredPermission="blogs"><EmployeeBlogs /></EmployeeLayout>
+          </Suspense>
+        } />
+        <Route path="/employee/analytics" element={
+          <Suspense fallback={<PageLoader />}>
+            <EmployeeLayout requiredPermission="analytics"><EmployeeAnalytics /></EmployeeLayout>
+          </Suspense>
+        } />
+        <Route path="/employee/landing-pages" element={
+          <Suspense fallback={<PageLoader />}>
+            <EmployeeLayout requiredPermission="landing_pages"><EmployeeLandingPages /></EmployeeLayout>
+          </Suspense>
+        } />
+        <Route path="/employee/consultations" element={
+          <Suspense fallback={<PageLoader />}>
+            <EmployeeLayout requiredPermission="consultations"><EmployeeConsultations /></EmployeeLayout>
           </Suspense>
         } />
         <Route path="/employee/*" element={

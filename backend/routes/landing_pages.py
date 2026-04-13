@@ -15,8 +15,9 @@ router = APIRouter(prefix="/landing-pages", tags=["Landing Pages"])
 landing_page_service: LandingPageService = None
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'celestaglow2024')
 
-# Reference to admin_sessions from server.py (will be set via set_admin_sessions)
+# Reference to admin_sessions and employee_sessions from server.py
 admin_sessions = {}
+employee_sessions = {}
 
 def set_landing_page_service(service: LandingPageService):
     global landing_page_service
@@ -27,7 +28,52 @@ def set_admin_sessions(sessions_dict):
     global admin_sessions
     admin_sessions = sessions_dict
 
-def verify_admin(x_admin_token: str = Header(None)):
+def set_employee_sessions(sessions_dict):
+    """Set reference to employee_sessions from server.py"""
+    global employee_sessions
+    employee_sessions = sessions_dict
+
+def verify_admin_or_employee(
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    x_employee_token: str = Header(None, alias="X-Employee-Token")
+):
+    """Verify admin token or employee token with landing_pages permission"""
+    from datetime import datetime, timezone
+    import hashlib
+    
+    # Check admin token first
+    if x_admin_token:
+        # Check if it's a valid session token
+        if x_admin_token in admin_sessions:
+            session = admin_sessions[x_admin_token]
+            expires_at = datetime.fromisoformat(session["expires_at"].replace("Z", "+00:00"))
+            if datetime.now(timezone.utc) < expires_at:
+                return {"type": "admin"}
+            else:
+                del admin_sessions[x_admin_token]
+        
+        # Check if it's the plain password
+        if x_admin_token == ADMIN_PASSWORD:
+            return {"type": "admin"}
+        
+        # Check if it's the hashed password
+        ADMIN_PASSWORD_HASH = hashlib.sha256(ADMIN_PASSWORD.encode()).hexdigest()
+        token_hash = hashlib.sha256(x_admin_token.encode()).hexdigest()
+        if token_hash == ADMIN_PASSWORD_HASH:
+            return {"type": "admin"}
+    
+    # Check employee token
+    if x_employee_token:
+        if x_employee_token in employee_sessions:
+            session = employee_sessions[x_employee_token]
+            if session["permissions"].get("landing_pages"):
+                return {"type": "employee", "permissions": session["permissions"]}
+            else:
+                raise HTTPException(status_code=403, detail="No permission to view landing pages")
+    
+    raise HTTPException(status_code=403, detail="Admin or employee token required")
+
+def verify_admin(x_admin_token: str = Header(None, alias="X-Admin-Token")):
     """Verify admin token - checks session tokens and plain password"""
     from datetime import datetime, timezone
     import hashlib
@@ -76,9 +122,9 @@ async def get_public_landing_page(slug: str):
 @router.get("/admin/all")
 async def get_all_landing_pages(
     include_inactive: bool = False,
-    admin: bool = Depends(verify_admin)
+    auth: dict = Depends(verify_admin_or_employee)
 ):
-    """Get all landing pages (admin)"""
+    """Get all landing pages (admin or employee with permission)"""
     return await landing_page_service.get_all_landing_pages(include_inactive)
 
 @router.get("/admin/predefined")

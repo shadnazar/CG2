@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { 
   Package, Search, Filter, RefreshCw, Eye, Truck, CheckCircle, Clock, XCircle,
-  ChevronDown, Phone, MapPin, Calendar, IndianRupee
+  ChevronDown, Phone, MapPin, Calendar, IndianRupee, ChevronLeft
 } from 'lucide-react';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -93,6 +93,12 @@ function EmployeeOrders() {
 
   return (
     <div className="space-y-6">
+      {/* Back Button */}
+      <Link to="/employee/dashboard" className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-2">
+        <ChevronLeft size={20} />
+        <span>Back to Dashboard</span>
+      </Link>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>

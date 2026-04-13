@@ -1160,6 +1160,9 @@ admin_routes.set_admin_sessions(admin_sessions)
 # Share admin_sessions with landing pages routes for token verification
 landing_page_routes.set_admin_sessions(admin_sessions)
 
+# Share employee_sessions with landing pages routes for employee access
+landing_page_routes.set_employee_sessions(employee_sessions)
+
 # Share admin_sessions with consultation routes for token verification
 consultation_routes.set_admin_sessions(admin_sessions)
 
@@ -1203,9 +1206,19 @@ async def admin_logout(response: Response, admin_session: str = Cookie(None)):
 
 
 @api_router.get("/admin/analytics/live")
-async def get_live_analytics(x_admin_token: str = Header(None)):
+async def get_live_analytics(
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    x_employee_token: str = Header(None, alias="X-Employee-Token")
+):
     """Get real-time analytics for admin dashboard"""
-    verify_admin_token(x_admin_token)
+    if x_admin_token:
+        verify_admin_token(x_admin_token)
+    elif x_employee_token:
+        session = verify_employee_token(x_employee_token)
+        if not session["permissions"].get("analytics"):
+            raise HTTPException(status_code=403, detail="No permission to view analytics")
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
     
     live_by_page = enhanced_analytics.get_live_visitors_by_page()
     total_live = enhanced_analytics.get_live_visitors_count()
@@ -1816,12 +1829,20 @@ async def get_visitor_journey(
 
 @api_router.get("/admin/user-tracking/stats")
 async def get_user_tracking_stats(
-    x_admin_token: str = Header(None),
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    x_employee_token: str = Header(None, alias="X-Employee-Token"),
     days: int = Query(7, ge=1, le=365),
     date: Optional[str] = Query(None, description="Single date in YYYY-MM-DD format")
 ):
     """Get user tracking statistics - supports both days range and single date"""
-    verify_admin_token(x_admin_token)
+    if x_admin_token:
+        verify_admin_token(x_admin_token)
+    elif x_employee_token:
+        session = verify_employee_token(x_employee_token)
+        if not session["permissions"].get("analytics"):
+            raise HTTPException(status_code=403, detail="No permission to view analytics")
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
     
     stats = await user_behavior_tracker.get_visitor_stats(days=days, date=date)
     return stats
@@ -2066,6 +2087,33 @@ async def send_order_whatsapp_notification(request: WhatsAppOrderNotifyRequest, 
         raise HTTPException(status_code=400, detail=result.get("error", "Failed to send WhatsApp notification"))
     
     return result
+
+
+# ==================== CONSULTATIONS ====================
+
+@api_router.get("/admin/consultations")
+async def get_all_consultations(
+    limit: int = Query(100),
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    x_employee_token: str = Header(None, alias="X-Employee-Token")
+):
+    """Get all skin consultations"""
+    if x_admin_token:
+        verify_admin_token(x_admin_token)
+    elif x_employee_token:
+        session = verify_employee_token(x_employee_token)
+        if not session["permissions"].get("consultations"):
+            raise HTTPException(status_code=403, detail="No permission to view consultations")
+    else:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    consultations = await db.consultations.find({}).sort("created_at", -1).to_list(limit)
+    
+    # Convert ObjectId to string
+    for c in consultations:
+        c["_id"] = str(c["_id"])
+    
+    return {"consultations": consultations}
 
 
 @api_router.post("/admin/whatsapp/notify-consultation")
