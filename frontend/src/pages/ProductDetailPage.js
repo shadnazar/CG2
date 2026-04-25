@@ -52,7 +52,7 @@ function ProductDetailPage() {
   const doBuy = () => { addToCart(slug, qty); navigate('/cart'); };
   const addCombo = (id) => { const c = getCart(); if (!c.items.find(i => i.combo_id === id)) c.items.push({ combo_id: id, quantity: 1 }); saveCart(c); navigate('/cart'); };
 
-  if (loading || !product) return <div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading || !product) return <div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
 
   const imgs = product.images?.length > 0 ? product.images : [];
   const kit = combos.find(c => c.combo_id === 'complete-anti-aging-kit');
@@ -63,15 +63,15 @@ function ProductDetailPage() {
   return (
     <div className="min-h-screen bg-white" data-testid="product-detail-page">
       {/* Subtle urgency */}
-      <div className="bg-emerald-800 text-emerald-100 py-1.5 px-4 text-center">
+      <div className="bg-green-800 text-green-100 py-1.5 px-4 text-center">
         <p className="text-[11px] tracking-wide">Limited Offer | {product.discount_percent}% OFF | Free Shipping All India</p>
       </div>
 
       {/* Breadcrumb */}
       <div className="max-w-7xl mx-auto px-4 py-2.5">
         <nav className="flex items-center gap-1.5 text-[11px] text-gray-400">
-          <Link to="/" className="hover:text-emerald-600">Home</Link><ChevronRight size={10} />
-          <Link to="/shop" className="hover:text-emerald-600">Shop</Link><ChevronRight size={10} />
+          <Link to="/" className="hover:text-green-600">Home</Link><ChevronRight size={10} />
+          <Link to="/shop" className="hover:text-green-600">Shop</Link><ChevronRight size={10} />
           <span className="text-gray-600 font-medium">{product.short_name}</span>
         </nav>
       </div>
@@ -81,11 +81,11 @@ function ProductDetailPage() {
           {/* Gallery */}
           <div>
             <div className="aspect-square bg-gradient-to-br from-stone-50 to-gray-50 rounded-3xl overflow-hidden relative shadow-sm">
-              {product.badge && <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-emerald-600 text-white'}`}>{product.badge.toUpperCase()}</div>}
+              {product.badge && <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-600 text-white'}`}>{product.badge.toUpperCase()}</div>}
               {imgs.length > 0 ? (
                 <img src={imgs[imgIdx]} alt={product.name} className="w-full h-full object-contain p-6 sm:p-10" />
               ) : (
-                <div className="w-full h-full flex items-center justify-center"><Sparkles className="w-20 h-20 text-emerald-200" /></div>
+                <div className="w-full h-full flex items-center justify-center"><Sparkles className="w-20 h-20 text-green-200" /></div>
               )}
               {imgs.length > 1 && (
                 <>
@@ -97,7 +97,7 @@ function ProductDetailPage() {
             {imgs.length > 1 && (
               <div className="flex gap-2.5 mt-3">
                 {imgs.map((img, i) => (
-                  <button key={i} onClick={() => setImgIdx(i)} className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all ${imgIdx === i ? 'ring-2 ring-emerald-500 ring-offset-2' : 'opacity-50 hover:opacity-80'}`}>
+                  <button key={i} onClick={() => setImgIdx(i)} className={`flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all ${imgIdx === i ? 'ring-2 ring-green-500 ring-offset-2' : 'opacity-50 hover:opacity-80'}`}>
                     <img src={img} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
@@ -114,13 +114,13 @@ function ProductDetailPage() {
             </div>
 
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-snug tracking-tight">{product.name}</h1>
-            <p className="text-emerald-600 text-xs font-medium mt-1 tracking-wide">{product.tagline} | {product.size}</p>
+            <p className="text-green-600 text-xs font-medium mt-1 tracking-wide">{product.tagline} | {product.size}</p>
 
             {/* Price — Clean, single */}
             <div className="mt-5 flex items-end gap-3">
               <span className="text-4xl font-black text-gray-900 tracking-tight">₹{product.prepaid_price}</span>
               <span className="text-lg text-gray-400 line-through mb-1">₹{product.mrp}</span>
-              <span className="bg-emerald-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-1.5 tracking-wider">{product.discount_percent}% OFF</span>
+              <span className="bg-green-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-1.5 tracking-wider">{product.discount_percent}% OFF</span>
             </div>
             <p className="text-xs text-gray-500 mt-1.5">Free Shipping | COD Available (₹{product.cod_price}) | Inclusive of all taxes</p>
 
@@ -131,8 +131,8 @@ function ProductDetailPage() {
                 {product.key_ingredients?.split('+').map((ing, i) => {
                   const Icon = INGREDIENT_ICONS[i % INGREDIENT_ICONS.length];
                   return (
-                    <div key={i} className="flex-shrink-0 bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl px-4 py-3 min-w-[110px] text-center">
-                      <Icon size={20} className="mx-auto mb-1.5 text-emerald-600" />
+                    <div key={i} className="flex-shrink-0 bg-gradient-to-br from-green-50 to-teal-50 border border-green-100 rounded-2xl px-4 py-3 min-w-[110px] text-center">
+                      <Icon size={20} className="mx-auto mb-1.5 text-green-600" />
                       <p className="text-xs font-semibold text-gray-800">{ing.trim()}</p>
                     </div>
                   );
@@ -146,8 +146,8 @@ function ProductDetailPage() {
               <div className="space-y-2">
                 {product.benefits?.map((b, i) => (
                   <div key={i} className="flex items-center gap-3 bg-stone-50 rounded-xl px-4 py-3 border border-stone-100">
-                    <div className="w-6 h-6 bg-emerald-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Check size={13} className="text-emerald-600" />
+                    <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <Check size={13} className="text-green-600" />
                     </div>
                     <span className="text-sm text-gray-700 font-medium">{b}</span>
                   </div>
@@ -164,15 +164,15 @@ function ProductDetailPage() {
               </div>
             </div>
             <div className="mt-3 flex gap-3">
-              <button onClick={doAdd} className="flex-1 border-2 border-emerald-600 text-emerald-600 font-bold py-3.5 rounded-2xl hover:bg-emerald-50 text-sm transition-all" data-testid="add-to-cart-btn">Add to Cart</button>
-              <button onClick={doBuy} className="flex-1 bg-emerald-600 text-white font-bold py-3.5 rounded-2xl hover:bg-emerald-700 text-sm transition-all shadow-lg shadow-emerald-200/50" data-testid="buy-now-btn">Buy Now</button>
+              <button onClick={doAdd} className="flex-1 border-2 border-green-600 text-green-600 font-bold py-3.5 rounded-2xl hover:bg-green-50 text-sm transition-all" data-testid="add-to-cart-btn">Add to Cart</button>
+              <button onClick={doBuy} className="flex-1 bg-green-600 text-white font-bold py-3.5 rounded-2xl hover:bg-green-700 text-sm transition-all shadow-lg shadow-green-200/50" data-testid="buy-now-btn">Buy Now</button>
             </div>
 
             {/* Trust — Glass style */}
             <div className="mt-5 grid grid-cols-4 gap-2">
               {[{ icon: Truck, t: 'Free Shipping', d: 'All India' }, { icon: Shield, t: 'Genuine', d: '100% Authentic' }, { icon: Award, t: 'Certified', d: 'Lab Tested' }, { icon: Clock, t: '30 Days', d: 'Easy Return' }].map((b, i) => (
                 <div key={i} className="text-center bg-gradient-to-b from-white to-stone-50 rounded-xl py-3 px-1 border border-stone-100 shadow-sm">
-                  <b.icon size={18} className="mx-auto mb-1 text-emerald-600" />
+                  <b.icon size={18} className="mx-auto mb-1 text-green-600" />
                   <p className="text-[9px] font-bold text-gray-800 leading-tight">{b.t}</p>
                   <p className="text-[8px] text-gray-400 mt-0.5">{b.d}</p>
                 </div>
@@ -191,7 +191,7 @@ function ProductDetailPage() {
                     <ChevronDown size={16} className={`text-gray-400 transition-transform duration-200 ${openSection === s.key ? 'rotate-180' : ''}`} />
                   </button>
                   {openSection === s.key && (
-                    <div className="px-4 pb-4 text-sm text-gray-600 leading-relaxed border-l-2 border-emerald-400 ml-4 pl-3">{s.content}</div>
+                    <div className="px-4 pb-4 text-sm text-gray-600 leading-relaxed border-l-2 border-green-400 ml-4 pl-3">{s.content}</div>
                   )}
                 </div>
               ))}
@@ -218,14 +218,14 @@ function ProductDetailPage() {
         )}
 
         {/* Clinical Stats — gradient */}
-        <div className="mt-12 bg-gradient-to-br from-emerald-900 via-emerald-800 to-teal-900 rounded-3xl p-6 sm:p-8 text-white">
-          <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-[0.2em] text-center mb-1">Clinical Study Results</p>
+        <div className="mt-12 bg-gradient-to-br from-green-900 via-green-800 to-teal-900 rounded-3xl p-6 sm:p-8 text-white">
+          <p className="text-[10px] font-bold text-green-300 uppercase tracking-[0.2em] text-center mb-1">Clinical Study Results</p>
           <h3 className="text-lg font-bold text-center mb-5">Proven by 500+ Participants</h3>
           <div className="grid grid-cols-4 gap-3">
             {[{ s: '94%', d: 'Reduced wrinkles' }, { s: '89%', d: 'Brighter skin tone' }, { s: '96%', d: 'Better hydration' }, { s: '91%', d: 'Firmer, lifted skin' }].map((r, i) => (
               <div key={i} className="text-center bg-white/10 backdrop-blur-sm rounded-2xl py-3 px-2">
-                <p className="text-2xl sm:text-3xl font-black text-emerald-300">{r.s}</p>
-                <p className="text-[9px] text-emerald-200 mt-1 leading-tight">{r.d}</p>
+                <p className="text-2xl sm:text-3xl font-black text-green-300">{r.s}</p>
+                <p className="text-[9px] text-green-200 mt-1 leading-tight">{r.d}</p>
               </div>
             ))}
           </div>
@@ -242,12 +242,12 @@ function ProductDetailPage() {
             ].map((d, i) => (
               <div key={i} className="bg-gradient-to-b from-white to-stone-50 rounded-2xl p-4 border border-stone-100 shadow-sm">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 bg-emerald-50 rounded-full flex items-center justify-center ring-2 ring-emerald-200">
-                    <User size={18} className="text-emerald-600" />
+                  <div className="w-10 h-10 bg-green-50 rounded-full flex items-center justify-center ring-2 ring-green-200">
+                    <User size={18} className="text-green-600" />
                   </div>
                   <div>
                     <p className="font-bold text-gray-900 text-sm">{d.n}</p>
-                    <p className="text-[10px] text-emerald-600 font-medium">{d.c}</p>
+                    <p className="text-[10px] text-green-600 font-medium">{d.c}</p>
                   </div>
                 </div>
                 <div className="flex gap-0.5 mb-2">{[1,2,3,4,5].map(s => <Star key={s} size={11} className="fill-amber-400 text-amber-400" />)}</div>
@@ -266,13 +266,13 @@ function ProductDetailPage() {
               <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm">{r.name[0]}</div>
+                    <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm">{r.name[0]}</div>
                     <div>
                       <p className="font-bold text-sm text-gray-900">{r.name}</p>
                       <p className="text-[10px] text-gray-400">{r.loc} | {r.days}</p>
                     </div>
                   </div>
-                  {r.v && <span className="text-[9px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold border border-emerald-200">Verified Purchase</span>}
+                  {r.v && <span className="text-[9px] bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-bold border border-green-200">Verified Purchase</span>}
                 </div>
                 <div className="flex gap-0.5 mb-2">{[1,2,3,4,5].map(s => <Star key={s} size={12} className={s <= r.r ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />)}</div>
                 <p className="text-sm text-gray-600 leading-relaxed">{r.t}</p>
@@ -291,7 +291,7 @@ function ProductDetailPage() {
                 <div key={p.slug} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all group">
                   <Link to={`/product/${p.slug}`}>
                     <div className="aspect-square bg-gradient-to-br from-stone-50 to-gray-50 flex items-center justify-center p-3 group-hover:scale-105 transition-transform">
-                      {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-emerald-200" />}
+                      {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-green-200" />}
                     </div>
                   </Link>
                   <div className="p-3">
@@ -300,7 +300,7 @@ function ProductDetailPage() {
                       <span className="font-bold text-sm text-gray-900">₹{p.prepaid_price}</span>
                       <span className="text-[10px] text-gray-400 line-through">₹{p.mrp}</span>
                     </div>
-                    <button onClick={() => addToCart(p.slug)} className="w-full bg-emerald-600 text-white text-[10px] font-bold py-2 rounded-xl hover:bg-emerald-700 transition-colors" data-testid={`related-add-${p.slug}`}>Add to Cart</button>
+                    <button onClick={() => addToCart(p.slug)} className="w-full bg-green-600 text-white text-[10px] font-bold py-2 rounded-xl hover:bg-green-700 transition-colors" data-testid={`related-add-${p.slug}`}>Add to Cart</button>
                   </div>
                 </div>
               ))}
@@ -313,7 +313,7 @@ function ProductDetailPage() {
           <h3 className="text-lg font-bold text-gray-900 text-center mb-5">Frequently Asked Questions</h3>
           <div className="space-y-2">
             {FAQS.map((f, i) => (
-              <div key={i} className={`rounded-2xl overflow-hidden transition-all ${openFaq === i ? 'bg-emerald-50 border border-emerald-100' : 'bg-stone-50 border border-stone-100'}`}>
+              <div key={i} className={`rounded-2xl overflow-hidden transition-all ${openFaq === i ? 'bg-green-50 border border-green-100' : 'bg-stone-50 border border-stone-100'}`}>
                 <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between p-4 text-left">
                   <span className="font-medium text-gray-900 text-sm pr-4">{f.q}</span>
                   <ChevronDown size={16} className={`text-gray-400 flex-shrink-0 transition-transform duration-200 ${openFaq === i ? 'rotate-180' : ''}`} />
@@ -331,8 +331,8 @@ function ProductDetailPage() {
           <div className="flex-1">
             <p className="text-lg font-black text-gray-900">₹{product.prepaid_price} <span className="text-xs text-gray-400 line-through font-normal">₹{product.mrp}</span></p>
           </div>
-          <button onClick={doAdd} className="border-2 border-emerald-600 text-emerald-600 font-bold px-5 py-2.5 rounded-xl text-xs">Add</button>
-          <button onClick={doBuy} className="bg-emerald-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow-lg shadow-emerald-200/50">Buy Now</button>
+          <button onClick={doAdd} className="border-2 border-green-600 text-green-600 font-bold px-5 py-2.5 rounded-xl text-xs">Add</button>
+          <button onClick={doBuy} className="bg-green-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow-lg shadow-green-200/50">Buy Now</button>
         </div>
       </div>
     </div>

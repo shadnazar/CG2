@@ -1,51 +1,34 @@
-# Celesta Glow - PRD
+# Celesta Glow PRD
 
-## Latest: April 25, 2026 — Premium UI Overhaul v2
+## Latest: April 25, 2026
 
-### Bugs Fixed
-- Cart page image sizing (was full-width, now 16x16/20x20 thumbnails)
-- Nav header is sticky across all pages with cart count badge
-- Cart count updates in real-time when adding products from any page
+### Changes Made
+- Brand green color unified (green-600/700 across all pages, matching notification green)
+- Auto-created 3 coupon codes: WELCOME50 (₹50 off), GLOW10 (10% off), NEWUSER (₹100 off)
+- Volume discounts: 2 items=5%, 3 items=10%, 4+=15% (admin configurable via site settings)
+- Volume discount banner on homepage + displayed in cart/checkout summaries
+- Complete Kit: compact badge layout with product tags + quality badges (FAST RESULTS, COMPLETE ROUTINE, FREE SHIPPING)
+- Trust stats: colorful differentiated badges (green/amber/purple/rose/blue)
+- Coupon promotion banner before footer (WELCOME50)
+- Cart image sizing bug fixed
+- Checkout: "Add More Save More" discount tier display + referral promotion
+- All pages use unified green-600 brand color
 
-### Homepage Premium
-- Animated gradient hero background, glass-morphism brand badge
-- Stats in card backgrounds with borders
-- Product cards with "Save ₹X" text, cart icon on buttons, hover lift+shadow
-- Section headings with decorative accent lines
-- Complete Kit with product thumbnails in "What You Get" list
-- Combos with 16:9 image slots + product count + discount badges
-- Timeline-connected 3-step routine
-- Clinical stats with glass-morphism cards on gradient background
-- FAQ on gradient stone background
-- Skin Analysis CTA section before footer
+### Active Coupons
+- WELCOME50: ₹50 off, min ₹499
+- GLOW10: 10% off, min ₹999
+- NEWUSER: ₹100 off, min ₹1499
 
-### Product Page Premium
-- Single clean price (no dual Prepaid/COD cards)
-- Ingredient cards with leaf/droplet/sun icons
-- Benefits in styled card rows
-- Trust badges with subtitles in glass cards
-- Accordion with emerald accent borders
-- Dermatologist with ring avatars
-- Reviews with gradient avatars + "Verified Purchase" badges
-- Bundle push + clinical stats + FAQ
-
-### Cart Page Premium
-- Fixed image sizing
-- Bundle upgrade push
-- "ADD TO YOUR ORDER" upsell with product images
-- Trust bar (256-bit, Free Shipping, 30-Day)
-- Customer review quote
-- Social proof badges (Orders Today, Rating, Customers)
-
-### Checkout Premium
-- Trust strip, referral banner, payment with RECOMMENDED badge
-- Savings highlight, delivery timeline
+### Volume Discounts (admin configurable)
+- 2 items: 5% OFF
+- 3 items: 10% OFF
+- 4+ items: 15% OFF
 
 ## Credentials
 - Admin: celestaglow2024
 - Employees: orderteam/VclhxCbJ, testadmin/TestPass123
 
 ## Pending
-- Upload real product photos via Admin
+- Upload real product photos
 - Admin review management
-- Old ProductPage.js cleanup (dead code)
+- Cleanup old ProductPage.js

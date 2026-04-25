@@ -354,14 +354,35 @@ async def validate_cart(data: CartValidateRequest):
     total = max(subtotal - discount, 0)
     savings = mrp_total - total
     
+    # Apply volume discount
+    total_items = sum(i["quantity"] for i in validated_items)
+    volume_discount = 0
+    volume_discount_percent = 0
+    settings_doc = await db.site_settings.find_one({"_id": "main"}, {"_id": 0})
+    volume_tiers = (settings_doc or {}).get("volume_discounts", [
+        {"min_items": 2, "discount_percent": 5},
+        {"min_items": 3, "discount_percent": 10},
+        {"min_items": 4, "discount_percent": 15},
+    ])
+    for tier in sorted(volume_tiers, key=lambda x: x.get("min_items", 0), reverse=True):
+        if total_items >= tier.get("min_items", 0):
+            volume_discount_percent = tier.get("discount_percent", 0)
+            volume_discount = round(total * volume_discount_percent / 100, 2)
+            break
+    
+    final_total = max(total - volume_discount, 0)
+    total_savings = mrp_total - final_total
+    
     return {
         "items": validated_items,
         "mrp_total": mrp_total,
         "subtotal": subtotal,
         "discount": discount,
-        "total": total,
-        "savings": savings,
-        "item_count": sum(i["quantity"] for i in validated_items)
+        "volume_discount": volume_discount,
+        "volume_discount_percent": volume_discount_percent,
+        "total": final_total,
+        "savings": total_savings,
+        "item_count": total_items
     }
 
 
@@ -379,6 +400,7 @@ class SiteSettingsUpdate(BaseModel):
     before_after_images: Optional[List[Dict]] = None
     result_images: Optional[List[str]] = None
     bundle_hero_image: Optional[str] = None
+    volume_discounts: Optional[List[Dict]] = None  # [{min_items: 2, discount_percent: 5}, ...]
 
 
 @router.get("/site-settings")

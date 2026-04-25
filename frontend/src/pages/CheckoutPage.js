@@ -75,7 +75,7 @@ function CheckoutPage() {
     <div className={span ? 'sm:col-span-2' : ''}>
       <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">{label}</label>
       <input type={type} value={formData[field]} onChange={e => field === 'pincode' ? handlePincodeChange(e.target.value) : setFormData(prev => ({ ...prev, [field]: e.target.value }))}
-        placeholder={placeholder} className={`w-full px-4 py-3 border rounded-xl text-sm bg-stone-50 focus:bg-white focus:ring-2 focus:ring-emerald-200 transition-all ${errors[field] ? 'border-red-300' : 'border-gray-200'}`} data-testid={`checkout-${field}`} />
+        placeholder={placeholder} className={`w-full px-4 py-3 border rounded-xl text-sm bg-stone-50 focus:bg-white focus:ring-2 focus:ring-green-200 transition-all ${errors[field] ? 'border-red-300' : 'border-gray-200'}`} data-testid={`checkout-${field}`} />
       {errors[field] && <p className="text-red-500 text-[10px] mt-1">{errors[field]}</p>}
     </div>
   );
@@ -83,7 +83,7 @@ function CheckoutPage() {
   return (
     <div className="min-h-screen bg-stone-50" data-testid="checkout-page">
       {/* Premium Trust Strip */}
-      <div className="bg-emerald-800 text-white py-2.5 px-4">
+      <div className="bg-green-800 text-white py-2.5 px-4">
         <div className="max-w-4xl mx-auto flex items-center justify-center gap-5 sm:gap-8 text-[10px] sm:text-xs font-medium">
           <span className="flex items-center gap-1.5"><Lock size={13} /> Secure Checkout</span>
           <span className="flex items-center gap-1.5"><Truck size={13} /> Free Shipping</span>
@@ -105,7 +105,7 @@ function CheckoutPage() {
           {/* Form */}
           <div className="lg:col-span-3 space-y-4">
             <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-              <h2 className="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2"><MapPin size={16} className="text-emerald-600" /> Delivery Address</h2>
+              <h2 className="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2"><MapPin size={16} className="text-green-600" /> Delivery Address</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Full Name" field="name" placeholder="Your full name" />
                 <Field label="Phone" field="phone" type="tel" placeholder="10-digit number" />
@@ -121,18 +121,18 @@ function CheckoutPage() {
             <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
               <h2 className="font-bold text-gray-900 text-sm mb-3">Payment Method</h2>
               <div className="space-y-2.5">
-                <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'prepaid' ? 'border-emerald-500 bg-emerald-50/50' : 'border-gray-100 hover:border-gray-200'}`}>
-                  <input type="radio" name="pay" checked={paymentMethod === 'prepaid'} onChange={() => setPaymentMethod('prepaid')} className="text-emerald-600 w-4 h-4" />
+                <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'prepaid' ? 'border-green-500 bg-green-50/50' : 'border-gray-100 hover:border-gray-200'}`}>
+                  <input type="radio" name="pay" checked={paymentMethod === 'prepaid'} onChange={() => setPaymentMethod('prepaid')} className="text-green-600 w-4 h-4" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <p className="font-bold text-sm text-gray-900">Prepaid (UPI / Card)</p>
-                      {paymentMethod === 'prepaid' && <span className="text-[9px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>}
+                      {paymentMethod === 'prepaid' && <span className="text-[9px] bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>}
                     </div>
-                    <p className="text-[10px] text-emerald-600 font-medium mt-0.5">Faster Delivery 1-2 days</p>
+                    <p className="text-[10px] text-green-600 font-medium mt-0.5">Faster Delivery 1-2 days</p>
                   </div>
                 </label>
-                <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'COD' ? 'border-emerald-500 bg-emerald-50/50' : 'border-gray-100 hover:border-gray-200'}`}>
-                  <input type="radio" name="pay" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} className="text-emerald-600 w-4 h-4" />
+                <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'COD' ? 'border-green-500 bg-green-50/50' : 'border-gray-100 hover:border-gray-200'}`}>
+                  <input type="radio" name="pay" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} className="text-green-600 w-4 h-4" />
                   <div>
                     <p className="font-bold text-sm text-gray-900">Cash on Delivery</p>
                     <p className="text-[10px] text-gray-500 mt-0.5">₹29 advance | Pay rest on delivery</p>
@@ -142,6 +142,19 @@ function CheckoutPage() {
             </div>
 
             {/* Referral Program Promotion */}
+            <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-4 text-white">
+              <p className="text-xs font-bold mb-1">Add More, Save More!</p>
+              <div className="flex gap-2 mt-2">
+                {[{n:'2 items',d:'5% OFF'},{n:'3 items',d:'10% OFF'},{n:'4+ items',d:'15% OFF'}].map((t,i) => (
+                  <div key={i} className="bg-white/15 rounded-lg px-2.5 py-1.5 text-center flex-1">
+                    <p className="text-[10px] font-bold">{t.n}</p>
+                    <p className="text-[9px] opacity-80">{t.d}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Referral Program */}
             <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-2xl p-4 border border-purple-100">
               <div className="flex items-center gap-2 mb-2"><Gift size={16} className="text-purple-600" /><p className="text-xs font-bold text-purple-800">Earn Rewards After Purchase!</p></div>
               <p className="text-xs text-gray-600 leading-relaxed">Refer friends after checkout and earn ₹50 for every successful referral. <span className="font-semibold text-purple-700">2,847 customers referred friends this month!</span></p>
@@ -173,25 +186,26 @@ function CheckoutPage() {
               </div>
               <div className="border-t border-gray-100 pt-3 space-y-1.5 text-sm">
                 <div className="flex justify-between text-gray-400"><span>Subtotal</span><span>₹{cartData.subtotal?.toLocaleString()}</span></div>
-                {cartData.discount > 0 && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-₹{cartData.discount}</span></div>}
-                <div className="flex justify-between text-gray-400"><span>Shipping</span><span className="text-emerald-600 font-medium">FREE</span></div>
+                {cartData.discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-₹{cartData.discount}</span></div>}
+                {cartData.volume_discount > 0 && <div className="flex justify-between text-purple-600"><span>Volume Discount ({cartData.volume_discount_percent}%)</span><span>-₹{cartData.volume_discount}</span></div>}
+                <div className="flex justify-between text-gray-400"><span>Shipping</span><span className="text-green-600 font-medium">FREE</span></div>
                 <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-gray-900 text-lg"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>
               </div>
 
               {cartData.savings > 0 && (
-                <div className="mt-3 bg-emerald-50 rounded-xl p-2.5 text-center border border-emerald-100">
-                  <p className="text-xs font-bold text-emerald-700">You're saving ₹{cartData.savings?.toLocaleString()} on this order!</p>
+                <div className="mt-3 bg-green-50 rounded-xl p-2.5 text-center border border-green-100">
+                  <p className="text-xs font-bold text-green-700">You're saving ₹{cartData.savings?.toLocaleString()} on this order!</p>
                 </div>
               )}
 
-              <button onClick={placeOrder} disabled={submitting} className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 text-white font-bold py-3.5 rounded-2xl mt-4 text-sm shadow-xl shadow-emerald-200/40 transition-all" data-testid="place-order-btn">
+              <button onClick={placeOrder} disabled={submitting} className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-300 text-white font-bold py-3.5 rounded-2xl mt-4 text-sm shadow-xl shadow-green-200/40 transition-all" data-testid="place-order-btn">
                 {submitting ? 'Processing...' : paymentMethod === 'prepaid' ? `Pay ₹${cartData.total?.toLocaleString()}` : `Place COD Order`}
               </button>
 
               {/* Delivery Timeline */}
               <div className="mt-3 text-center text-xs text-gray-500">
                 {paymentMethod === 'prepaid' ? (
-                  <p>Estimated delivery: <strong className="text-emerald-600">1-2 business days</strong></p>
+                  <p>Estimated delivery: <strong className="text-green-600">1-2 business days</strong></p>
                 ) : (
                   <p>Estimated delivery: <strong>5-7 business days</strong></p>
                 )}

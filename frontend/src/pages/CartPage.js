@@ -54,7 +54,7 @@ function CartPage() {
     navigate('/checkout', { state: { cartData, paymentMethod: 'prepaid', coupon: appliedCoupon } });
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-stone-50"><div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-stone-50"><div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
 
   if (!cartData || !cartData.items?.length) {
     return (
@@ -62,7 +62,7 @@ function CartPage() {
         <div className="text-center"><ShoppingCart className="w-14 h-14 mx-auto mb-4 text-gray-200" />
         <h2 className="text-lg font-bold text-gray-900 mb-2">Your cart is empty</h2>
         <p className="text-sm text-gray-500 mb-6">Explore our anti-aging range to get started.</p>
-        <Link to="/shop" className="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-emerald-700 inline-flex items-center gap-2">Shop Now <ChevronRight size={16} /></Link></div>
+        <Link to="/shop" className="bg-green-600 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-green-700 inline-flex items-center gap-2">Shop Now <ChevronRight size={16} /></Link></div>
       </div>
     );
   }
@@ -86,11 +86,11 @@ function CartPage() {
             {cartData.items.map((item, index) => (
               <div key={index} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex gap-3.5" data-testid={`cart-item-${index}`}>
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-stone-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {item.image ? <img src={item.image} alt="" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" /> : <Package size={20} className="text-emerald-300" />}
+                  {item.image ? <img src={item.image} alt="" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" /> : <Package size={20} className="text-green-300" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-gray-900 text-sm leading-tight">{item.type === 'combo' ? item.name : item.short_name || item.name}</h3>
-                  {item.type === 'combo' && <p className="text-[10px] text-emerald-600 font-medium">{item.product_slugs?.length} products included</p>}
+                  {item.type === 'combo' && <p className="text-[10px] text-green-600 font-medium">{item.product_slugs?.length} products included</p>}
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="font-bold text-gray-900">₹{item.price}</span>
                     {(item.mrp || item.mrp_total) > item.price && <span className="text-[10px] text-gray-400 line-through">₹{item.mrp || item.mrp_total}</span>}
@@ -115,7 +115,7 @@ function CartPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-bold text-sm text-gray-900">{kit.name}</p>
-                    <p className="text-xs mt-0.5"><span className="font-bold text-emerald-700">₹{kit.combo_prepaid_price?.toLocaleString()}</span> <span className="text-gray-400 line-through text-[10px]">₹{kit.mrp_total?.toLocaleString()}</span></p>
+                    <p className="text-xs mt-0.5"><span className="font-bold text-green-700">₹{kit.combo_prepaid_price?.toLocaleString()}</span> <span className="text-gray-400 line-through text-[10px]">₹{kit.mrp_total?.toLocaleString()}</span></p>
                   </div>
                   <button onClick={() => { const c = getCart(); c.items = [{ combo_id: kit.combo_id, quantity: 1 }]; saveCart(c); validateCart(); }}
                     className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm">Switch to Kit</button>
@@ -131,11 +131,11 @@ function CartPage() {
                   {upsellProducts.slice(0, 4).map(p => (
                     <div key={p.slug} className="flex-shrink-0 w-28 text-center">
                       <div className="w-20 h-20 mx-auto bg-stone-50 rounded-xl flex items-center justify-center mb-1.5 overflow-hidden">
-                        {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-16 h-16 object-contain" /> : <Sparkles size={16} className="text-emerald-300" />}
+                        {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-16 h-16 object-contain" /> : <Sparkles size={16} className="text-green-300" />}
                       </div>
                       <p className="text-[10px] font-semibold text-gray-800 line-clamp-1">{p.short_name}</p>
                       <p className="text-[10px] text-gray-500">₹{p.prepaid_price}</p>
-                      <button onClick={() => addUpsellToCart(p.slug)} className="mt-1.5 w-full bg-emerald-600 text-white text-[9px] font-bold py-1.5 rounded-lg hover:bg-emerald-700">+ Add</button>
+                      <button onClick={() => addUpsellToCart(p.slug)} className="mt-1.5 w-full bg-green-600 text-white text-[9px] font-bold py-1.5 rounded-lg hover:bg-green-700">+ Add</button>
                     </div>
                   ))}
                 </div>
@@ -143,11 +143,11 @@ function CartPage() {
             )}
 
             {/* Trust Bar */}
-            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
+            <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 border border-green-100">
               <div className="grid grid-cols-3 gap-3">
                 {[{ icon: Lock, t: '256-bit Secure', d: 'SSL Encrypted' }, { icon: Truck, t: 'Free Shipping', d: 'All India Delivery' }, { icon: Clock, t: '30-Day Return', d: 'Money Back Guarantee' }].map((b, i) => (
                   <div key={i} className="text-center">
-                    <div className="w-9 h-9 mx-auto mb-1.5 bg-white rounded-xl flex items-center justify-center shadow-sm"><b.icon size={16} className="text-emerald-600" /></div>
+                    <div className="w-9 h-9 mx-auto mb-1.5 bg-white rounded-xl flex items-center justify-center shadow-sm"><b.icon size={16} className="text-green-600" /></div>
                     <p className="text-[10px] font-bold text-gray-800">{b.t}</p>
                     <p className="text-[8px] text-gray-400 mt-0.5">{b.d}</p>
                   </div>
@@ -159,7 +159,7 @@ function CartPage() {
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Customers Love Us</p>
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">R</div>
+                <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">R</div>
                 <div>
                   <div className="flex gap-0.5 mb-0.5">{[1,2,3,4,5].map(i => <Star key={i} size={10} className="fill-amber-400 text-amber-400" />)}</div>
                   <p className="text-xs text-gray-600">"Best anti-aging products I've ever used. Visible results in 2 weeks!"</p>
@@ -172,22 +172,22 @@ function CartPage() {
           {/* Summary Column */}
           <div className="space-y-3">
             {cartData.savings > 0 && (
-              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-3.5 text-center text-white shadow-lg shadow-emerald-200/30">
+              <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-2xl p-3.5 text-center text-white shadow-lg shadow-green-200/30">
                 <p className="text-sm font-bold">You're saving ₹{cartData.savings?.toLocaleString()}</p>
-                <p className="text-[10px] text-emerald-100">on this order</p>
+                <p className="text-[10px] text-green-100">on this order</p>
               </div>
             )}
 
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Have a Coupon?</p>
               {appliedCoupon ? (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
-                  <div><p className="font-bold text-emerald-700 text-sm">{appliedCoupon.code}</p><p className="text-[10px] text-emerald-600">Saving ₹{appliedCoupon.discount}</p></div>
+                <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center justify-between">
+                  <div><p className="font-bold text-green-700 text-sm">{appliedCoupon.code}</p><p className="text-[10px] text-green-600">Saving ₹{appliedCoupon.discount}</p></div>
                   <button onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="text-gray-400 text-xs hover:text-red-500">Remove</button>
                 </div>
               ) : (
                 <div className="flex gap-2">
-                  <input type="text" value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())} placeholder="Enter code" className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-stone-50 focus:bg-white focus:ring-2 focus:ring-emerald-200" />
+                  <input type="text" value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())} placeholder="Enter code" className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-stone-50 focus:bg-white focus:ring-2 focus:ring-green-200" />
                   <button onClick={applyCoupon} className="px-4 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800">Apply</button>
                 </div>
               )}
@@ -199,13 +199,14 @@ function CartPage() {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-gray-400"><span>MRP</span><span className="line-through">₹{cartData.mrp_total?.toLocaleString()}</span></div>
                 <div className="flex justify-between text-gray-700"><span>Subtotal</span><span className="font-medium">₹{cartData.subtotal?.toLocaleString()}</span></div>
-                {cartData.discount > 0 && <div className="flex justify-between text-emerald-600"><span>Coupon Discount</span><span>-₹{cartData.discount}</span></div>}
-                <div className="flex justify-between text-gray-400"><span>Shipping</span><span className="text-emerald-600 font-medium">FREE</span></div>
+                {cartData.discount > 0 && <div className="flex justify-between text-green-600"><span>Coupon Discount</span><span>-₹{cartData.discount}</span></div>}
+                {cartData.volume_discount > 0 && <div className="flex justify-between text-purple-600"><span>Volume Discount ({cartData.volume_discount_percent}%)</span><span>-₹{cartData.volume_discount}</span></div>}
+                <div className="flex justify-between text-gray-400"><span>Shipping</span><span className="text-green-600 font-medium">FREE</span></div>
                 <div className="border-t border-gray-100 pt-2.5 flex justify-between font-bold text-gray-900 text-lg"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>
               </div>
             </div>
 
-            <button onClick={proceedToCheckout} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl text-base shadow-xl shadow-emerald-200/40 transition-all" data-testid="proceed-checkout-btn">
+            <button onClick={proceedToCheckout} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded-2xl text-base shadow-xl shadow-green-200/40 transition-all" data-testid="proceed-checkout-btn">
               Proceed to Checkout
             </button>
 
