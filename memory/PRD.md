@@ -3,16 +3,12 @@
 ## Original Problem Statement
 Build a comprehensive multi-product e-commerce platform for anti-aging products ("Celesta Glow") with:
 - 5 products: Anti-Aging Serum, Anti-Aging Night Cream, Under Eye Cream, SPF 50 Sunscreen, Gentle Cleanser
-- Combo bundles for multi-product deals
-- Cart & checkout system with COD + Prepaid support
-- Admin panel with product management, analytics, order management
-- AI-powered SEO blog generation
-- User behavior tracking and analytics
-- Meta Pixel, Google Ads tracking with AddToCart, ViewContent, Purchase events
-- Employee portal with role-based access
-- Customer retention system, coupon codes, pre-sale mode
+- Combo bundles, cart system, checkout with COD + Prepaid
+- Admin panel with full product management, analytics, orders
+- AI blog generation, employee portal, customer retention
+- Meta Pixel, Google Ads tracking with per-product events
 
-## Product Catalog (MRP Prices)
+## Product Catalog
 | Product | MRP | Prepaid | COD | Badge |
 |---------|-----|---------|-----|-------|
 | Anti-Aging Serum | ₹1,699 | ₹999 | ₹1,099 | Bestseller |
@@ -28,91 +24,81 @@ Build a comprehensive multi-product e-commerce platform for anti-aging products 
 
 ## What's Been Implemented
 
-### April 25, 2026 — Multi-Product Transformation (Phase 1+2)
-**Backend:**
-- `products` collection with full CRUD (POST/PUT/DELETE /api/admin/products)
-- `combos` collection with CRUD (POST/PUT/DELETE /api/admin/combos)
+### April 25, 2026 — Multi-Product Transformation + Legacy Migration
+
+**Phase 1: Backend Foundation**
+- `products` collection with CRUD + 5 seeded products with real ingredient data
+- `combos` collection with 3 seeded bundles
 - `coupons` collection with create/validate/delete
-- Cart validation endpoint (POST /api/cart/validate)
-- Site settings (hero title, COD advance, pre-sale toggle)
-- Product seed on startup (5 products, 3 combos)
-- Updated order model to support multi-product items
+- Cart validation endpoint, site settings, order model updated for multi-product
 
-**Frontend:**
-- Homepage redesigned for multi-product (hero, 5 products grid, combo deals, trust section)
-- ProductDetailPage (dynamic /product/:slug with image gallery, pricing, benefits, accordion)
-- ShopPage (/shop with all products + combos)
-- CartPage (/cart with items, payment method, coupons, upselling, order summary)
-- CheckoutPage (/checkout with address form, Razorpay integration)
-- Admin Product Management (/admin/products with tabs: Products, Combos, Coupons, Site Settings)
+**Phase 2: Frontend New Pages**
+- Homepage redesigned: flash sale timer, Complete Kit bundle (top), 5-product grid, combo deals, 3-step routine, clinical results, dermatologist section, FAQ
+- ProductDetailPage: 4-image carousel, pricing, benefits, accordion, dermatologist reviews, customer reviews, before/after section, Complete Kit push, related products with Add to Cart, sticky mobile CTA, FAQ
+- ShopPage: all products + combo bundles
+- CartPage: items, payment method, coupons, upsell products, bundle push, trust badges
+- CheckoutPage: address form, trust elements, savings highlight, delivery timeline
+- AdminProducts: Products/Combos/Coupons/Site Settings tabs with full CRUD
 
-**Tracking:**
-- Meta Pixel: AddToCart fires on product add, ViewContent on product page, Purchase on order success
-- Google Ads: Conversion tracking on purchase
-- Backend: order_complete action tracked to visitor_profiles
+**Phase 3: Legacy Migration (30+ files updated)**
+- Navigation: Cart icon → /cart with count badge, Shop → /shop
+- Footer: description updated to multi-product
+- RecentPurchaseNotification: rotates all 5 products + combos
+- WhatsAppButton: message updated to "anti-aging products"
+- BlogList, BlogPost, LocationPage: CTAs → /shop, prices → "From ₹499"
+- AboutPage: updated description to 5-product system
+- ConsultationPage: recommendation → /shop
+- OrderSuccessPage: shows actual order items, dynamic pixel data
+- index.html: SEO meta tags updated (title, description, OG, Twitter)
+- Backend emails: product references updated
+- Delhivery: shipment description updated
+- AI blog prompts: updated to reference complete range
+- AdminLocationEditor: description updated
+- Product images: 4 per product set via API
 
-### April 13, 2026 — Employee Portal + Purchase Tracking Fix
-- Fixed Employee pages (Blogs, Analytics, Landing Pages, Consultations)
-- Added back buttons to all employee pages
-- Fixed EmployeeAnalytics using wrong API endpoint
-- Fixed backend crash (employee_sessions declaration order)
-- Fixed missing purchase conversion tracking in OrderSuccessPage
-- Added Google Ads conversion to OrderSuccessPage and LandingOrderSuccess
-- All 13 tests PASSED
+**Previous Sessions (preserved):**
+- Employee portal with role-based access
+- Purchase conversion tracking (Meta + Google Ads + backend)
+- SEO trust pages (About, Contact, Refund, Shipping)
+- Referral system, WhatsApp integration, AI blog generation
 
-### Previous Sessions
-- Employee Management System, Customer Section, COD ₹29 pricing
-- SEO Trust Pages (About, Contact, Refund Policy, Shipping Policy)
-- Admin fixes, User Journey analytics, referral system
-- Landing page funnels, blog system, WhatsApp integration
+## Pending/Future Tasks
 
-## Current Pricing
-- COD Advance: ₹29 (configurable from admin)
-- Prepaid gets "Faster Delivery (1-2 days)" messaging
-- Free shipping on all orders
+### P1 (High)
+- Customer retention panel (15-day/30-day follow-up, reorder from admin)
+- Pre-sale campaign mode (admin toggle transforms site pricing)
+- Admin before/after image management per product
+- Admin homepage section customization
+
+### P2 (Medium)
+- Real product images (user to upload their own via admin)
+- Landing page funnels update for multi-product (LandingHero.js, LandingProductPage.js still have ₹699)
+- metaPixel.js utility — make functions accept dynamic product data
+- TrackingProvider.js — dynamic content_ids
+- Old ProductPage.js cleanup (1615 lines, no longer routed but still in bundle)
+
+### P3 (Low)
+- Customer video testimonials
+- Refactor server.py into modular routers
+- WhatsApp automated triggers
 
 ## Architecture
 ```
 /app
 ├── backend/
-│   ├── routes/
-│   │   ├── products.py (Product/Combo/Coupon CRUD + Cart validation)
-│   │   ├── landing_pages.py, consultation.py, admin.py
+│   ├── routes/products.py (Product/Combo/Coupon CRUD + Cart)
+│   ├── routes/ (landing_pages, consultation, admin, i18n)
 │   ├── services/
-│   ├── server.py
-└── frontend/
-    └── src/
-        ├── pages/
-        │   ├── Homepage.js (multi-product)
-        │   ├── ProductDetailPage.js (dynamic)
-        │   ├── ShopPage.js, CartPage.js, CheckoutPage.js
-        │   ├── admin/AdminProducts.js
-        │   ├── admin/ (Dashboard, Orders, Blogs, etc.)
-        │   ├── employee/ (Dashboard, Login, Orders, etc.)
+│   └── server.py
+└── frontend/src/
+    ├── pages/Homepage.js (multi-product)
+    ├── pages/ProductDetailPage.js (dynamic with reviews, FAQ)
+    ├── pages/ShopPage.js, CartPage.js, CheckoutPage.js
+    ├── pages/admin/AdminProducts.js
+    ├── components/Navigation.js (cart badge)
+    └── components/DermatologistSection.js
 ```
 
-## Pending/Future Tasks
-
-### P2 (Medium)
-- Customer retention panel (15-day/30-day follow-up with reorder)
-- Pre-sale campaign mode (full site transformation)
-- Admin image upload for products (currently URL-based)
-- Before/after result images management
-
-### P3 (Low)
-- WhatsApp Cloud API automated triggers (paused)
-- Customer referral program enhancements
-- Refactor server.py into modular routers
-- Customer video testimonials
-
-## 3rd Party Integrations
-- OpenAI GPT-4o — Emergent LLM Key
-- Razorpay — Live payments
-- Meta Pixel — ID: 690863659974240
-- Google Ads — AW-16928253164
-- WhatsApp Cloud API — Integrated
-- Delhivery — Shipping
-
 ## Credentials
-- Admin Password: `celestaglow2024`
-- Employee: orderteam/VclhxCbJ, testadmin/TestPass123
+- Admin: `celestaglow2024`
+- Employees: orderteam/VclhxCbJ, testadmin/TestPass123
