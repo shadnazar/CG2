@@ -56,7 +56,7 @@ function Homepage() {
     <div className="min-h-screen bg-white" data-testid="homepage">
       {/* Brand Bar */}
       <div className="bg-green-700 text-green-50 text-center py-1.5 px-4">
-        <p className="text-[10px] sm:text-xs tracking-wider font-medium">FREE SHIPPING | COD AVAILABLE | 30-DAY MONEY BACK | 50,000+ CUSTOMERS</p>
+        <p className="text-xs sm:text-xs tracking-wider font-medium">FREE SHIPPING | COD AVAILABLE | 30-DAY MONEY BACK | 50,000+ CUSTOMERS</p>
       </div>
 
       {/* Hero */}
@@ -87,7 +87,7 @@ function Homepage() {
                 {[{ n: '50K+', d: 'Customers', bg: 'green' }, { n: '4.8', d: 'Rating', bg: 'amber' }, { n: '30-Day', d: 'Return', bg: 'rose' }, { n: 'COD', d: 'Available', bg: 'blue' }].map((s, i) => (
                   <div key={i} className={`bg-${s.bg}-50 border border-${s.bg}-200/60 rounded-xl px-3 py-1.5 text-center`}>
                     <p className={`text-sm font-black text-${s.bg}-700`}>{s.n}</p>
-                    <p className={`text-[7px] text-${s.bg}-600 font-semibold tracking-wider`}>{s.d.toUpperCase()}</p>
+                    <p className={`text-xs text-${s.bg}-600 font-semibold tracking-wider`}>{s.d.toUpperCase()}</p>
                   </div>
                 ))}
               </div>
@@ -159,13 +159,13 @@ function Homepage() {
 
       {/* Volume Discount Banner */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white py-2.5 px-4 text-center">
-        <p className="text-[10px] sm:text-xs font-bold">Add More, Save More! <span className="font-normal opacity-90">2 items = 5% OFF | 3 items = 10% OFF | 4+ items = 15% OFF</span></p>
+        <p className="text-xs sm:text-xs font-bold">Add More, Save More! <span className="font-normal opacity-90">2 items = 5% OFF | 3 items = 10% OFF | 4+ items = 15% OFF</span></p>
       </div>
 
       {/* Products */}
       <section className="max-w-7xl mx-auto px-4 py-8 sm:py-12" data-testid="products-section">
         <div className="text-center mb-6">
-          <p className="text-[10px] font-bold text-green-600 uppercase tracking-[0.2em] mb-1">Our Range</p>
+          <p className="text-xs font-bold text-green-600 uppercase tracking-[0.2em] mb-1">Our Range</p>
           <h2 className="text-xl sm:text-2xl font-black text-gray-900">Shop Individual Products</h2>
           <div className="w-12 h-0.5 bg-green-500 mx-auto mt-2.5 rounded-full" />
         </div>
@@ -175,36 +175,36 @@ function Homepage() {
             const piecesLeft = Math.floor(Math.random() * 20) + 5;
             return (
             <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300" data-testid={`product-card-${product.slug}`}>
-              {product.badge && <div className={`text-[10px] font-bold px-3 py-1 text-center tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-50 text-green-700'}`}>{product.badge.toUpperCase()}</div>}
+              {product.badge && <div className={`text-xs font-bold px-3 py-1 text-center tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-50 text-green-700'}`}>{product.badge.toUpperCase()}</div>}
               <Link to={`/product/${product.slug}`} className="block relative">
                 <div className="aspect-square bg-stone-50 flex items-center justify-center p-4 group-hover:scale-105 transition-transform duration-300">
                   {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-green-200" />}
                 </div>
                 {/* Live badges — medium size */}
                 <div className="absolute bottom-2 left-2 right-2 flex justify-between">
-                  <span className="text-[9px] bg-white/95 backdrop-blur-sm text-gray-700 px-2 py-1 rounded-lg font-semibold border border-gray-200 shadow-sm">{orders} sold today</span>
-                  <span className="text-[9px] bg-rose-50 text-rose-700 px-2 py-1 rounded-lg font-semibold border border-rose-200 shadow-sm">{piecesLeft} left</span>
+                  <span className="text-xs bg-white/95 backdrop-blur-sm text-gray-700 px-2 py-1 rounded-lg font-semibold border border-gray-200 shadow-sm">{orders} sold today</span>
+                  <span className="text-xs bg-rose-50 text-rose-700 px-2 py-1 rounded-lg font-semibold border border-rose-200 shadow-sm">{piecesLeft} left</span>
                 </div>
               </Link>
               <div className="p-3">
                 <Link to={`/product/${product.slug}`}><h3 className="font-bold text-gray-900 text-sm leading-tight mb-1 group-hover:text-green-700 line-clamp-2">{product.short_name}</h3></Link>
-                <p className="text-[10px] text-gray-400 line-clamp-1 mb-1">{product.key_ingredients}</p>
-                <p className="text-[10px] text-gray-400 mb-1.5">{product.size}</p>
+                <p className="text-xs text-gray-400 line-clamp-1 mb-1">{product.key_ingredients}</p>
+                <p className="text-xs text-gray-400 mb-1.5">{product.size}</p>
                 {/* Price */}
                 <div className="flex items-baseline gap-2 mb-1">
                   <span className="text-xs text-gray-400 line-through">₹{product.mrp}</span>
                   <span className="text-lg font-black text-gray-900">₹{product.prepaid_price}</span>
-                  <span className="text-[10px] font-bold text-green-600">{product.discount_percent}% Off</span>
+                  <span className="text-xs font-bold text-green-600">{product.discount_percent}% Off</span>
                 </div>
                 {/* Coupon — orange theme */}
                 <div className="bg-orange-50 border border-orange-200 rounded-lg px-2 py-1.5 mb-2 flex items-center gap-1.5">
                   <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0"><Check size={9} className="text-white" /></div>
-                  <p className="text-[10px] text-orange-800 font-semibold">Get for ₹{product.prepaid_price - 50} with <span className="font-bold font-mono">WELCOME50</span></p>
+                  <p className="text-xs text-orange-800 font-semibold">Get for ₹{product.prepaid_price - 50} with <span className="font-bold font-mono">WELCOME50</span></p>
                 </div>
                 {/* Rating */}
                 <div className="flex items-center gap-1.5 mb-2.5">
                   <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} size={11} className={i <= Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />)}</div>
-                  <span className="text-[10px] text-gray-500 font-medium">({product.reviews_count?.toLocaleString()})</span>
+                  <span className="text-xs text-gray-500 font-medium">({product.reviews_count?.toLocaleString()})</span>
                 </div>
                 <button onClick={(e) => { e.preventDefault(); handleAddToCart(product.slug); }} className="w-full bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5" data-testid={`add-to-cart-${product.slug}`}>
                   <ShoppingCart size={14} /> Add to Cart
@@ -221,7 +221,7 @@ function Homepage() {
         <section className="bg-stone-50 py-8 sm:py-12" data-testid="combos-section">
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-5">
-              <p className="text-[10px] font-bold text-green-600 uppercase tracking-[0.2em] mb-1">Bundle & Save</p>
+              <p className="text-xs font-bold text-green-600 uppercase tracking-[0.2em] mb-1">Bundle & Save</p>
               <h2 className="text-xl sm:text-2xl font-black text-gray-900">More Deals</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -229,14 +229,14 @@ function Homepage() {
                 <div key={combo.combo_id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all">
                   <div className="aspect-[16/9] bg-gradient-to-br from-green-50 to-teal-50 flex items-center justify-center relative">
                     <Package className="w-8 h-8 text-green-300" />
-                    <span className="absolute top-2.5 right-2.5 bg-rose-500 text-white text-[8px] font-bold px-2 py-0.5 rounded-full">{combo.discount_percent}% OFF</span>
-                    <span className="absolute top-2.5 left-2.5 bg-white/90 text-gray-700 text-[8px] font-bold px-2 py-0.5 rounded-full">{combo.product_slugs?.length} Products</span>
+                    <span className="absolute top-2.5 right-2.5 bg-rose-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">{combo.discount_percent}% OFF</span>
+                    <span className="absolute top-2.5 left-2.5 bg-white/90 text-gray-700 text-xs font-bold px-2 py-0.5 rounded-full">{combo.product_slugs?.length} Products</span>
                   </div>
                   <div className="p-3.5">
                     <h3 className="text-sm font-bold text-gray-900">{combo.name}</h3>
                     <div className="flex items-center justify-between mt-2">
-                      <div><span className="text-lg font-black text-gray-900">₹{combo.combo_prepaid_price?.toLocaleString()}</span><span className="text-[10px] text-gray-400 line-through ml-1">₹{combo.mrp_total?.toLocaleString()}</span></div>
-                      <button onClick={() => handleAddCombo(combo.combo_id)} className="bg-green-600 text-white px-3 py-1.5 rounded-lg font-bold text-[10px] hover:bg-green-700 flex items-center gap-1"><ShoppingCart size={10} /> Add</button>
+                      <div><span className="text-lg font-black text-gray-900">₹{combo.combo_prepaid_price?.toLocaleString()}</span><span className="text-xs text-gray-400 line-through ml-1">₹{combo.mrp_total?.toLocaleString()}</span></div>
+                      <button onClick={() => handleAddCombo(combo.combo_id)} className="bg-green-600 text-white px-3 py-1.5 rounded-lg font-bold text-xs hover:bg-green-700 flex items-center gap-1"><ShoppingCart size={10} /> Add</button>
                     </div>
                   </div>
                 </div>
@@ -254,7 +254,7 @@ function Homepage() {
             <div key={i} className="text-center">
               <div className="w-11 h-11 sm:w-14 sm:h-14 bg-green-600 text-white text-sm sm:text-lg font-black rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-2 sm:mb-3 shadow-lg shadow-green-200/50">{item.s}</div>
               <h3 className="font-bold text-gray-900 text-xs sm:text-base mb-0.5">{item.t}</h3>
-              <p className="text-[9px] sm:text-xs text-gray-500">{item.d}</p>
+              <p className="text-xs sm:text-xs text-gray-500">{item.d}</p>
             </div>
           ))}
         </div>
@@ -268,7 +268,7 @@ function Homepage() {
             {[{ s: '94%', d: 'Less wrinkles' }, { s: '89%', d: 'Brighter tone' }, { s: '96%', d: 'Hydrated' }, { s: '91%', d: 'Firmer skin' }].map((r, i) => (
               <div key={i} className="text-center bg-white/10 backdrop-blur-sm rounded-xl py-3 px-2 border border-white/10">
                 <p className="text-xl sm:text-3xl font-black text-green-300">{r.s}</p>
-                <p className="text-[8px] sm:text-[10px] text-green-200 mt-1">{r.d}</p>
+                <p className="text-xs sm:text-xs text-green-200 mt-1">{r.d}</p>
               </div>
             ))}
           </div>
@@ -282,7 +282,7 @@ function Homepage() {
           {[{ icon: Shield, t: 'Lab Tested' }, { icon: Truck, t: 'Free Ship' }, { icon: Award, t: 'Certified' }, { icon: RefreshCw, t: '30-Day Return' }].map((item, i) => (
             <div key={i} className="text-center p-3 rounded-xl bg-stone-50 border border-stone-100">
               <item.icon size={20} className="mx-auto mb-1.5 text-green-600" />
-              <p className="text-[10px] font-bold text-gray-800">{item.t}</p>
+              <p className="text-xs font-bold text-gray-800">{item.t}</p>
             </div>
           ))}
         </div>

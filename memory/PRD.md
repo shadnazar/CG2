@@ -1,36 +1,30 @@
-# Celesta Glow PRD
+# Celesta Glow PRD - Final
 
 ## Latest: April 25, 2026
 
-### Sizing & Badge Fixes
-- All text/badges resized to medium (not too small, not too big)
-- Product cards: name text-sm, price text-lg, badge text-[10px], coupon text-[10px]
-- "X sold today" + "X left" badges medium size with proper contrast
-- Orange coupon theme (not green) — differentiated from brand color
+### Text Size Fixes
+- All tiny text (7px-10px) increased to readable sizes (xs-sm)
+- Product name: text-base (16px), Price: text-xl (20px)
+- Badges, ratings, descriptions: text-xs (12px)
+- Buttons: text-sm (14px) with icons
 
-### Auto Monthly Coupons
-- Backend auto-generates 3 monthly coupons on startup: MONTH_CODE (₹25), MONTH_GLOW (₹30), NEXT_EARLY (₹20)
-- WELCOME50 auto-created if not exists
-- Admin can also manually create coupons
+### Shop Page = Homepage Card Style
+- Same Nykaa-style cards with badges, stock left, coupon, rating
+- Bundle bigger with description and product tags
 
-### Active Coupons
-- WELCOME50: ₹50 off (min ₹499) — permanent new user
-- FEB25: ₹25 off — auto monthly
-- FEBGLOW: ₹30 off — auto monthly
-- MAREARLY: ₹20 off — auto monthly
-- GLOW10: 10% off (min ₹999) — manual
-- NEWUSER: ₹100 off (min ₹1499) — manual
+### Cart Coupon — No Reload
+- Shows 3 coupons (WELCOME50, FEB26, GLOW10) with Apply buttons
+- One tap applies — no page reload
+- Bundle "Switch to Kit" — no reload
+- Manual coupon input also available
 
-### Checkout
-- COD ₹0 advance, "Save more with Prepaid" nudge
-- Tappable volume discount tiers
-- Taxes: ₹0 (Included), Shipping: FREE
-- Total savings gradient banner
+### Checkout Quantity Tiers — No Reload
+- Tapping "2 items/3 items/4+ items" updates cart via API, no reload
+
+### Auto Monthly Coupons (Backend)
+- 3 coupons generated per month on startup
+- WELCOME50 always exists
 
 ## Credentials
 - Admin: celestaglow2024
 - Employees: orderteam/VclhxCbJ, testadmin/TestPass123
-
-## Pending
-- Upload real product photos
-- Delete old ProductPage.js

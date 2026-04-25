@@ -73,10 +73,10 @@ function CheckoutPage() {
 
   const Field = ({ label, field, type = 'text', placeholder, span }) => (
     <div className={span ? 'sm:col-span-2' : ''}>
-      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">{label}</label>
+      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">{label}</label>
       <input type={type} value={formData[field]} onChange={e => field === 'pincode' ? handlePincodeChange(e.target.value) : setFormData(prev => ({ ...prev, [field]: e.target.value }))}
         placeholder={placeholder} className={`w-full px-4 py-3 border rounded-xl text-sm bg-stone-50 focus:bg-white focus:ring-2 focus:ring-green-200 transition-all ${errors[field] ? 'border-red-300' : 'border-gray-200'}`} data-testid={`checkout-${field}`} />
-      {errors[field] && <p className="text-red-500 text-[10px] mt-1">{errors[field]}</p>}
+      {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field]}</p>}
     </div>
   );
 
@@ -84,7 +84,7 @@ function CheckoutPage() {
     <div className="min-h-screen bg-stone-50" data-testid="checkout-page">
       {/* Premium Trust Strip */}
       <div className="bg-green-800 text-white py-2.5 px-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-5 sm:gap-8 text-[10px] sm:text-xs font-medium">
+        <div className="max-w-4xl mx-auto flex items-center justify-center gap-5 sm:gap-8 text-xs sm:text-xs font-medium">
           <span className="flex items-center gap-1.5"><Lock size={13} /> Secure Checkout</span>
           <span className="flex items-center gap-1.5"><Truck size={13} /> Free Shipping</span>
           <span className="flex items-center gap-1.5"><Star size={13} /> 4.8 Rating</span>
@@ -97,7 +97,7 @@ function CheckoutPage() {
           <Link to="/cart" className="p-2 hover:bg-white rounded-xl transition-colors"><ArrowLeft size={20} /></Link>
           <div>
             <h1 className="text-lg font-bold text-gray-900">Checkout</h1>
-            <p className="text-[10px] text-gray-400">{cartData.item_count} items | Secure checkout</p>
+            <p className="text-xs text-gray-400">{cartData.item_count} items | Secure checkout</p>
           </div>
         </div>
 
@@ -126,21 +126,21 @@ function CheckoutPage() {
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <p className="font-bold text-sm text-gray-900">Prepaid (UPI / Card)</p>
-                      <span className="text-[8px] bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>
+                      <span className="text-xs bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>
                     </div>
-                    <p className="text-[10px] text-green-600 font-medium mt-0.5">Faster Delivery 1-2 days | Best Price</p>
+                    <p className="text-xs text-green-600 font-medium mt-0.5">Faster Delivery 1-2 days | Best Price</p>
                   </div>
                 </label>
                 <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'COD' ? 'border-green-500 bg-green-50/50' : 'border-gray-100 hover:border-gray-200'}`}>
                   <input type="radio" name="pay" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} className="text-green-600 w-4 h-4" />
                   <div className="flex-1">
                     <p className="font-bold text-sm text-gray-900">Cash on Delivery</p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">₹0 advance | Pay full amount on delivery</p>
+                    <p className="text-xs text-gray-500 mt-0.5">₹0 advance | Pay full amount on delivery</p>
                   </div>
                 </label>
                 {paymentMethod === 'COD' && (
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-center">
-                    <p className="text-[10px] text-amber-800 font-semibold">You save more with Prepaid! Switch to save extra on faster delivery.</p>
+                    <p className="text-xs text-amber-800 font-semibold">You save more with Prepaid! Switch to save extra on faster delivery.</p>
                   </div>
                 )}
               </div>
@@ -156,11 +156,13 @@ function CheckoutPage() {
                     if (cart.items.length > 0 && cart.items[0].product_slug) {
                       cart.items[0].quantity = t.n;
                       saveCart(cart);
-                      window.location.reload();
+                      // Re-validate cart without reload
+                      axios.post(`${API}/api/cart/validate`, { items: cart.items, payment_method: paymentMethod, coupon_code: coupon?.code })
+                        .then(res => setCartData(res.data)).catch(() => {});
                     }
                   }} className="bg-white/15 hover:bg-white/25 rounded-lg px-2.5 py-2 text-center flex-1 transition-colors cursor-pointer">
-                    <p className="text-[10px] font-bold">{t.n} items</p>
-                    <p className="text-[9px] opacity-80">{t.d}</p>
+                    <p className="text-xs font-bold">{t.n} items</p>
+                    <p className="text-xs opacity-80">{t.d}</p>
                   </button>
                 ))}
               </div>
@@ -173,11 +175,11 @@ function CheckoutPage() {
               <div className="grid grid-cols-2 gap-2 mt-3">
                 <div className="bg-white rounded-xl p-2.5 text-center border border-purple-100">
                   <p className="text-base font-black text-purple-700">2,847</p>
-                  <p className="text-[9px] text-purple-500 font-medium">Referrals This Month</p>
+                  <p className="text-xs text-purple-500 font-medium">Referrals This Month</p>
                 </div>
                 <div className="bg-white rounded-xl p-2.5 text-center border border-purple-100">
                   <p className="text-base font-black text-purple-700">₹1.42L</p>
-                  <p className="text-[9px] text-purple-500 font-medium">Rewards Earned</p>
+                  <p className="text-xs text-purple-500 font-medium">Rewards Earned</p>
                 </div>
               </div>
             </div>
@@ -186,12 +188,12 @@ function CheckoutPage() {
           {/* Order Summary */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm sticky top-4">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Order Summary</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Order Summary</p>
               <div className="space-y-2 mb-3 max-h-36 overflow-y-auto">
                 {cartData.items?.map((item, i) => (
                   <div key={i} className="flex justify-between items-center text-sm">
                     <span className="text-gray-600 truncate mr-2 flex-1">{item.short_name || item.name}</span>
-                    <span className="text-[10px] text-gray-400 mr-2">x{item.quantity}</span>
+                    <span className="text-xs text-gray-400 mr-2">x{item.quantity}</span>
                     <span className="font-medium text-gray-900">₹{item.line_total}</span>
                   </div>
                 ))}
@@ -208,7 +210,7 @@ function CheckoutPage() {
               {cartData.savings > 0 && (
                 <div className="mt-3 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-3 text-center text-white">
                   <p className="text-xs font-bold">Total Savings: ₹{cartData.savings?.toLocaleString()}</p>
-                  <p className="text-[9px] opacity-80">Incl. product discount + volume discount + free shipping</p>
+                  <p className="text-xs opacity-80">Incl. product discount + volume discount + free shipping</p>
                 </div>
               )}
 
@@ -226,7 +228,7 @@ function CheckoutPage() {
               </div>
 
               {/* Trust Icons */}
-              <div className="mt-3 flex items-center justify-center gap-4 text-[9px] text-gray-400 font-medium">
+              <div className="mt-3 flex items-center justify-center gap-4 text-xs text-gray-400 font-medium">
                 <span className="flex items-center gap-1"><Lock size={10} /> SSL Secure</span>
                 <span className="flex items-center gap-1"><Shield size={10} /> Verified Brand</span>
                 <span className="flex items-center gap-1"><Users size={10} /> 50K+ Served</span>

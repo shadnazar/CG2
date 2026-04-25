@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Star, ShoppingCart, Sparkles, ChevronRight, Award, Zap, Package } from 'lucide-react';
+import { Star, ShoppingCart, Sparkles, ChevronRight, Award, Zap, Package, Check } from 'lucide-react';
 import { addToCart, getCart, saveCart } from './Homepage';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -66,23 +66,32 @@ function ShopPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
-        {/* Compact Bundle on Shop Page */}
+        {/* Bundle — bigger on shop */}
         {completeKit && (
           <div className="bg-white rounded-2xl shadow-md border border-amber-200/40 overflow-hidden mb-8">
-            <div className="bg-amber-400 text-amber-900 py-1.5 px-4 text-center text-[10px] font-bold tracking-wider">BEST VALUE — SAVE {completeKit.discount_percent}% — ALL 5 PRODUCTS</div>
-            <div className="p-4 flex items-start gap-3.5">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-50 to-amber-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                {settings.bundle_hero_image ? <img src={settings.bundle_hero_image} alt="Kit" className="w-16 h-16 object-contain" /> : <Package className="w-8 h-8 text-amber-500" />}
+            <div className="bg-amber-400 text-amber-900 py-2 px-4 text-center text-sm font-bold tracking-wide">BEST VALUE — SAVE {completeKit.discount_percent}% — ALL 5 PRODUCTS</div>
+            <div className="p-5">
+              <div className="flex items-start gap-4">
+                <div className="w-28 h-28 bg-gradient-to-br from-green-50 to-amber-50 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {settings.bundle_hero_image ? <img src={settings.bundle_hero_image} alt="Kit" className="w-24 h-24 object-contain" /> : <Package className="w-12 h-12 text-amber-500" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-lg font-black text-gray-900">{completeKit.name}</h3>
+                  <p className="text-xs text-gray-500 mt-1">{completeKit.description}</p>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {completeKit.product_slugs?.map(slug => { const p = products.find(pr => pr.slug === slug); return p ? <span key={slug} className="text-xs bg-green-50 text-green-700 border border-green-200/60 px-2 py-1 rounded-full font-medium">{p.short_name}</span> : null; })}
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-black text-gray-900">{completeKit.name}</h3>
-                <div className="flex flex-wrap gap-1 mt-1.5">
-                  {completeKit.product_slugs?.map(slug => { const p = products.find(pr => pr.slug === slug); return p ? <span key={slug} className="text-[8px] bg-green-50 text-green-700 border border-green-200/60 px-1.5 py-0.5 rounded-full font-medium">{p.short_name}</span> : null; })}
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                <div>
+                  <div className="flex items-end gap-2">
+                    <span className="text-2xl font-black text-gray-900">₹{completeKit.combo_prepaid_price?.toLocaleString()}</span>
+                    <span className="text-sm text-gray-400 line-through mb-0.5">₹{completeKit.mrp_total?.toLocaleString()}</span>
+                  </div>
+                  <p className="text-xs text-green-600 font-bold">Save ₹{(completeKit.mrp_total - completeKit.combo_prepaid_price)?.toLocaleString()}</p>
                 </div>
-                <div className="flex items-center justify-between mt-2.5">
-                  <div><span className="text-xl font-black text-gray-900">₹{completeKit.combo_prepaid_price?.toLocaleString()}</span><span className="text-xs text-gray-400 line-through ml-1.5">₹{completeKit.mrp_total?.toLocaleString()}</span></div>
-                  <button onClick={() => handleAddCombo(completeKit.combo_id)} className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-green-700 flex items-center gap-1" data-testid="shop-add-kit"><ShoppingCart size={12} /> Add Kit</button>
-                </div>
+                <button onClick={() => handleAddCombo(completeKit.combo_id)} className="bg-green-600 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-green-700 flex items-center gap-2" data-testid="shop-add-kit"><ShoppingCart size={16} /> Add Kit</button>
               </div>
             </div>
           </div>
@@ -92,31 +101,31 @@ function ShopPage() {
         <h2 className="text-xl font-bold text-gray-900 mb-4">Individual Products</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-10">
           {products.map(product => (
-            <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:border-green-200 transition-all" data-testid={`shop-product-${product.slug}`}>
-              {product.badge && (
-                <div className={`text-[10px] sm:text-xs font-bold px-3 py-1 text-center ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-100 text-green-800'}`}>
-                  {product.badge}
-                </div>
-              )}
+            <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all" data-testid={`shop-product-${product.slug}`}>
+              {product.badge && <div className={`text-xs font-bold px-3 py-1.5 text-center tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-50 text-green-700'}`}>{product.badge.toUpperCase()}</div>}
               <Link to={`/product/${product.slug}`}>
-                <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center p-4 sm:p-6 group-hover:scale-105 transition-transform">
-                  {product.images?.[0] ? <img src={product.images[0]} alt={product.name} className="w-full h-full object-contain" /> : (
-                    <div className="text-center"><div className="w-12 h-12 mx-auto bg-green-100 rounded-xl flex items-center justify-center"><Sparkles className="w-6 h-6 text-green-600" /></div></div>
-                  )}
+                <div className="aspect-square bg-stone-50 flex items-center justify-center p-4 group-hover:scale-105 transition-transform">
+                  {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-green-200" />}
                 </div>
               </Link>
-              <div className="p-2.5 sm:p-4">
-                <Link to={`/product/${product.slug}`}><h3 className="font-semibold text-gray-900 text-xs sm:text-sm leading-tight mb-1 group-hover:text-green-700 line-clamp-2">{product.short_name}</h3></Link>
-                <p className="text-[10px] sm:text-xs text-gray-500 mb-1.5 line-clamp-1">{product.key_ingredients}</p>
-                <div className="flex items-center gap-1 mb-1.5">
-                  <Star size={10} className="fill-amber-400 text-amber-400" /><span className="text-[10px] sm:text-xs font-medium">{product.rating}</span>
+              <div className="p-3.5">
+                <Link to={`/product/${product.slug}`}><h3 className="font-bold text-gray-900 text-base leading-snug mb-1 group-hover:text-green-700 line-clamp-2">{product.short_name}</h3></Link>
+                <p className="text-xs text-gray-400 mb-1">{product.key_ingredients}</p>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-sm text-gray-400 line-through">₹{product.mrp}</span>
+                  <span className="text-xl font-black text-gray-900">₹{product.prepaid_price}</span>
+                  <span className="text-xs font-bold text-green-600">{product.discount_percent}% Off</span>
                 </div>
-                <div className="flex items-baseline gap-1.5 mb-2.5">
-                  <span className="text-base sm:text-lg font-bold text-gray-900">₹{product.prepaid_price}</span>
-                  <span className="text-[10px] sm:text-xs text-gray-400 line-through">₹{product.mrp}</span>
+                <div className="bg-orange-50 border border-orange-200 rounded-lg px-2.5 py-2 mb-2.5 flex items-center gap-2">
+                  <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0"><Check size={10} className="text-white" /></div>
+                  <p className="text-xs text-orange-800 font-semibold">₹{product.prepaid_price - 50} with <span className="font-mono font-bold">WELCOME50</span></p>
                 </div>
-                <button onClick={() => addToCart(product.slug)} className="w-full bg-green-600 hover:bg-green-700 text-white text-xs sm:text-sm font-semibold py-2 rounded-xl transition-colors" data-testid={`shop-add-${product.slug}`}>
-                  Add to Cart
+                <div className="flex items-center gap-1.5 mb-3">
+                  <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} size={13} className={i <= Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />)}</div>
+                  <span className="text-xs text-gray-500">({product.reviews_count?.toLocaleString()})</span>
+                </div>
+                <button onClick={() => addToCart(product.slug)} className="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2" data-testid={`shop-add-${product.slug}`}>
+                  <ShoppingCart size={16} /> Add to Cart
                 </button>
               </div>
             </div>

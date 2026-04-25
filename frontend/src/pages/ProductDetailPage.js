@@ -98,7 +98,7 @@ function ProductDetailPage() {
           {/* Gallery */}
           <div>
             <div className="aspect-square bg-gradient-to-br from-stone-50 to-gray-50 rounded-3xl overflow-hidden relative shadow-sm">
-              {product.badge && <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-[10px] font-bold tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-600 text-white'}`}>{product.badge.toUpperCase()}</div>}
+              {product.badge && <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-bold tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-600 text-white'}`}>{product.badge.toUpperCase()}</div>}
               {imgs.length > 0 ? (
                 <img src={imgs[imgIdx]} alt={product.name} className="w-full h-full object-contain p-6 sm:p-10" />
               ) : (
@@ -149,10 +149,10 @@ function ProductDetailPage() {
               <div className="flex items-end gap-2.5">
                 <span className="text-4xl font-black text-gray-900 tracking-tight">₹{product.prepaid_price}</span>
                 <span className="text-lg text-gray-400 line-through mb-1">₹{product.mrp}</span>
-                <span className="bg-rose-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full mb-1.5">{product.discount_percent}% OFF</span>
+                <span className="bg-rose-500 text-white text-xs font-bold px-2.5 py-0.5 rounded-full mb-1.5">{product.discount_percent}% OFF</span>
               </div>
               <p className="text-xs text-green-700 font-semibold mt-1">You save ₹{savings} on this product</p>
-              <p className="text-[10px] text-gray-500 mt-1">Free Shipping | COD ₹{product.cod_price} | Inclusive of all taxes</p>
+              <p className="text-xs text-gray-500 mt-1">Free Shipping | COD ₹{product.cod_price} | Inclusive of all taxes</p>
               {/* Coupon — orange theme */}
               <div className="mt-2.5 bg-orange-50 rounded-lg p-2.5 border border-orange-200 flex items-center gap-2">
                 <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0"><Zap size={13} className="text-white" /></div>
@@ -162,18 +162,18 @@ function ProductDetailPage() {
 
             {/* Volume Discount Offers */}
             <div className="mt-3 bg-purple-50 rounded-xl p-3 border border-purple-100">
-              <p className="text-[10px] font-bold text-purple-800 mb-2">Buy More, Save More!</p>
+              <p className="text-xs font-bold text-purple-800 mb-2">Buy More, Save More!</p>
               <div className="flex gap-1.5">
                 {[{q:1,d:'0%',label:'Buy 1'},{q:2,d:'5%',label:'Buy 2'},{q:3,d:'10%',label:'Buy 3'},{q:4,d:'15%',label:'Buy 4+'}].map((tier,i) => (
                   <button key={i} onClick={() => { setQty(tier.q); }} className={`flex-1 rounded-lg py-2 text-center transition-all border ${qty >= tier.q && qty < (tier.q === 4 ? 99 : tier.q + 1) ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-purple-200 hover:border-purple-400'}`}>
-                    <p className="text-[9px] font-bold">{tier.label}</p>
-                    <p className="text-[8px] opacity-80">{tier.d} Off</p>
+                    <p className="text-xs font-bold">{tier.label}</p>
+                    <p className="text-xs opacity-80">{tier.d} Off</p>
                   </button>
                 ))}
               </div>
             </div>
             <div className="mt-6">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Key Active Ingredients</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Key Active Ingredients</p>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {product.key_ingredients?.split('+').map((ing, i) => {
                   const Icon = INGREDIENT_ICONS[i % INGREDIENT_ICONS.length];
@@ -189,7 +189,7 @@ function ProductDetailPage() {
 
             {/* Benefits — Styled cards */}
             <div className="mt-5">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Benefits</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Benefits</p>
               <div className="space-y-2">
                 {product.benefits?.map((b, i) => (
                   <div key={i} className="flex items-center gap-3 bg-stone-50 rounded-xl px-4 py-3 border border-stone-100">
@@ -220,8 +220,8 @@ function ProductDetailPage() {
               {[{ icon: Truck, t: 'Free Shipping', d: 'All India' }, { icon: Shield, t: 'Genuine', d: '100% Authentic' }, { icon: Award, t: 'Certified', d: 'Lab Tested' }, { icon: Clock, t: '30 Days', d: 'Easy Return' }].map((b, i) => (
                 <div key={i} className="text-center bg-gradient-to-b from-white to-stone-50 rounded-xl py-3 px-1 border border-stone-100 shadow-sm">
                   <b.icon size={18} className="mx-auto mb-1 text-green-600" />
-                  <p className="text-[9px] font-bold text-gray-800 leading-tight">{b.t}</p>
-                  <p className="text-[8px] text-gray-400 mt-0.5">{b.d}</p>
+                  <p className="text-xs font-bold text-gray-800 leading-tight">{b.t}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{b.d}</p>
                 </div>
               ))}
             </div>
@@ -251,7 +251,7 @@ function ProductDetailPage() {
           <div className="mt-12 bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 rounded-3xl p-5 sm:p-6 border border-amber-200/60" data-testid="bundle-push">
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="flex-1">
-                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-[0.15em] mb-1">Best Value — Save {kit.discount_percent}%</p>
+                <p className="text-xs font-bold text-amber-700 uppercase tracking-[0.15em] mb-1">Best Value — Save {kit.discount_percent}%</p>
                 <h3 className="text-lg sm:text-xl font-bold text-gray-900">{kit.name}</h3>
                 <p className="text-xs text-gray-500 mt-1">{kit.description}</p>
                 <div className="flex items-end gap-2 mt-3">
@@ -266,13 +266,13 @@ function ProductDetailPage() {
 
         {/* Clinical Stats — gradient */}
         <div className="mt-12 bg-gradient-to-br from-green-900 via-green-800 to-teal-900 rounded-3xl p-6 sm:p-8 text-white">
-          <p className="text-[10px] font-bold text-green-300 uppercase tracking-[0.2em] text-center mb-1">Clinical Study Results</p>
+          <p className="text-xs font-bold text-green-300 uppercase tracking-[0.2em] text-center mb-1">Clinical Study Results</p>
           <h3 className="text-lg font-bold text-center mb-5">Proven by 500+ Participants</h3>
           <div className="grid grid-cols-4 gap-3">
             {[{ s: '94%', d: 'Reduced wrinkles' }, { s: '89%', d: 'Brighter skin tone' }, { s: '96%', d: 'Better hydration' }, { s: '91%', d: 'Firmer, lifted skin' }].map((r, i) => (
               <div key={i} className="text-center bg-white/10 backdrop-blur-sm rounded-2xl py-3 px-2">
                 <p className="text-2xl sm:text-3xl font-black text-green-300">{r.s}</p>
-                <p className="text-[9px] text-green-200 mt-1 leading-tight">{r.d}</p>
+                <p className="text-xs text-green-200 mt-1 leading-tight">{r.d}</p>
               </div>
             ))}
           </div>
@@ -280,7 +280,7 @@ function ProductDetailPage() {
 
         {/* Dermatologist — premium */}
         <div className="mt-12">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] text-center mb-1">Expert Endorsements</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] text-center mb-1">Expert Endorsements</p>
           <h3 className="text-lg font-bold text-gray-900 text-center mb-5">Dermatologist Approved</h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {[{ n: 'Dr. Priya Sharma', c: 'MD Dermatology, AIIMS', q: 'Clinically-proven actives at effective concentrations. Highly recommended for my patients.' },
@@ -294,7 +294,7 @@ function ProductDetailPage() {
                   </div>
                   <div>
                     <p className="font-bold text-gray-900 text-sm">{d.n}</p>
-                    <p className="text-[10px] text-green-600 font-medium">{d.c}</p>
+                    <p className="text-xs text-green-600 font-medium">{d.c}</p>
                   </div>
                 </div>
                 <div className="flex gap-0.5 mb-2">{[1,2,3,4,5].map(s => <Star key={s} size={11} className="fill-amber-400 text-amber-400" />)}</div>
@@ -306,7 +306,7 @@ function ProductDetailPage() {
 
         {/* Reviews — premium style */}
         <div className="mt-12">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] text-center mb-1">Customer Love</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] text-center mb-1">Customer Love</p>
           <h3 className="text-lg font-bold text-gray-900 text-center mb-5">What Our Customers Say</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {REVIEWS.map((r, i) => (
@@ -316,10 +316,10 @@ function ProductDetailPage() {
                     <div className="w-9 h-9 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm">{r.name[0]}</div>
                     <div>
                       <p className="font-bold text-sm text-gray-900">{r.name}</p>
-                      <p className="text-[10px] text-gray-400">{r.loc} | {r.days}</p>
+                      <p className="text-xs text-gray-400">{r.loc} | {r.days}</p>
                     </div>
                   </div>
-                  {r.v && <span className="text-[9px] bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-bold border border-green-200">Verified Purchase</span>}
+                  {r.v && <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-bold border border-green-200">Verified Purchase</span>}
                 </div>
                 <div className="flex gap-0.5 mb-2">{[1,2,3,4,5].map(s => <Star key={s} size={12} className={s <= r.r ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />)}</div>
                 <p className="text-sm text-gray-600 leading-relaxed">{r.t}</p>
@@ -331,7 +331,7 @@ function ProductDetailPage() {
         {/* Related Products */}
         {allProducts.length > 0 && (
           <div className="mt-12">
-            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] text-center mb-1">Complete Your Routine</p>
+            <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] text-center mb-1">Complete Your Routine</p>
             <h3 className="text-lg font-bold text-gray-900 text-center mb-5">You Might Also Like</h3>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {allProducts.slice(0, 4).map(p => (
@@ -345,9 +345,9 @@ function ProductDetailPage() {
                     <p className="font-semibold text-xs text-gray-900 line-clamp-1">{p.short_name}</p>
                     <div className="flex items-baseline gap-1.5 mt-1 mb-2">
                       <span className="font-bold text-sm text-gray-900">₹{p.prepaid_price}</span>
-                      <span className="text-[10px] text-gray-400 line-through">₹{p.mrp}</span>
+                      <span className="text-xs text-gray-400 line-through">₹{p.mrp}</span>
                     </div>
-                    <button onClick={() => addToCart(p.slug)} className="w-full bg-green-600 text-white text-[10px] font-bold py-2 rounded-xl hover:bg-green-700 transition-colors" data-testid={`related-add-${p.slug}`}>Add to Cart</button>
+                    <button onClick={() => addToCart(p.slug)} className="w-full bg-green-600 text-white text-xs font-bold py-2 rounded-xl hover:bg-green-700 transition-colors" data-testid={`related-add-${p.slug}`}>Add to Cart</button>
                   </div>
                 </div>
               ))}

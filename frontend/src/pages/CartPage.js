@@ -90,10 +90,10 @@ function CartPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-gray-900 text-sm leading-tight">{item.type === 'combo' ? item.name : item.short_name || item.name}</h3>
-                  {item.type === 'combo' && <p className="text-[10px] text-green-600 font-medium">{item.product_slugs?.length} products included</p>}
+                  {item.type === 'combo' && <p className="text-xs text-green-600 font-medium">{item.product_slugs?.length} products included</p>}
                   <div className="flex items-baseline gap-2 mt-1">
                     <span className="font-bold text-gray-900">₹{item.price}</span>
-                    {(item.mrp || item.mrp_total) > item.price && <span className="text-[10px] text-gray-400 line-through">₹{item.mrp || item.mrp_total}</span>}
+                    {(item.mrp || item.mrp_total) > item.price && <span className="text-xs text-gray-400 line-through">₹{item.mrp || item.mrp_total}</span>}
                   </div>
                   <div className="flex items-center gap-3 mt-2">
                     <div className="flex items-center border border-gray-200 rounded-lg bg-white shadow-sm">
@@ -115,7 +115,7 @@ function CartPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-bold text-sm text-gray-900">{kit.name}</p>
-                    <p className="text-xs mt-0.5"><span className="font-bold text-green-700">₹{kit.combo_prepaid_price?.toLocaleString()}</span> <span className="text-gray-400 line-through text-[10px]">₹{kit.mrp_total?.toLocaleString()}</span></p>
+                    <p className="text-xs mt-0.5"><span className="font-bold text-green-700">₹{kit.combo_prepaid_price?.toLocaleString()}</span> <span className="text-gray-400 line-through text-xs">₹{kit.mrp_total?.toLocaleString()}</span></p>
                   </div>
                   <button onClick={() => { const c = getCart(); c.items = [{ combo_id: kit.combo_id, quantity: 1 }]; saveCart(c); validateCart(); }}
                     className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm">Switch to Kit</button>
@@ -126,7 +126,7 @@ function CartPage() {
             {/* Upsell with images — click goes to product page */}
             {upsellProducts.length > 0 && (
               <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Frequently Bought Together</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Frequently Bought Together</p>
                 <div className="flex gap-2.5 overflow-x-auto pb-1">
                   {upsellProducts.slice(0, 4).map(p => (
                     <div key={p.slug} className="flex-shrink-0 w-28 text-center">
@@ -135,25 +135,39 @@ function CartPage() {
                           {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-16 h-16 object-contain" /> : <Sparkles size={16} className="text-green-300" />}
                         </div>
                       </Link>
-                      <Link to={`/product/${p.slug}`}><p className="text-[10px] font-semibold text-gray-800 line-clamp-1 hover:text-green-700">{p.short_name}</p></Link>
-                      <p className="text-[10px] text-gray-500">₹{p.prepaid_price}</p>
-                      <button onClick={() => addUpsellToCart(p.slug)} className="mt-1.5 w-full bg-green-600 text-white text-[9px] font-bold py-1.5 rounded-lg hover:bg-green-700">+ Add</button>
+                      <Link to={`/product/${p.slug}`}><p className="text-xs font-semibold text-gray-800 line-clamp-1 hover:text-green-700">{p.short_name}</p></Link>
+                      <p className="text-xs text-gray-500">₹{p.prepaid_price}</p>
+                      <button onClick={() => addUpsellToCart(p.slug)} className="mt-1.5 w-full bg-green-600 text-white text-xs font-bold py-1.5 rounded-lg hover:bg-green-700">+ Add</button>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Auto Coupon Suggestion — orange */}
+            {/* Available Coupons — show 3-4, apply on tap */}
             {!appliedCoupon && (
-              <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-3.5 border border-orange-200 flex items-center justify-between">
-                <div>
-                  <p className="text-xs font-bold text-orange-800">Apply <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-orange-300">WELCOME50</span> for ₹50 OFF</p>
-                  <p className="text-[10px] text-orange-600 mt-0.5">New user offer</p>
+              <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-sm font-bold text-gray-900 mb-3">Available Coupons</p>
+                <div className="space-y-2">
+                  {[
+                    { code: 'WELCOME50', desc: '₹50 OFF on orders above ₹499', color: 'orange' },
+                    { code: 'FEB26', desc: '₹25 OFF — February Special', color: 'purple' },
+                    { code: 'GLOW10', desc: '10% OFF on orders above ₹999', color: 'rose' },
+                  ].map(c => (
+                    <div key={c.code} className={`bg-${c.color}-50 border border-${c.color}-200 rounded-xl p-3 flex items-center justify-between`}>
+                      <div>
+                        <p className="text-sm font-bold font-mono text-gray-900">{c.code}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">{c.desc}</p>
+                      </div>
+                      <button onClick={async () => {
+                        try {
+                          const r = await axios.post(`${API}/api/validate-coupon?code=${c.code}&cart_total=${cartData?.subtotal || 0}`);
+                          setAppliedCoupon({ code: c.code, ...r.data });
+                        } catch (e) { setCouponError(e.response?.data?.detail || 'Cannot apply'); }
+                      }} className={`bg-${c.color}-500 hover:bg-${c.color}-600 text-white text-xs font-bold px-4 py-2 rounded-xl`}>Apply</button>
+                    </div>
+                  ))}
                 </div>
-                <button onClick={() => { setCouponCode('WELCOME50'); setTimeout(async () => {
-                  try { const r = await axios.post(`${API}/api/validate-coupon?code=WELCOME50&cart_total=${cartData?.subtotal || 0}`); setAppliedCoupon({ code: 'WELCOME50', ...r.data }); } catch {}
-                }, 100); }} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Apply</button>
               </div>
             )}
 
@@ -163,8 +177,8 @@ function CartPage() {
                 {[{ icon: Lock, t: '256-bit Secure', d: 'SSL Encrypted' }, { icon: Truck, t: 'Free Shipping', d: 'All India Delivery' }, { icon: Clock, t: '30-Day Return', d: 'Money Back Guarantee' }].map((b, i) => (
                   <div key={i} className="text-center">
                     <div className="w-9 h-9 mx-auto mb-1.5 bg-white rounded-xl flex items-center justify-center shadow-sm"><b.icon size={16} className="text-green-600" /></div>
-                    <p className="text-[10px] font-bold text-gray-800">{b.t}</p>
-                    <p className="text-[8px] text-gray-400 mt-0.5">{b.d}</p>
+                    <p className="text-xs font-bold text-gray-800">{b.t}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{b.d}</p>
                   </div>
                 ))}
               </div>
@@ -172,13 +186,13 @@ function CartPage() {
 
             {/* Mini Review */}
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Customers Love Us</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Customers Love Us</p>
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">R</div>
                 <div>
                   <div className="flex gap-0.5 mb-0.5">{[1,2,3,4,5].map(i => <Star key={i} size={10} className="fill-amber-400 text-amber-400" />)}</div>
                   <p className="text-xs text-gray-600">"Best anti-aging products I've ever used. Visible results in 2 weeks!"</p>
-                  <p className="text-[10px] text-gray-400 mt-0.5">Ritika M., Mumbai | Verified Purchase</p>
+                  <p className="text-xs text-gray-400 mt-0.5">Ritika M., Mumbai | Verified Purchase</p>
                 </div>
               </div>
             </div>
@@ -189,15 +203,15 @@ function CartPage() {
             {cartData.savings > 0 && (
               <div className="bg-gradient-to-r from-green-500 to-teal-500 rounded-2xl p-3.5 text-center text-white shadow-lg shadow-green-200/30">
                 <p className="text-sm font-bold">You're saving ₹{cartData.savings?.toLocaleString()}</p>
-                <p className="text-[10px] text-green-100">on this order</p>
+                <p className="text-xs text-green-100">on this order</p>
               </div>
             )}
 
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Have a Coupon?</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Have a Coupon?</p>
               {appliedCoupon ? (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center justify-between">
-                  <div><p className="font-bold text-green-700 text-sm">{appliedCoupon.code}</p><p className="text-[10px] text-green-600">Saving ₹{appliedCoupon.discount}</p></div>
+                  <div><p className="font-bold text-green-700 text-sm">{appliedCoupon.code}</p><p className="text-xs text-green-600">Saving ₹{appliedCoupon.discount}</p></div>
                   <button onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="text-gray-400 text-xs hover:text-red-500">Remove</button>
                 </div>
               ) : (
@@ -206,11 +220,11 @@ function CartPage() {
                   <button onClick={applyCoupon} className="px-4 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800">Apply</button>
                 </div>
               )}
-              {couponError && <p className="text-red-500 text-[10px] mt-1">{couponError}</p>}
+              {couponError && <p className="text-red-500 text-xs mt-1">{couponError}</p>}
             </div>
 
             <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm" data-testid="order-summary">
-              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Order Summary</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Order Summary</p>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between text-gray-400"><span>MRP</span><span className="line-through">₹{cartData.mrp_total?.toLocaleString()}</span></div>
                 <div className="flex justify-between text-gray-700"><span>Subtotal</span><span className="font-medium">₹{cartData.subtotal?.toLocaleString()}</span></div>
@@ -229,15 +243,15 @@ function CartPage() {
             <div className="grid grid-cols-3 gap-2">
               <div className="bg-gradient-to-b from-amber-50 to-orange-50 rounded-xl p-3 text-center border border-amber-100/60">
                 <p className="text-xl font-black text-amber-700">127</p>
-                <p className="text-[9px] text-amber-600 font-semibold tracking-wide">ORDERS TODAY</p>
+                <p className="text-xs text-amber-600 font-semibold tracking-wide">ORDERS TODAY</p>
               </div>
               <div className="bg-gradient-to-b from-rose-50 to-pink-50 rounded-xl p-3 text-center border border-rose-100/60">
                 <p className="text-xl font-black text-rose-700">4.8</p>
-                <p className="text-[9px] text-rose-600 font-semibold tracking-wide">AVG RATING</p>
+                <p className="text-xs text-rose-600 font-semibold tracking-wide">AVG RATING</p>
               </div>
               <div className="bg-gradient-to-b from-purple-50 to-violet-50 rounded-xl p-3 text-center border border-purple-100/60">
                 <p className="text-xl font-black text-purple-700">50K+</p>
-                <p className="text-[9px] text-purple-600 font-semibold tracking-wide">CUSTOMERS</p>
+                <p className="text-xs text-purple-600 font-semibold tracking-wide">CUSTOMERS</p>
               </div>
             </div>
           </div>
