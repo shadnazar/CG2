@@ -136,7 +136,7 @@ export function TrackingProvider({ children }) {
       window.fbq('track', 'ViewContent', {
         content_name: contentName || 'Celesta Glow',
         content_category: 'Skincare',
-        content_ids: ['celestaglow_serum_001'],
+        content_ids: ['celesta_glow'],
         content_type: 'product',
         value: value,
         currency: 'INR'
@@ -149,7 +149,7 @@ export function TrackingProvider({ children }) {
     waitForFbq(() => {
       window.fbq('track', 'InitiateCheckout', {
         content_category: 'Skincare',
-        content_ids: ['celestaglow_serum_001'],
+        content_ids: ['celesta_glow'],
         num_items: 1,
         value: value,
         currency: 'INR'
@@ -161,7 +161,7 @@ export function TrackingProvider({ children }) {
   const trackPurchase = useCallback((orderId, value, paymentMethod) => {
     waitForFbq(() => {
       window.fbq('track', 'Purchase', {
-        content_ids: ['celestaglow_serum_001'],
+        content_ids: ['celesta_glow'],
         content_type: 'product',
         value: value,
         currency: 'INR',

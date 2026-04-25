@@ -58,12 +58,12 @@ export const initMetaPixel = () => {
  * 
  * @param {number} value - Product price (default 699.00)
  */
-export const trackViewContent = (value = 699.00) => {
+export const trackViewContent = (productName = 'Celesta Glow Products', value = 999, productIds = ['celesta_glow']) => {
   waitForFbq(() => {
     window.fbq('track', 'ViewContent', {
-      content_name: 'Super Anti-Aging Serum',
+      content_name: productName,
       content_category: 'Skincare',
-      content_ids: ['celestaglow_serum_001'],
+      content_ids: productIds,
       content_type: 'product',
       value: value,
       currency: 'INR'
@@ -78,12 +78,12 @@ export const trackViewContent = (value = 699.00) => {
  * 
  * @param {number} value - Cart value (default 699.00)
  */
-export const trackInitiateCheckout = (value = 699.00) => {
+export const trackInitiateCheckout = (value = 999, numItems = 1, contentIds = ['celesta_glow']) => {
   waitForFbq(() => {
     window.fbq('track', 'InitiateCheckout', {
       content_category: 'Skincare',
-      content_ids: ['celestaglow_serum_001'],
-      num_items: 1,
+      content_ids: contentIds,
+      num_items: numItems,
       value: value,
       currency: 'INR'
     });
@@ -108,9 +108,9 @@ export const trackPurchase = (orderId, value) => {
     window.fbq('track', 'Purchase', {
       value: value,
       currency: 'INR',
-      content_name: 'Super Anti-Aging Serum',
+      content_name: 'Celesta Glow Products',
       content_category: 'Skincare',
-      content_ids: ['celestaglow_serum_001'],
+      content_ids: ['celesta_glow'],
       content_type: 'product',
       num_items: 1,
       order_id: orderId
@@ -127,7 +127,7 @@ export const trackPurchase = (orderId, value) => {
 export const trackLead = (source = 'discount_popup') => {
   waitForFbq(() => {
     window.fbq('track', 'Lead', {
-      content_name: 'Super Anti-Aging Serum',
+      content_name: 'Celesta Glow Anti-Aging Range',
       content_category: 'Skincare',
       lead_source: source
     });
@@ -229,18 +229,27 @@ export const trackPageView = (pageName, additionalParams = {}) => {
 // ==================== LEGACY EXPORTS (for backward compatibility) ====================
 
 // AddToCart not needed for direct Buy Now flow
-export const trackAddToCart = (price = 699, quantity = 1) => {
-  // No-op - direct Buy Now flow doesn't need AddToCart
-  console.log('[Meta Pixel] AddToCart skipped - using direct Buy Now flow');
+export const trackAddToCart = (price = 999, quantity = 1, productName = 'Celesta Glow Products', productIds = ['celesta_glow']) => {
+  waitForFbq(() => {
+    window.fbq('track', 'AddToCart', {
+      content_name: productName,
+      content_category: 'Skincare',
+      content_ids: productIds,
+      value: price * quantity,
+      currency: 'INR',
+      num_items: quantity
+    });
+    console.log('[Meta Pixel] AddToCart fired - value:', price * quantity);
+  });
 };
 
 // AddPaymentInfo
-export const trackAddPaymentInfo = (paymentMethod, price) => {
+export const trackAddPaymentInfo = (paymentMethod, price, productIds = ['celesta_glow']) => {
   waitForFbq(() => {
     window.fbq('track', 'AddPaymentInfo', {
-      content_name: 'Super Anti-Aging Serum',
+      content_name: 'Celesta Glow Products',
       content_category: 'Skincare',
-      content_ids: ['celestaglow_serum_001'],
+      content_ids: productIds,
       value: price,
       currency: 'INR',
       payment_method: paymentMethod

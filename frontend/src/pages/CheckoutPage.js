@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
-import { ShoppingCart, Shield, Truck, ArrowLeft, Check, MapPin } from 'lucide-react';
-import { getCart, saveCart } from './Homepage';
+import { ShoppingCart, Shield, Truck, ArrowLeft, Check, MapPin, Clock, Star, Award, Gift } from 'lucide-react';
+import { getCart, saveCart, addToCart } from './Homepage';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -112,10 +112,20 @@ function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="checkout-page">
-      <div className="max-w-4xl mx-auto px-4 py-6">
-        <div className="flex items-center gap-3 mb-6">
+      {/* Trust Strip */}
+      <div className="bg-emerald-800 text-white py-2 px-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-center gap-4 sm:gap-8 text-[10px] sm:text-xs">
+          <span className="flex items-center gap-1"><Shield size={12} /> Secure Checkout</span>
+          <span className="flex items-center gap-1"><Truck size={12} /> Free Shipping</span>
+          <span className="flex items-center gap-1"><Star size={12} /> 50K+ Customers</span>
+          <span className="flex items-center gap-1 hidden sm:flex"><Clock size={12} /> 30-Day Guarantee</span>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6">
+        <div className="flex items-center gap-3 mb-4">
           <Link to="/cart" className="p-2 hover:bg-white rounded-xl"><ArrowLeft size={20} /></Link>
-          <h1 className="text-xl font-bold text-gray-900">Checkout</h1>
+          <h1 className="text-lg sm:text-xl font-bold text-gray-900">Checkout</h1>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">

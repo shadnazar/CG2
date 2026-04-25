@@ -1,68 +1,59 @@
-# Celesta Glow - Product Requirements Document
-
-## Original Problem Statement
-Multi-product anti-aging e-commerce platform with 5 products, combo bundles, cart/checkout, admin product management, customer retention, pre-sale campaigns, and complete admin customization.
+# Celesta Glow - PRD
 
 ## Product Catalog
-| Product | MRP | Prepaid | COD |
-|---------|-----|---------|-----|
-| Anti-Aging Serum | ₹1,699 | ₹999 | ₹1,099 |
-| Anti-Aging Night Cream | ₹1,499 | ₹899 | ₹999 |
-| Under Eye Cream | ₹899 | ₹549 | ₹649 |
-| SPF 50 Sunscreen | ₹799 | ₹499 | ₹599 |
-| Gentle Cleanser | ₹799 | ₹499 | ₹599 |
-| Complete Kit (5-in-1) | ₹5,695 | ₹2,799 | ₹3,099 |
+| Product | MRP | Prepaid | COD | Sort |
+|---------|-----|---------|-----|------|
+| Gentle Cleanser | ₹799 | ₹499 | ₹599 | 1 |
+| Anti-Aging Serum | ₹1,699 | ₹999 | ₹1,099 | 2 |
+| Anti-Aging Night Cream | ₹1,499 | ₹899 | ₹999 | 3 |
+| Under Eye Cream | ₹899 | ₹549 | ₹649 | 4 |
+| SPF 50 Sunscreen | ₹799 | ₹499 | ₹599 | 5 |
+| Complete Kit (5-in-1) | ₹5,695 | ₹2,799 | ₹3,099 | - |
 
-## Implemented Features
+## Implemented (April 25, 2026)
 
-### April 25, 2026 — Session 3: Polish + Retention + Admin
-- Brand message bar before timer (FREE SHIPPING | COD | 30-Day Guarantee)
-- Timer design cleaned up (single row, no double layer)
-- Removed unwanted hyphens from title text (non-breaking hyphens)
-- Bundle kit shows single hero image (admin updatable) + product list text
-- Customer Retention panel: 15-day/30-day follow-up, call/WhatsApp, notes (interested/not interested/reorder/callback)
-- Before/After image management API (CRUD per product)
-- Pre-sale campaign mode with configurable price in admin
-- Bundle hero image field in site settings
-- Landing page prices updated (₹699→₹999, MRP ₹1499→₹1699)
-- Consultation recommendation updated to Complete Kit
-- ConsultationComponents updated to recommend Complete Kit
+### Session 4: UI Polish + Cart + Tracking + Admin
+- Removed timer from homepage (only brand bar)
+- Product order: Cleanser → Serum → Night Cream → Under Eye → Sunscreen
+- ShopPage: Bundle first with single hero image, then products, then combos
+- CartPage: Product images, bundle push, "Add More Products" with images, trust badges, payment, coupon
+- CheckoutPage: Trust strip bar, savings highlight, delivery timeline
+- MetaPixel.js: ALL functions now accept dynamic product data (name, IDs, price)
+- TrackingProvider.js: Dynamic content_ids
+- Landing pages: Prices updated (₹699→₹999, MRP ₹1499→₹1699)
+- ConsultationPage: Recommends Complete Kit (not just serum)
+- Admin Retention panel: 15/30-day follow-up, call/WhatsApp, notes
+- Before/After image management API
+- Pre-sale campaign with price field
+- Bundle hero image in site settings
+- All remaining legacy "serum" references cleaned
 
-### April 25, 2026 — Session 2: Legacy Migration (30+ files)
-- ALL single-product references updated across Navigation, Footer, Notifications, Blogs, About, Consultation, OrderSuccess, SEO, emails, shipping, AI prompts
+### Previous Sessions
+- Multi-product foundation (5 products, 3 combos, cart, checkout)
+- Legacy migration (30+ files)
+- Employee portal, referral, blog AI, WhatsApp, analytics
 
-### April 25, 2026 — Session 1: Multi-Product Foundation
-- Backend: products, combos, coupons, cart validation, site settings
-- Frontend: Homepage, ProductDetailPage, ShopPage, CartPage, CheckoutPage, AdminProducts
-- 5 products with 4 images each, 3 combo bundles
+## Admin Customization
+- Products: name, price, images, badge, description, visibility, sort order
+- Combos: price, products, badge
+- Coupons: create/validate/delete
+- Site Settings: hero text, bundle hero image, COD advance, pre-sale toggle/price
+- Before/After: image pairs per product
+- Retention: 15/30-day follow-up
 
-### Previous Sessions (preserved)
-- Employee portal, referral system, blog AI, WhatsApp, analytics, tracking
-
-## Admin Customization Points
-- Products: name, price (MRP/prepaid/COD/advance), images, badge, description, visibility
-- Combos: name, price, products, badge
-- Coupons: code, discount type/value, min order, max uses, expiry
-- Site Settings: hero title/subtitle, hero banner image, bundle hero image, COD advance amount, pre-sale toggle/title/badge/price
-- Before/After: upload image pairs per product
-- Retention: 15/30-day follow-up with notes
-
-## Pending Tasks
+## Pending
 ### P1
-- Real product photos (admin can upload via Products > Edit > Images)
-- metaPixel.js and TrackingProvider.js — make dynamic per product
-- Old ProductPage.js cleanup (dead code, 1615 lines)
+- Upload real product photos (admin can via Products > Edit)
+- Upload bundle hero image (admin via Site Settings)
 
 ### P2
-- Admin homepage section ordering/visibility
-- Admin customer review management
-- Admin notification settings
-- Desktop 2-column hero with product showcase
+- Admin review management
+- Homepage section visibility toggles
+- Old ProductPage.js cleanup
+- Desktop-optimized 2-column layouts
 
 ### P3
-- WhatsApp automated triggers
-- Customer video testimonials
-- server.py modular refactoring
+- WhatsApp triggers, video testimonials, server.py refactoring
 
 ## Credentials
 - Admin: celestaglow2024

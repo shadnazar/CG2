@@ -115,16 +115,6 @@ function Homepage() {
         <p className="text-[11px] sm:text-xs tracking-wide">FREE SHIPPING All India | COD Available | 30 Day Money Back Guarantee | Trusted by 50,000+</p>
       </div>
 
-      {/* Sale Timer Bar */}
-      <div className="bg-rose-600 text-white py-2 px-4">
-        <div className="flex items-center justify-center gap-2 sm:gap-3">
-          <Zap size={14} />
-          <span className="text-xs sm:text-sm font-semibold">FLASH SALE</span>
-          <span className="text-[10px] sm:text-xs opacity-90">Up to 51% OFF</span>
-          <CountdownTimer />
-        </div>
-      </div>
-
       {/* Floating Cart */}
       {cartCount > 0 && (
         <Link to="/cart" className="fixed bottom-4 right-4 z-50 bg-emerald-600 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-2 hover:bg-emerald-700 transition-all" data-testid="floating-cart-btn">
