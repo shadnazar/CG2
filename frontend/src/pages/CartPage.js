@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { ShoppingCart, Trash2, Minus, Plus, ChevronRight, Shield, Truck, Tag, ArrowLeft, Sparkles, Zap } from 'lucide-react';
+import { ShoppingCart, Trash2, Minus, Plus, ChevronRight, Shield, Truck, Tag, ArrowLeft, Sparkles, Zap, Award, Check, Clock } from 'lucide-react';
 import { getCart, saveCart } from './Homepage';
 import { useTracking } from '../providers/TrackingProvider';
 
@@ -17,6 +17,7 @@ function CartPage() {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
   const [upsellProducts, setUpsellProducts] = useState([]);
+  const [combos, setCombos] = useState([]);
 
   const validateCart = useCallback(async () => {
     setLoading(true);
@@ -29,10 +30,15 @@ function CartPage() {
         payment_method: paymentMethod
       });
       setCartData(res.data);
-      // Fetch upsell products
-      const allProds = await axios.get(`${API}/api/products`);
+      // Fetch upsell products and combos
+      const [allProds, comboRes] = await Promise.all([
+        axios.get(`${API}/api/products`),
+        axios.get(`${API}/api/combos`)
+      ]);
       const cartSlugs = cart.items.map(i => i.product_slug).filter(Boolean);
+      const cartCombos = cart.items.map(i => i.combo_id).filter(Boolean);
       setUpsellProducts(allProds.data.filter(p => !cartSlugs.includes(p.slug)).slice(0, 3));
+      setCombos(comboRes.data.filter(c => !cartCombos.includes(c.combo_id)));
     } catch (err) { console.error(err); }
     setLoading(false);
   }, [paymentMethod, appliedCoupon]);
@@ -171,6 +177,45 @@ function CartPage() {
                 </div>
               </div>
             )}
+
+            {/* Bundle Deal Push */}
+            {combos.length > 0 && (
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border-2 border-amber-200">
+                <div className="flex items-center gap-2 mb-3">
+                  <Award size={16} className="text-amber-600" />
+                  <span className="font-bold text-amber-900 text-sm">Upgrade to a Bundle & Save Up to 51%!</span>
+                </div>
+                {combos.slice(0, 2).map(combo => (
+                  <div key={combo.combo_id} className="bg-white rounded-xl p-3 mb-2 flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-sm text-gray-900">{combo.name}</p>
+                      <div className="flex items-baseline gap-2 mt-0.5">
+                        <span className="font-bold text-emerald-700">₹{combo.combo_prepaid_price?.toLocaleString()}</span>
+                        <span className="text-xs text-gray-400 line-through">₹{combo.mrp_total?.toLocaleString()}</span>
+                        <span className="text-xs font-bold text-rose-600">{combo.discount_percent}% OFF</span>
+                      </div>
+                    </div>
+                    <button onClick={() => { const cart = getCart(); cart.items = [{ combo_id: combo.combo_id, quantity: 1 }]; saveCart(cart); validateCart(); }}
+                      className="text-xs bg-amber-500 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-amber-600">
+                      Switch to Bundle
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Trust Badges */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100">
+              <div className="grid grid-cols-4 gap-3">
+                {[{ icon: Shield, t: 'Secure Checkout', d: '256-bit SSL' }, { icon: Truck, t: 'Free Shipping', d: 'All India' }, { icon: Clock, t: '30-Day Return', d: 'Money back' }, { icon: Check, t: '50K+ Customers', d: 'Trusted brand' }].map((b, i) => (
+                  <div key={i} className="text-center">
+                    <b.icon size={18} className="mx-auto mb-1 text-emerald-600" />
+                    <p className="text-[10px] font-semibold text-gray-700">{b.t}</p>
+                    <p className="text-[9px] text-gray-400">{b.d}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Order Summary */}

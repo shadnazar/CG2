@@ -182,7 +182,7 @@ function RecentPurchaseNotification() {
               <span className="font-bold text-base">Welcome to Celesta Glow!</span>
             </div>
             <p className="text-sm opacity-95 leading-relaxed">
-              India's #1 Anti-Aging Serum trusted by 50,000+ women. Discover your younger-looking skin today!
+              India's #1 Anti-Aging Brand trusted by 50,000+ women. Complete anti-aging routine — 5 products for younger-looking skin!
             </p>
             <div className="mt-4 pt-3 border-t border-white/20 flex items-center gap-3 text-xs opacity-90">
               <span className="flex items-center gap-1">
@@ -234,7 +234,7 @@ function RecentPurchaseNotification() {
             <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-100 p-1">
               <img 
                 src={PRODUCT_IMAGE} 
-                alt="Celesta Glow Serum" 
+                alt="Celesta Glow Products" 
                 className="w-full h-full object-contain"
                 onError={(e) => { e.target.style.display = 'none'; }}
               />

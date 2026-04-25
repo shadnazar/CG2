@@ -7,7 +7,7 @@ import { MessageCircle } from 'lucide-react';
  */
 function WhatsAppButton({ 
   phoneNumber = '919446125745', 
-  message = 'Hi! I am interested in Celesta Glow Anti-Aging Serum. Can you help me?',
+  message = 'Hi! I am interested in Celesta Glow Anti-Aging products. Can you help me?',
   position = 'fixed',  // 'fixed' or 'inline'
   className = ''
 }) {

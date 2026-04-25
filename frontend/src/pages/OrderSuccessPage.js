@@ -32,7 +32,7 @@ function OrderSuccessPage() {
             window.fbq('track', 'Purchase', {
               value: orderData.amount,
               currency: 'INR',
-              content_name: 'Super Anti-Aging Serum',
+              content_name: order?.items?.map(i => i.name || i.slug).join(', ') || 'Celesta Glow Products',
               content_category: 'Skincare',
               content_ids: ['celestaglow_serum_001'],
               content_type: 'product',
@@ -96,7 +96,7 @@ function OrderSuccessPage() {
 
   const shareOnWhatsApp = () => {
     const message = encodeURIComponent(
-      `Hey! I just ordered from Celesta Glow and got amazing results! 🌟\n\nUse my link to get ₹50 OFF on India's #1 Anti-Aging Serum:\n${referralLink}\n\nTrust me, your skin will thank you! ✨`
+      `Hey! I just ordered from Celesta Glow and got amazing results! \n\nUse my link to get ₹50 OFF on India's #1 Anti-Aging Range:\n${referralLink}\n\nTrust me, your skin will thank you!`
     );
     window.open(`https://wa.me/?text=${message}`, '_blank');
   };
@@ -235,7 +235,7 @@ function OrderSuccessPage() {
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-500">Product</span>
-            <span className="text-gray-900 font-medium">Super Anti-Aging Serum</span>
+            <span className="text-gray-900 font-medium">{order?.items?.map(i => i.name || i.slug).join(', ') || 'Celesta Glow Products'}</span>
           </div>
           <div className="flex justify-between">
             <span className="text-gray-500">Quantity</span>

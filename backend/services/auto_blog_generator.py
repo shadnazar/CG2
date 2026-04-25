@@ -64,7 +64,7 @@ Each topic should:
 1. Be highly searchable and SEO-friendly
 2. Target Indian audience (mention Indian cities, climate, or preferences where relevant)
 3. Be timely and relevant to current season/trends
-4. Have potential to convert readers to anti-aging serum buyers
+4. Have potential to convert readers to anti-aging product buyers
 
 Return as JSON array:
 [
@@ -120,8 +120,8 @@ IMPORTANT WRITING GUIDELINES:
 6. Use proper HTML formatting (h2, h3, p, ul, li, strong)
 7. Avoid jargon - explain any technical terms simply
 8. Include practical, actionable advice anyone can follow
-9. Naturally mention how a good anti-aging serum can help
-10. Add a subtle CTA for Celesta Glow serum
+9. Naturally mention how a complete anti-aging routine can help
+10. Add a subtle CTA for Celesta Glow's 5-product anti-aging range
 11. Make it feel like advice from a caring friend, not a textbook
 
 Return as JSON:
@@ -396,8 +396,8 @@ IMPORTANT WRITING GUIDELINES:
 3. Use bullet points and numbered lists
 4. Include subheadings every 150-200 words
 5. Use proper HTML formatting (h2, h3, p, ul, li, strong)
-6. Naturally mention how a good anti-aging serum can help
-7. Add a subtle CTA for Celesta Glow serum
+6. Naturally mention how a complete anti-aging routine can help
+7. Add a subtle CTA for Celesta Glow's anti-aging range
 8. Make it locally relevant to {state}
 
 Return as JSON:
@@ -561,8 +561,8 @@ IMPORTANT WRITING GUIDELINES:
 3. Use bullet points and numbered lists
 4. Include subheadings every 150-200 words
 5. Use proper HTML formatting (h2, h3, p, ul, li, strong)
-6. Naturally mention how a good anti-aging serum can help
-7. Add a subtle CTA for Celesta Glow serum
+6. Naturally mention how a complete anti-aging routine can help
+7. Add a subtle CTA for Celesta Glow's anti-aging range
 8. Make it practical and actionable
 
 Return as JSON:

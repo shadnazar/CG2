@@ -516,15 +516,15 @@ function BlogList() {
             Ready to Transform Your Skin?
           </h2>
           <p className="text-green-100 mb-6 max-w-xl mx-auto">
-            Try Celesta Glow Advanced Anti-Aging Serum with Retinol, Niacinamide, Vitamin E & Hyaluronic Acid
+            Try Celesta Glow Complete Anti-Aging Range — Serum, Night Cream, Under Eye Cream, Sunscreen & Cleanser
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link 
-              to="/product/anti-aging-serum"
+              to="/shop"
               className="inline-flex items-center gap-2 bg-white text-green-600 px-8 py-4 rounded-full font-bold hover:bg-green-50 transition-colors"
               data-testid="blog-cta"
             >
-              Shop Now — ₹699 <ChevronRight size={20} />
+              Shop Now — From ₹499 <ChevronRight size={20} />
             </Link>
             <div className="flex items-center gap-1 text-green-200">
               <Star size={16} fill="currentColor" />

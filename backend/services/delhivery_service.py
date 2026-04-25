@@ -42,7 +42,7 @@ class DelhiveryService:
                     "return_add": "",
                     "return_state": "",
                     "return_country": "",
-                    "products_desc": "Celesta Glow Anti-Aging Serum",
+                    "products_desc": "Celesta Glow Anti-Aging Products",
                     "hsn_code": "",
                     "cod_amount": str(order.get("cod_balance", 0)) if order.get("payment_method") == "cod" else "0",
                     "order_date": datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),

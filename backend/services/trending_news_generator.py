@@ -23,7 +23,7 @@ NEWS_FEEDS = {
 }
 
 # Blog generation prompt template
-TRENDING_BLOG_PROMPT = """You are an expert beauty and skincare blogger for Celesta Glow, an anti-aging serum brand.
+TRENDING_BLOG_PROMPT = """You are an expert beauty and skincare blogger for Celesta Glow, a complete anti-aging skincare brand with 5 products (Serum, Night Cream, Under Eye Cream, Sunscreen, Cleanser).
 
 Based on this trending news headline and summary, create an engaging skincare blog post that:
 1. References the trending topic/celebrity naturally

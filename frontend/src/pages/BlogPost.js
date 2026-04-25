@@ -81,7 +81,7 @@ function BlogPost() {
       <div className="mx-5 mt-6 p-4 bg-green-50 border border-green-100 rounded-xl">
         <p className="text-sm text-gray-700">
           Looking for effective anti-aging solutions? Try{' '}
-          <Link to="/product/anti-aging-serum" className="text-green-600 font-semibold">
+          <Link to="/shop" className="text-green-600 font-semibold">
             Celesta Glow Advanced Serum
           </Link>
           {' '}— India's first 4-in-1 formula.
@@ -111,11 +111,11 @@ function BlogPost() {
         <h3 className="text-white text-lg font-bold mb-2">Ready to Transform Your Skin?</h3>
         <p className="text-gray-400 text-sm mb-4">Join 10,000+ happy customers</p>
         <Link 
-          to="/product/anti-aging-serum"
+          to="/shop"
           className="btn-cg-primary inline-flex"
           data-testid="blog-cta"
         >
-          Shop Now — ₹699 <ChevronRight size={18} />
+          Shop Now — From ₹499 <ChevronRight size={18} />
         </Link>
       </div>
     </div>

@@ -505,7 +505,7 @@ def send_order_status_email(order: dict, new_status: str):
                     
                     <div class="order-box">
                         <p><strong>Order ID:</strong> {order['order_id']}</p>
-                        <p><strong>Product:</strong> Super Anti-Aging Serum</p>
+                        <p><strong>Product:</strong> Celesta Glow Anti-Aging Products</p>
                         <p><strong>Amount:</strong> ₹{order['amount']}</p>
                         <p><strong>Delivery Address:</strong><br/>
                         {order['house_number']}, {order['area']}<br/>
@@ -552,17 +552,17 @@ def send_order_status_email(order: dict, new_status: str):
                     </div>
                     
                     <p>Hi {order['name']},</p>
-                    <p>Your Celesta Glow Super Anti-Aging Serum has been successfully delivered!</p>
+                    <p>Your Celesta Glow order has been successfully delivered!</p>
                     
                     <div class="order-box">
                         <p><strong>Order ID:</strong> {order['order_id']}</p>
-                        <p><strong>Product:</strong> Super Anti-Aging Serum</p>
+                        <p><strong>Product:</strong> Celesta Glow Anti-Aging Products</p>
                         <p><strong>Amount:</strong> ₹{order['amount']}</p>
                     </div>
                     
                     <div class="tips-box">
                         <p><strong>💡 Pro Tip for Best Results:</strong></p>
-                        <p>Apply the serum on clean skin every night before bed. Gently massage in circular motions and let it absorb for 5 minutes before applying moisturizer.</p>
+                        <p>Follow the usage instructions included with your products for best results. Use your skincare routine consistently — morning and night.</p>
                     </div>
                     
                     <p>We'd love to hear about your experience! Reply to this email or share your feedback on WhatsApp: <a href="https://wa.me/919446125745">+91 9446125745</a></p>
@@ -1035,7 +1035,7 @@ async def get_location_city(state: str, city: str):
             "city": city.title(),
             "content": {
                 "title": f"Anti-Aging Skincare in {city.title()}, {state.title()}",
-                "description": f"Get Celesta Glow Anti-Aging Serum delivered to {city.title()}. Free shipping available.",
+                "description": f"Get Celesta Glow anti-aging products delivered to {city.title()}. Free shipping available.",
                 "climate": "Varies by season",
                 "skin_issues": ["wrinkles", "fine lines", "pollution damage"],
                 "recommendations": "Use Celesta Glow twice daily for optimal results"
@@ -2151,7 +2151,7 @@ async def send_consultation_whatsapp_notification(request: WhatsAppConsultationN
         raise HTTPException(status_code=404, detail="Consultation not found")
     
     # Build recommendations text
-    recommendations = request.recommendations or "Based on your skin analysis, we recommend using Celesta Glow Anti-Aging Serum twice daily - morning and night after cleansing. For best results, follow with a moisturizer and SPF during the day."
+    recommendations = request.recommendations or "Based on your skin analysis, we recommend Celesta Glow's complete anti-aging routine. Start with our Gentle Cleanser, apply the Advanced Face Serum, and protect with SPF 50 Sunscreen daily. Use the Retinoid Night Cream and Under Eye Cream at night for best results."
     
     result = await whatsapp_service.send_consultation_result(
         phone_number=consultation.get("phone"),

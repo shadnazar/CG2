@@ -1460,7 +1460,7 @@ function ConsultationPage() {
             </div>
             <div className="text-center">
               <p className="text-green-200 text-sm mb-2">Celesta Glow Advanced Anti-Aging Serum</p>
-              <p className="text-2xl font-bold">₹699 <span className="text-sm font-normal text-green-200 line-through">₹1,499</span></p>
+              <p className="text-2xl font-bold">From ₹499 <span className="text-sm font-normal text-green-200 line-through">₹1,499</span></p>
             </div>
           </div>
         </div>
@@ -1468,11 +1468,11 @@ function ConsultationPage() {
         {/* Fixed Bottom Actions */}
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 space-y-2">
           <button
-            onClick={() => navigate('/product/anti-aging-serum')}
+            onClick={() => navigate('/shop')}
             className="w-full py-4 bg-green-500 text-white rounded-full font-semibold flex items-center justify-center gap-2"
             data-testid="buy-now-btn"
           >
-            {t.buyNow} — ₹699 <ChevronRight size={20} />
+            {t.buyNow} — Shop Now <ChevronRight size={20} />
           </button>
           <button
             onClick={handleDownloadPDF}

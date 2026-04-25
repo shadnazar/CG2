@@ -57,7 +57,7 @@ function Footer() {
           <div className="md:col-span-2">
             <h2 className="text-xl font-bold text-white mb-4">Celesta Glow</h2>
             <p className="text-sm text-gray-400 mb-4 leading-relaxed">
-              India's #1 Premium Anti-Aging Serum. Transform your skin with our clinically proven formula featuring Retinol, Niacinamide, Vitamin E & Hyaluronic Acid.
+              India's #1 Complete Anti-Aging Solution. 5 clinically-formulated products to fight aging — Serum, Night Cream, Under Eye Cream, Sunscreen & Cleanser.
             </p>
             
             {/* Company Address */}

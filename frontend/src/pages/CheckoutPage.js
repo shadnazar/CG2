@@ -169,6 +169,31 @@ function CheckoutPage() {
                 <span className="flex items-center gap-1"><Truck size={12} /> Free Ship</span>
                 <span className="flex items-center gap-1"><Check size={12} /> 30-day Guarantee</span>
               </div>
+
+              {/* Trust Section */}
+              <div className="mt-4 bg-emerald-50 rounded-xl p-3">
+                <p className="text-xs text-emerald-800 font-medium text-center mb-2">Trusted by 50,000+ Customers</p>
+                <div className="flex justify-center gap-1">
+                  {[1,2,3,4,5].map(i => <span key={i} className="text-amber-400 text-xs">&#9733;</span>)}
+                  <span className="text-xs text-gray-600 ml-1">4.8/5 Average Rating</span>
+                </div>
+              </div>
+
+              {/* Savings Highlight */}
+              {cartData.savings > 0 && (
+                <div className="mt-3 bg-rose-50 border border-rose-100 rounded-xl p-3 text-center">
+                  <p className="text-sm font-bold text-rose-700">You're saving ₹{cartData.savings?.toLocaleString()} on this order!</p>
+                  <p className="text-xs text-rose-500 mt-0.5">Free shipping included</p>
+                </div>
+              )}
+
+              {/* Delivery Timeline */}
+              <div className="mt-3 text-xs text-gray-500 text-center">
+                {paymentMethod === 'prepaid' 
+                  ? <p>Estimated delivery: <strong className="text-emerald-600">1-2 business days</strong></p>
+                  : <p>Estimated delivery: <strong>5-7 business days</strong></p>
+                }
+              </div>
             </div>
           </div>
         </div>

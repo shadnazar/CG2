@@ -84,11 +84,11 @@ function LocationPage() {
           Limited time offer - Save 53% today!
         </p>
         <Link 
-          to="/product/anti-aging-serum"
+          to="/shop"
           className="inline-flex items-center gap-2 bg-white text-green-600 font-semibold py-3 px-6 rounded-full"
           data-testid="location-cta"
         >
-          Order Now — ₹699 <ChevronRight size={18} />
+          Order Now — From ₹499 <ChevronRight size={18} />
         </Link>
       </div>
     </div>

@@ -32,7 +32,7 @@ function AboutPage() {
               Celesta Glow was born from a simple observation: effective anti-aging skincare shouldn't cost a fortune or require a 10-step routine. We set out to create a single, powerful serum that combines the best of science and nature.
             </p>
             <p className="text-gray-600 mb-4">
-              After years of research and development, we formulated our signature Anti-Aging Serum – a breakthrough 4-in-1 formula that combines Retinol, Niacinamide, Vitamin E, and Hyaluronic Acid. Each ingredient is clinically proven and carefully balanced for maximum effectiveness without irritation.
+              After years of research and development, we created India's first complete anti-aging system — 5 clinically-formulated products that work together to fight aging from every angle. From our Advanced Face Serum to our SPF 50 Sunscreen, each product is packed with active ingredients like Retinoid, Niacinamide, Caffeine, Alpha Arbutin, and Vitamin C.
             </p>
             <p className="text-gray-600">
               Today, over 50,000 Indians trust Celesta Glow for their skincare needs. Our customers consistently report visible improvements in fine lines, skin texture, and overall radiance within just 2-4 weeks of use.
@@ -118,7 +118,7 @@ function AboutPage() {
           <p className="text-green-100 mb-6">Join 50,000+ happy customers and start your anti-aging journey today.</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link 
-              to="/product/anti-aging-serum"
+              to="/shop"
               className="inline-flex items-center justify-center gap-2 bg-white text-green-600 font-semibold py-3 px-6 rounded-xl hover:bg-green-50 transition-colors"
             >
               Shop Now <ChevronRight size={20} />

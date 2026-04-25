@@ -130,7 +130,7 @@ function AdminLocationEditor() {
       setFormData(prev => ({
         ...prev,
         title: `Anti-Aging Skincare in ${location}`,
-        description: `Get Celesta Glow Anti-Aging Serum delivered to ${location}. Free shipping and Cash on Delivery available.`
+        description: `Get Celesta Glow anti-aging products delivered to ${location}. Free shipping and Cash on Delivery available.`
       }));
     }
   }, [formData.state, formData.city, isEditing]);
