@@ -120,15 +120,15 @@ function ProductDetailPage() {
                 ))}
               </div>
             )}
-            {/* Live badges below image */}
+            {/* Live badges below image — medium size */}
             <div className="flex items-center justify-center gap-3 mt-3">
-              <div className="flex items-center gap-1 bg-amber-50 border border-amber-100 rounded-full px-3 py-1">
-                <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
-                <span className="text-[9px] text-amber-700 font-semibold">{Math.floor(Math.random() * 30) + 40} ordered today</span>
+              <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
+                <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                <span className="text-xs text-amber-800 font-semibold">{Math.floor(Math.random() * 30) + 40} sold today</span>
               </div>
-              <div className="flex items-center gap-1 bg-rose-50 border border-rose-100 rounded-full px-3 py-1">
-                <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
-                <span className="text-[9px] text-rose-700 font-semibold">{Math.floor(Math.random() * 12) + 8} viewing now</span>
+              <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5">
+                <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
+                <span className="text-xs text-rose-800 font-semibold">Only {Math.floor(Math.random() * 15) + 5} left</span>
               </div>
             </div>
           </div>
@@ -153,10 +153,10 @@ function ProductDetailPage() {
               </div>
               <p className="text-xs text-green-700 font-semibold mt-1">You save ₹{savings} on this product</p>
               <p className="text-[10px] text-gray-500 mt-1">Free Shipping | COD ₹{product.cod_price} | Inclusive of all taxes</p>
-              {/* New user coupon auto-suggestion */}
-              <div className="mt-2.5 bg-white rounded-lg p-2 border border-amber-200/60 flex items-center gap-2">
-                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0"><Zap size={12} className="text-amber-600" /></div>
-                <p className="text-[10px] text-gray-700">Use code <span className="font-mono font-bold text-green-700 bg-green-50 px-1 rounded">WELCOME50</span> for extra ₹50 OFF at checkout</p>
+              {/* Coupon — orange theme */}
+              <div className="mt-2.5 bg-orange-50 rounded-lg p-2.5 border border-orange-200 flex items-center gap-2">
+                <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0"><Zap size={13} className="text-white" /></div>
+                <p className="text-xs text-orange-800 font-semibold">Use code <span className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-orange-200">WELCOME50</span> for extra ₹50 OFF</p>
               </div>
             </div>
 

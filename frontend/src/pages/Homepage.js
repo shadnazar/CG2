@@ -169,45 +169,45 @@ function Homepage() {
           <h2 className="text-xl sm:text-2xl font-black text-gray-900">Shop Individual Products</h2>
           <div className="w-12 h-0.5 bg-green-500 mx-auto mt-2.5 rounded-full" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
           {products.map(product => {
             const orders = Math.floor(Math.random() * 40) + 30;
-            const viewing = Math.floor(Math.random() * 15) + 5;
+            const piecesLeft = Math.floor(Math.random() * 20) + 5;
             return (
             <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300" data-testid={`product-card-${product.slug}`}>
-              {product.badge && <div className={`text-[8px] font-bold px-2 py-0.5 text-center tracking-widest ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-50 text-green-700'}`}>{product.badge.toUpperCase()}</div>}
+              {product.badge && <div className={`text-[10px] font-bold px-3 py-1 text-center tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-50 text-green-700'}`}>{product.badge.toUpperCase()}</div>}
               <Link to={`/product/${product.slug}`} className="block relative">
-                <div className="aspect-square bg-stone-50 flex items-center justify-center p-3 group-hover:scale-105 transition-transform duration-300">
-                  {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-8 h-8 text-green-200" />}
+                <div className="aspect-square bg-stone-50 flex items-center justify-center p-4 group-hover:scale-105 transition-transform duration-300">
+                  {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-green-200" />}
                 </div>
-                {/* Live badge */}
-                <div className="absolute bottom-1.5 left-1.5 right-1.5 flex justify-between">
-                  <span className="text-[7px] bg-white/90 backdrop-blur-sm text-gray-600 px-1.5 py-0.5 rounded-full font-medium border border-gray-100">{orders} ordered today</span>
-                  <span className="text-[7px] bg-red-50 text-red-600 px-1.5 py-0.5 rounded-full font-medium border border-red-100">{viewing} viewing</span>
+                {/* Live badges — medium size */}
+                <div className="absolute bottom-2 left-2 right-2 flex justify-between">
+                  <span className="text-[9px] bg-white/95 backdrop-blur-sm text-gray-700 px-2 py-1 rounded-lg font-semibold border border-gray-200 shadow-sm">{orders} sold today</span>
+                  <span className="text-[9px] bg-rose-50 text-rose-700 px-2 py-1 rounded-lg font-semibold border border-rose-200 shadow-sm">{piecesLeft} left</span>
                 </div>
               </Link>
-              <div className="p-2.5">
-                <Link to={`/product/${product.slug}`}><h3 className="font-bold text-gray-900 text-[11px] leading-tight mb-0.5 group-hover:text-green-700 line-clamp-2">{product.short_name}</h3></Link>
-                <p className="text-[8px] text-gray-400 line-clamp-1 mb-1">{product.key_ingredients}</p>
-                <p className="text-[8px] text-gray-400 mb-1">{product.size}</p>
+              <div className="p-3">
+                <Link to={`/product/${product.slug}`}><h3 className="font-bold text-gray-900 text-sm leading-tight mb-1 group-hover:text-green-700 line-clamp-2">{product.short_name}</h3></Link>
+                <p className="text-[10px] text-gray-400 line-clamp-1 mb-1">{product.key_ingredients}</p>
+                <p className="text-[10px] text-gray-400 mb-1.5">{product.size}</p>
                 {/* Price */}
-                <div className="flex items-baseline gap-1.5 mb-0.5">
-                  <span className="text-[10px] text-gray-400 line-through">₹{product.mrp}</span>
-                  <span className="text-sm font-black text-gray-900">₹{product.prepaid_price}</span>
-                  <span className="text-[9px] font-bold text-green-600">{product.discount_percent}% Off</span>
+                <div className="flex items-baseline gap-2 mb-1">
+                  <span className="text-xs text-gray-400 line-through">₹{product.mrp}</span>
+                  <span className="text-lg font-black text-gray-900">₹{product.prepaid_price}</span>
+                  <span className="text-[10px] font-bold text-green-600">{product.discount_percent}% Off</span>
                 </div>
-                {/* Coupon offer */}
-                <div className="bg-green-50 border border-green-100 rounded px-1.5 py-1 mb-1.5 flex items-center gap-1">
-                  <div className="w-3 h-3 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0"><Check size={7} className="text-white" /></div>
-                  <p className="text-[8px] text-green-700 font-medium">Get it for ₹{product.prepaid_price - 50} with <span className="font-bold">WELCOME50</span></p>
+                {/* Coupon — orange theme */}
+                <div className="bg-orange-50 border border-orange-200 rounded-lg px-2 py-1.5 mb-2 flex items-center gap-1.5">
+                  <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0"><Check size={9} className="text-white" /></div>
+                  <p className="text-[10px] text-orange-800 font-semibold">Get for ₹{product.prepaid_price - 50} with <span className="font-bold font-mono">WELCOME50</span></p>
                 </div>
                 {/* Rating */}
-                <div className="flex items-center gap-1 mb-2">
-                  <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} size={8} className={i <= Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />)}</div>
-                  <span className="text-[8px] text-gray-500">({product.reviews_count?.toLocaleString()})</span>
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} size={11} className={i <= Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />)}</div>
+                  <span className="text-[10px] text-gray-500 font-medium">({product.reviews_count?.toLocaleString()})</span>
                 </div>
-                <button onClick={(e) => { e.preventDefault(); handleAddToCart(product.slug); }} className="w-full bg-green-600 hover:bg-green-700 text-white text-[10px] font-bold py-2 rounded-xl transition-colors flex items-center justify-center gap-1" data-testid={`add-to-cart-${product.slug}`}>
-                  <ShoppingCart size={11} /> Add to Cart
+                <button onClick={(e) => { e.preventDefault(); handleAddToCart(product.slug); }} className="w-full bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-2.5 rounded-xl transition-colors flex items-center justify-center gap-1.5" data-testid={`add-to-cart-${product.slug}`}>
+                  <ShoppingCart size={14} /> Add to Cart
                 </button>
               </div>
             </div>
@@ -308,9 +308,9 @@ function Homepage() {
         </div>
       </section>
 
-      {/* Coupon */}
-      <div className="bg-gradient-to-r from-rose-500 to-pink-500 text-white py-2.5 px-4 text-center">
-        <p className="text-[10px] sm:text-xs font-bold">New User? Use <span className="bg-white/20 px-1.5 py-0.5 rounded font-mono mx-0.5">WELCOME50</span> for ₹50 OFF | This Month: <span className="bg-white/20 px-1.5 py-0.5 rounded font-mono mx-0.5">FEB25</span> for ₹25 OFF</p>
+      {/* Coupon — orange */}
+      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 px-4 text-center">
+        <p className="text-xs font-bold">New User? Use <span className="bg-white/25 px-2 py-0.5 rounded font-mono mx-0.5">WELCOME50</span> for ₹50 OFF | This Month: <span className="bg-white/25 px-2 py-0.5 rounded font-mono mx-0.5">FEB25</span> for ₹25 OFF</p>
       </div>
 
       {/* CTA */}

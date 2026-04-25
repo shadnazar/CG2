@@ -730,3 +730,42 @@ async def seed_products():
         upsert=True
     )
     logging.info("Site settings initialized")
+    
+    # Auto-generate monthly coupons
+    await generate_monthly_coupons()
+
+
+async def generate_monthly_coupons():
+    """Auto-generate monthly coupons if not already generated"""
+    now = datetime.now(timezone.utc)
+    months = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC']
+    current_month = months[now.month - 1]
+    next_month = months[now.month % 12]
+    
+    monthly_coupons = [
+        {"code": f"{current_month}{now.year % 100}", "discount_type": "fixed", "discount_value": 25, "min_order_amount": 499, "max_uses": 5000},
+        {"code": f"{current_month}GLOW", "discount_type": "fixed", "discount_value": 30, "min_order_amount": 799, "max_uses": 3000},
+        {"code": f"{next_month}EARLY", "discount_type": "fixed", "discount_value": 20, "min_order_amount": 499, "max_uses": 2000},
+    ]
+    
+    for coupon in monthly_coupons:
+        existing = await db.coupons.find_one({"code": coupon["code"]})
+        if not existing:
+            from datetime import timedelta
+            coupon["used_count"] = 0
+            coupon["is_active"] = True
+            coupon["created_at"] = now.isoformat()
+            coupon["expiry_date"] = (now + timedelta(days=45)).isoformat()
+            coupon["auto_generated"] = True
+            await db.coupons.insert_one(coupon)
+            logging.info(f"Auto-generated monthly coupon: {coupon['code']}")
+    
+    # Ensure WELCOME50 exists
+    if not await db.coupons.find_one({"code": "WELCOME50"}):
+        from datetime import timedelta
+        await db.coupons.insert_one({
+            "code": "WELCOME50", "discount_type": "fixed", "discount_value": 50,
+            "min_order_amount": 499, "max_uses": 99999, "used_count": 0, "is_active": True,
+            "created_at": now.isoformat(), "expiry_date": (now + timedelta(days=365)).isoformat()
+        })
+        logging.info("Created WELCOME50 coupon")

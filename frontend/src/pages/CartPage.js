@@ -144,16 +144,16 @@ function CartPage() {
               </div>
             )}
 
-            {/* Auto Coupon Suggestion */}
+            {/* Auto Coupon Suggestion — orange */}
             {!appliedCoupon && (
-              <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-3.5 border border-green-100 flex items-center justify-between">
+              <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-3.5 border border-orange-200 flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-green-800">Apply <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-green-200">WELCOME50</span> for ₹50 OFF</p>
-                  <p className="text-[9px] text-green-600 mt-0.5">New user discount, auto-applied!</p>
+                  <p className="text-xs font-bold text-orange-800">Apply <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-orange-300">WELCOME50</span> for ₹50 OFF</p>
+                  <p className="text-[10px] text-orange-600 mt-0.5">New user offer</p>
                 </div>
                 <button onClick={() => { setCouponCode('WELCOME50'); setTimeout(async () => {
                   try { const r = await axios.post(`${API}/api/validate-coupon?code=WELCOME50&cart_total=${cartData?.subtotal || 0}`); setAppliedCoupon({ code: 'WELCOME50', ...r.data }); } catch {}
-                }, 100); }} className="bg-green-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Apply</button>
+                }, 100); }} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl">Apply</button>
               </div>
             )}
 
