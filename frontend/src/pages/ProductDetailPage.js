@@ -120,6 +120,17 @@ function ProductDetailPage() {
                 ))}
               </div>
             )}
+            {/* Live badges below image */}
+            <div className="flex items-center justify-center gap-3 mt-3">
+              <div className="flex items-center gap-1 bg-amber-50 border border-amber-100 rounded-full px-3 py-1">
+                <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-pulse" />
+                <span className="text-[9px] text-amber-700 font-semibold">{Math.floor(Math.random() * 30) + 40} ordered today</span>
+              </div>
+              <div className="flex items-center gap-1 bg-rose-50 border border-rose-100 rounded-full px-3 py-1">
+                <div className="w-1.5 h-1.5 bg-rose-500 rounded-full animate-pulse" />
+                <span className="text-[9px] text-rose-700 font-semibold">{Math.floor(Math.random() * 12) + 8} viewing now</span>
+              </div>
+            </div>
           </div>
 
           {/* Info */}
@@ -149,7 +160,18 @@ function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Key Ingredients — Premium cards */}
+            {/* Volume Discount Offers */}
+            <div className="mt-3 bg-purple-50 rounded-xl p-3 border border-purple-100">
+              <p className="text-[10px] font-bold text-purple-800 mb-2">Buy More, Save More!</p>
+              <div className="flex gap-1.5">
+                {[{q:1,d:'0%',label:'Buy 1'},{q:2,d:'5%',label:'Buy 2'},{q:3,d:'10%',label:'Buy 3'},{q:4,d:'15%',label:'Buy 4+'}].map((tier,i) => (
+                  <button key={i} onClick={() => { setQty(tier.q); }} className={`flex-1 rounded-lg py-2 text-center transition-all border ${qty >= tier.q && qty < (tier.q === 4 ? 99 : tier.q + 1) ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-purple-200 hover:border-purple-400'}`}>
+                    <p className="text-[9px] font-bold">{tier.label}</p>
+                    <p className="text-[8px] opacity-80">{tier.d} Off</p>
+                  </button>
+                ))}
+              </div>
+            </div>
             <div className="mt-6">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Key Active Ingredients</p>
               <div className="flex gap-2 overflow-x-auto pb-1">

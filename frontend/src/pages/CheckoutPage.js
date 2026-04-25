@@ -117,39 +117,51 @@ function CheckoutPage() {
               </div>
             </div>
 
-            {/* Payment Method — on checkout only */}
+            {/* Payment Method */}
             <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
               <h2 className="font-bold text-gray-900 text-sm mb-3">Payment Method</h2>
               <div className="space-y-2.5">
-                <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'prepaid' ? 'border-green-500 bg-green-50/50' : 'border-gray-100 hover:border-gray-200'}`}>
+                <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'prepaid' ? 'border-green-500 bg-green-50/50 shadow-sm' : 'border-gray-100 hover:border-gray-200'}`}>
                   <input type="radio" name="pay" checked={paymentMethod === 'prepaid'} onChange={() => setPaymentMethod('prepaid')} className="text-green-600 w-4 h-4" />
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <p className="font-bold text-sm text-gray-900">Prepaid (UPI / Card)</p>
-                      {paymentMethod === 'prepaid' && <span className="text-[9px] bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>}
+                      <span className="text-[8px] bg-green-600 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>
                     </div>
-                    <p className="text-[10px] text-green-600 font-medium mt-0.5">Faster Delivery 1-2 days</p>
+                    <p className="text-[10px] text-green-600 font-medium mt-0.5">Faster Delivery 1-2 days | Best Price</p>
                   </div>
                 </label>
                 <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'COD' ? 'border-green-500 bg-green-50/50' : 'border-gray-100 hover:border-gray-200'}`}>
                   <input type="radio" name="pay" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} className="text-green-600 w-4 h-4" />
-                  <div>
+                  <div className="flex-1">
                     <p className="font-bold text-sm text-gray-900">Cash on Delivery</p>
-                    <p className="text-[10px] text-gray-500 mt-0.5">₹29 advance | Pay rest on delivery</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">₹0 advance | Pay full amount on delivery</p>
                   </div>
                 </label>
+                {paymentMethod === 'COD' && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-center">
+                    <p className="text-[10px] text-amber-800 font-semibold">You save more with Prepaid! Switch to save extra on faster delivery.</p>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Referral Program Promotion */}
+            {/* Volume Discount — Tappable */}
             <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-4 text-white">
-              <p className="text-xs font-bold mb-1">Add More, Save More!</p>
-              <div className="flex gap-2 mt-2">
-                {[{n:'2 items',d:'5% OFF'},{n:'3 items',d:'10% OFF'},{n:'4+ items',d:'15% OFF'}].map((t,i) => (
-                  <div key={i} className="bg-white/15 rounded-lg px-2.5 py-1.5 text-center flex-1">
-                    <p className="text-[10px] font-bold">{t.n}</p>
+              <p className="text-xs font-bold mb-2">Add More, Save More!</p>
+              <div className="flex gap-2">
+                {[{n:2,d:'5% OFF'},{n:3,d:'10% OFF'},{n:4,d:'15% OFF'}].map((t,i) => (
+                  <button key={i} onClick={() => {
+                    const cart = getCart();
+                    if (cart.items.length > 0 && cart.items[0].product_slug) {
+                      cart.items[0].quantity = t.n;
+                      saveCart(cart);
+                      window.location.reload();
+                    }
+                  }} className="bg-white/15 hover:bg-white/25 rounded-lg px-2.5 py-2 text-center flex-1 transition-colors cursor-pointer">
+                    <p className="text-[10px] font-bold">{t.n} items</p>
                     <p className="text-[9px] opacity-80">{t.d}</p>
-                  </div>
+                  </button>
                 ))}
               </div>
             </div>
@@ -186,15 +198,17 @@ function CheckoutPage() {
               </div>
               <div className="border-t border-gray-100 pt-3 space-y-1.5 text-sm">
                 <div className="flex justify-between text-gray-400"><span>Subtotal</span><span>₹{cartData.subtotal?.toLocaleString()}</span></div>
-                {cartData.discount > 0 && <div className="flex justify-between text-green-600"><span>Discount</span><span>-₹{cartData.discount}</span></div>}
-                {cartData.volume_discount > 0 && <div className="flex justify-between text-purple-600"><span>Volume Discount ({cartData.volume_discount_percent}%)</span><span>-₹{cartData.volume_discount}</span></div>}
+                {cartData.discount > 0 && <div className="flex justify-between text-green-600"><span>Coupon Discount</span><span className="font-semibold">-₹{cartData.discount}</span></div>}
+                {cartData.volume_discount > 0 && <div className="flex justify-between text-purple-600"><span>Volume Discount ({cartData.volume_discount_percent}%)</span><span className="font-semibold">-₹{cartData.volume_discount}</span></div>}
+                <div className="flex justify-between text-gray-400"><span>Taxes & Charges</span><span className="text-green-600 font-medium">₹0 (Included)</span></div>
                 <div className="flex justify-between text-gray-400"><span>Shipping</span><span className="text-green-600 font-medium">FREE</span></div>
                 <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-gray-900 text-lg"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>
               </div>
 
               {cartData.savings > 0 && (
-                <div className="mt-3 bg-green-50 rounded-xl p-2.5 text-center border border-green-100">
-                  <p className="text-xs font-bold text-green-700">You're saving ₹{cartData.savings?.toLocaleString()} on this order!</p>
+                <div className="mt-3 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl p-3 text-center text-white">
+                  <p className="text-xs font-bold">Total Savings: ₹{cartData.savings?.toLocaleString()}</p>
+                  <p className="text-[9px] opacity-80">Incl. product discount + volume discount + free shipping</p>
                 </div>
               )}
 

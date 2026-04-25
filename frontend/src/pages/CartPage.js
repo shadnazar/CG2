@@ -123,22 +123,37 @@ function CartPage() {
               </div>
             )}
 
-            {/* Upsell with images */}
+            {/* Upsell with images — click goes to product page */}
             {upsellProducts.length > 0 && (
               <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
-                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Add to Your Order</p>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Frequently Bought Together</p>
                 <div className="flex gap-2.5 overflow-x-auto pb-1">
                   {upsellProducts.slice(0, 4).map(p => (
                     <div key={p.slug} className="flex-shrink-0 w-28 text-center">
-                      <div className="w-20 h-20 mx-auto bg-stone-50 rounded-xl flex items-center justify-center mb-1.5 overflow-hidden">
-                        {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-16 h-16 object-contain" /> : <Sparkles size={16} className="text-green-300" />}
-                      </div>
-                      <p className="text-[10px] font-semibold text-gray-800 line-clamp-1">{p.short_name}</p>
+                      <Link to={`/product/${p.slug}`}>
+                        <div className="w-20 h-20 mx-auto bg-stone-50 rounded-xl flex items-center justify-center mb-1.5 overflow-hidden hover:shadow-md transition-shadow">
+                          {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-16 h-16 object-contain" /> : <Sparkles size={16} className="text-green-300" />}
+                        </div>
+                      </Link>
+                      <Link to={`/product/${p.slug}`}><p className="text-[10px] font-semibold text-gray-800 line-clamp-1 hover:text-green-700">{p.short_name}</p></Link>
                       <p className="text-[10px] text-gray-500">₹{p.prepaid_price}</p>
                       <button onClick={() => addUpsellToCart(p.slug)} className="mt-1.5 w-full bg-green-600 text-white text-[9px] font-bold py-1.5 rounded-lg hover:bg-green-700">+ Add</button>
                     </div>
                   ))}
                 </div>
+              </div>
+            )}
+
+            {/* Auto Coupon Suggestion */}
+            {!appliedCoupon && (
+              <div className="bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-3.5 border border-green-100 flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-green-800">Apply <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-green-200">WELCOME50</span> for ₹50 OFF</p>
+                  <p className="text-[9px] text-green-600 mt-0.5">New user discount, auto-applied!</p>
+                </div>
+                <button onClick={() => { setCouponCode('WELCOME50'); setTimeout(async () => {
+                  try { const r = await axios.post(`${API}/api/validate-coupon?code=WELCOME50&cart_total=${cartData?.subtotal || 0}`); setAppliedCoupon({ code: 'WELCOME50', ...r.data }); } catch {}
+                }, 100); }} className="bg-green-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg">Apply</button>
               </div>
             )}
 
