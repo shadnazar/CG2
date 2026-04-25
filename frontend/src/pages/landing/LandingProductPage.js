@@ -16,8 +16,8 @@ import { getSharedStats, updateSharedStats } from '../../utils/sharedStats';
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 const RAZORPAY_KEY = process.env.REACT_APP_RAZORPAY_KEY;
 
-const PREPAID_PRICE = 699;
-const COD_PRICE = 749;
+const PREPAID_PRICE = 999;
+const COD_PRICE = 1099;
 const COD_ADVANCE = 29; // Fixed regardless of quantity
 const MRP = 1499;
 const DISCOUNT_AMOUNT = 50;

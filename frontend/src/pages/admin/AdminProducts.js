@@ -254,6 +254,7 @@ function AdminProducts() {
               <div><label className="text-xs font-semibold text-gray-500">Hero Title</label><input value={editSettings.hero_title || ''} onChange={e => setEditSettings({...editSettings, hero_title: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div><label className="text-xs font-semibold text-gray-500">Hero Subtitle</label><textarea value={editSettings.hero_subtitle || ''} onChange={e => setEditSettings({...editSettings, hero_subtitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" rows={2} /></div>
               <div><label className="text-xs font-semibold text-gray-500">Hero Banner Image URL</label><input value={editSettings.hero_banner_image || ''} onChange={e => setEditSettings({...editSettings, hero_banner_image: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+              <div><label className="text-xs font-semibold text-gray-500">Bundle Kit Hero Image URL</label><input value={editSettings.bundle_hero_image || ''} onChange={e => setEditSettings({...editSettings, bundle_hero_image: e.target.value})} placeholder="Single image for Complete Kit bundle card" className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div><label className="text-xs font-semibold text-gray-500">COD Advance Amount (₹)</label><input type="number" value={editSettings.cod_advance_amount || 29} onChange={e => setEditSettings({...editSettings, cod_advance_amount: Number(e.target.value)})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div className="flex items-center gap-3">
                 <label className="text-xs font-semibold text-gray-500">Pre-Sale Mode</label>
@@ -265,6 +266,7 @@ function AdminProducts() {
                 <>
                   <div><label className="text-xs font-semibold text-gray-500">Pre-Sale Title</label><input value={editSettings.presale_title || ''} onChange={e => setEditSettings({...editSettings, presale_title: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
                   <div><label className="text-xs font-semibold text-gray-500">Pre-Sale Badge</label><input value={editSettings.presale_badge || ''} onChange={e => setEditSettings({...editSettings, presale_badge: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+                  <div><label className="text-xs font-semibold text-gray-500">Pre-Sale Price (₹)</label><input type="number" value={editSettings.presale_price || ''} onChange={e => setEditSettings({...editSettings, presale_price: Number(e.target.value)})} placeholder="e.g., 2 or 20" className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
                 </>
               )}
               <div className="flex gap-2">

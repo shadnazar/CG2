@@ -258,6 +258,9 @@ function AdminDashboard() {
           <Link to="/admin/products" className="flex items-center gap-3 px-4 py-3 text-emerald-600 hover:bg-emerald-50 rounded-xl" data-testid="nav-products">
             <Package size={20} /> Products
           </Link>
+          <Link to="/admin/retention" className="flex items-center gap-3 px-4 py-3 text-cyan-600 hover:bg-cyan-50 rounded-xl" data-testid="nav-retention">
+            <Phone size={20} /> Retention
+          </Link>
           
           <Link to="/admin/consultations" className="flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-50 rounded-xl" data-testid="nav-consultations">
             <Stethoscope size={20} /> Consultations

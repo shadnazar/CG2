@@ -374,9 +374,11 @@ class SiteSettingsUpdate(BaseModel):
     presale_enabled: Optional[bool] = None
     presale_title: Optional[str] = None
     presale_badge: Optional[str] = None
+    presale_price: Optional[float] = None
     cod_advance_amount: Optional[float] = None
     before_after_images: Optional[List[Dict]] = None
     result_images: Optional[List[str]] = None
+    bundle_hero_image: Optional[str] = None
 
 
 @router.get("/site-settings")
@@ -395,6 +397,97 @@ async def update_site_settings(
     update = {k: v for k, v in data.dict().items() if v is not None}
     update["updated_at"] = datetime.now(timezone.utc).isoformat()
     await db.site_settings.update_one({"_id": "main"}, {"$set": update}, upsert=True)
+    return {"success": True}
+
+
+# ==================== CUSTOMER RETENTION ====================
+
+@router.get("/admin/retention/customers")
+async def get_retention_customers(
+    x_admin_token: str = Header(None, alias="X-Admin-Token"),
+    days: int = Query(15)
+):
+    """Get customers due for follow-up (15 or 30 days after purchase)"""
+    verify_auth(x_admin_token=x_admin_token)
+    from datetime import timedelta
+    target_date = datetime.now(timezone.utc) - timedelta(days=days)
+    window_start = target_date - timedelta(days=2)
+    window_end = target_date + timedelta(days=2)
+    
+    orders = await db.orders.find({
+        "status": {"$in": ["confirmed", "delivered"]},
+        "created_at": {"$gte": window_start.isoformat(), "$lte": window_end.isoformat()}
+    }, {"_id": 0}).to_list(500)
+    
+    # Check for existing retention notes
+    for order in orders:
+        note = await db.retention_notes.find_one({"order_id": order.get("order_id")}, {"_id": 0})
+        order["retention_note"] = note
+    
+    return {"customers": orders, "days": days}
+
+
+class RetentionNoteCreate(BaseModel):
+    order_id: str
+    status: str  # interested, not_interested, reorder, callback
+    notes: str = ""
+
+
+@router.post("/admin/retention/note")
+async def add_retention_note(
+    data: RetentionNoteCreate,
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    verify_auth(x_admin_token=x_admin_token)
+    note = data.dict()
+    note["created_at"] = datetime.now(timezone.utc).isoformat()
+    await db.retention_notes.update_one(
+        {"order_id": data.order_id},
+        {"$set": note},
+        upsert=True
+    )
+    return {"success": True}
+
+
+# ==================== BEFORE/AFTER IMAGE MANAGEMENT ====================
+
+class BeforeAfterImage(BaseModel):
+    product_slug: str
+    customer_name: str = ""
+    before_image: str
+    after_image: str
+    duration: str = ""
+    description: str = ""
+
+
+@router.get("/admin/before-after")
+async def get_before_after(x_admin_token: str = Header(None, alias="X-Admin-Token")):
+    verify_auth(x_admin_token=x_admin_token)
+    images = await db.before_after_images.find({}, {"_id": 0}).to_list(100)
+    return images
+
+
+@router.get("/before-after/{product_slug}")
+async def get_product_before_after(product_slug: str):
+    """Public: Get before/after images for a product"""
+    images = await db.before_after_images.find({"product_slug": product_slug}, {"_id": 0}).to_list(20)
+    return images
+
+
+@router.post("/admin/before-after")
+async def add_before_after(data: BeforeAfterImage, x_admin_token: str = Header(None, alias="X-Admin-Token")):
+    verify_auth(x_admin_token=x_admin_token)
+    doc = data.dict()
+    doc["created_at"] = datetime.now(timezone.utc).isoformat()
+    doc["ba_id"] = f"ba_{secrets.token_hex(4)}"
+    await db.before_after_images.insert_one(doc)
+    return {"success": True, "ba_id": doc["ba_id"]}
+
+
+@router.delete("/admin/before-after/{ba_id}")
+async def delete_before_after(ba_id: str, x_admin_token: str = Header(None, alias="X-Admin-Token")):
+    verify_auth(x_admin_token=x_admin_token)
+    await db.before_after_images.delete_one({"ba_id": ba_id})
     return {"success": True}
 
 

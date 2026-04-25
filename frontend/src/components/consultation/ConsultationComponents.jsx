@@ -403,7 +403,7 @@ export const ProductRecommendation = memo(function ProductRecommendation({
     <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl p-5 text-white">
       <h3 className="font-bold text-lg mb-3">{t.productRec}</h3>
       <p className="text-green-100 text-sm mb-4">
-        Based on your skin analysis, Celesta Glow Anti-Aging Serum is perfect for you.
+        Based on your skin analysis, Celesta Glow's Complete Anti-Aging Kit is perfect for you.
       </p>
       <div className="flex gap-3">
         <button

@@ -110,13 +110,18 @@ function Homepage() {
 
   return (
     <div className="min-h-screen bg-white" data-testid="homepage">
+      {/* Brand Message Bar */}
+      <div className="bg-emerald-800 text-white text-center py-1.5 px-4">
+        <p className="text-[11px] sm:text-xs tracking-wide">FREE SHIPPING All India | COD Available | 30 Day Money Back Guarantee | Trusted by 50,000+</p>
+      </div>
+
       {/* Sale Timer Bar */}
-      <div className="bg-gradient-to-r from-rose-600 to-red-600 text-white text-center py-2 px-4">
-        <div className="flex items-center justify-center gap-3 text-sm">
-          <Zap size={14} className="animate-pulse" />
-          <span className="font-semibold">FLASH SALE — Up to 51% OFF</span>
+      <div className="bg-rose-600 text-white py-2 px-4">
+        <div className="flex items-center justify-center gap-2 sm:gap-3">
+          <Zap size={14} />
+          <span className="text-xs sm:text-sm font-semibold">FLASH SALE</span>
+          <span className="text-[10px] sm:text-xs opacity-90">Up to 51% OFF</span>
           <CountdownTimer />
-          <span className="hidden sm:inline">| FREE Shipping</span>
         </div>
       </div>
 
@@ -135,11 +140,11 @@ function Homepage() {
               <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-800 px-4 py-1.5 rounded-full text-sm font-medium mb-5">
                 <Sparkles size={14} /> India's #1 Anti-Aging Brand
               </div>
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-4">
-                {settings.hero_title || "Complete Anti-Aging Solution"}
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 leading-tight mb-4" style={{hyphens: 'none', wordBreak: 'keep-all', overflowWrap: 'normal'}}>
+                {settings.hero_title || "India's #1 Complete Anti\u2011Aging Solution"}
               </h1>
-              <p className="text-base text-gray-600 mb-6 max-w-lg mx-auto lg:mx-0">
-                {settings.hero_subtitle || "5 clinically-formulated products designed exclusively to fight aging. Cleanse, treat, hydrate, protect & brighten."}
+              <p className="text-base text-gray-600 mb-6 max-w-lg mx-auto lg:mx-0" style={{hyphens: 'none'}}>
+                {settings.hero_subtitle || "5 clinically formulated products designed exclusively to fight aging. Cleanse, treat, hydrate, protect and brighten."}
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
                 <Link to="/shop" className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-7 py-3 rounded-full text-base font-semibold transition-all shadow-lg shadow-emerald-200" data-testid="shop-now-btn">
@@ -185,32 +190,46 @@ function Homepage() {
               <p className="text-gray-600 mt-2">{completeKit.description}</p>
             </div>
             <div className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 border-2 border-amber-200">
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
-                {completeKit.product_slugs?.map(slug => {
-                  const p = products.find(pr => pr.slug === slug);
-                  return p ? (
-                    <Link to={`/product/${p.slug}`} key={slug} className="text-center group">
-                      <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2 bg-emerald-50 rounded-xl flex items-center justify-center group-hover:bg-emerald-100 transition-colors">
-                        {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-12 h-12 object-contain" /> : <Sparkles className="w-6 h-6 text-emerald-500" />}
-                      </div>
-                      <p className="text-xs font-medium text-gray-700">{p.short_name}</p>
-                      <p className="text-xs text-gray-400 line-through">₹{p.mrp}</p>
-                    </Link>
-                  ) : null;
-                })}
-              </div>
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-gray-100">
-                <div>
-                  <div className="flex items-baseline gap-3">
-                    <span className="text-3xl font-bold text-gray-900">₹{completeKit.combo_prepaid_price?.toLocaleString()}</span>
-                    <span className="text-lg text-gray-400 line-through">₹{completeKit.mrp_total?.toLocaleString()}</span>
-                    <span className="text-sm font-bold text-white bg-rose-500 px-3 py-1 rounded-full">{completeKit.discount_percent}% OFF</span>
-                  </div>
-                  <p className="text-sm text-emerald-700 mt-1">Save ₹{(completeKit.mrp_total - completeKit.combo_prepaid_price)?.toLocaleString()} | Free Shipping | 30-Day Guarantee</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 items-center">
+                {/* Single Hero Image — admin updatable */}
+                <div className="aspect-square sm:aspect-[4/3] bg-gradient-to-br from-emerald-50 to-amber-50 rounded-2xl flex items-center justify-center overflow-hidden">
+                  {settings.bundle_hero_image ? (
+                    <img src={settings.bundle_hero_image} alt="Complete Anti-Aging Kit" className="w-full h-full object-contain p-4" />
+                  ) : (
+                    <div className="text-center p-6">
+                      <div className="w-20 h-20 mx-auto mb-3 bg-amber-100 rounded-2xl flex items-center justify-center"><Package className="w-10 h-10 text-amber-600" /></div>
+                      <p className="text-sm font-semibold text-gray-700">Complete Anti-Aging Kit</p>
+                      <p className="text-xs text-gray-400 mt-1">5 Products Bundle</p>
+                    </div>
+                  )}
                 </div>
-                <button onClick={() => handleAddCombo(completeKit.combo_id)} className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-8 py-3.5 rounded-full transition-colors text-base shadow-lg" data-testid="add-complete-kit">
-                  Add Complete Kit to Cart
-                </button>
+                {/* Product List + Pricing */}
+                <div>
+                  <h3 className="font-bold text-gray-900 text-lg mb-3">What You Get:</h3>
+                  <div className="space-y-2 mb-5">
+                    {completeKit.product_slugs?.map(slug => {
+                      const p = products.find(pr => pr.slug === slug);
+                      return p ? (
+                        <div key={slug} className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 flex-shrink-0" />
+                          <span className="text-sm text-gray-700 flex-1">{p.short_name}</span>
+                          <span className="text-sm text-gray-400 line-through">₹{p.mrp}</span>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                  <div className="border-t border-gray-100 pt-4">
+                    <div className="flex items-baseline gap-3 mb-1">
+                      <span className="text-3xl font-bold text-gray-900">₹{completeKit.combo_prepaid_price?.toLocaleString()}</span>
+                      <span className="text-lg text-gray-400 line-through">₹{completeKit.mrp_total?.toLocaleString()}</span>
+                      <span className="text-sm font-bold text-white bg-rose-500 px-3 py-1 rounded-full">{completeKit.discount_percent}% OFF</span>
+                    </div>
+                    <p className="text-sm text-emerald-700 mb-4">Save ₹{(completeKit.mrp_total - completeKit.combo_prepaid_price)?.toLocaleString()} | Free Shipping</p>
+                    <button onClick={() => handleAddCombo(completeKit.combo_id)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-full transition-colors text-base shadow-lg" data-testid="add-complete-kit">
+                      Add Complete Kit to Cart
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

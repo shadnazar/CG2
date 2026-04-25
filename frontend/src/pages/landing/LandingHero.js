@@ -12,8 +12,8 @@ import { useTracking } from '../../providers/TrackingProvider';
 import { useLandingPage } from './LandingPageContext';
 import { getSharedStats, updateSharedStats, getCurrentLocation, rotateLocation } from '../../utils/sharedStats';
 
-const PREPAID_PRICE = 699;
-const MRP = 1499;
+const PREPAID_PRICE = 999;
+const MRP = 1699;
 
 // Product Images
 const HERO_IMAGE = 'https://customer-assets.emergentagent.com/job_ae0c9586-b94c-4054-b869-8b9baeb452c6/artifacts/gwxje1nv_1F955957-C2EB-4ED0-A713-0B302C9B4892.jpeg';

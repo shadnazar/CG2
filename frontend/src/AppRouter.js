@@ -45,6 +45,7 @@ const AdminLandingPages = lazy(() => import('./pages/admin/AdminLandingPages'));
 const AdminEmployees = lazy(() => import('./pages/admin/AdminEmployees'));
 const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'));
 const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
+const AdminRetention = lazy(() => import('./pages/admin/AdminRetention'));
 
 // Employee Pages
 const EmployeeLogin = lazy(() => import('./pages/employee/EmployeeLogin'));
@@ -114,6 +115,7 @@ function App() {
         <Route path="/admin/employees" element={<AdminLayout><AdminEmployees /></AdminLayout>} />
         <Route path="/admin/customers" element={<AdminLayout><AdminCustomers /></AdminLayout>} />
         <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
+        <Route path="/admin/retention" element={<AdminLayout><AdminRetention /></AdminLayout>} />
         
         {/* Employee Routes */}
         <Route path="/employee/login" element={

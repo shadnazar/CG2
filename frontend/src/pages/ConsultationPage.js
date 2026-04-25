@@ -685,7 +685,7 @@ function ConsultationPage() {
     yPosition += 10;
     doc.setFontSize(14);
     doc.setTextColor(34, 197, 94);
-    doc.text('Recommended: Celesta Glow Anti-Aging Serum', 20, yPosition);
+    doc.text('Recommended: Celesta Glow Complete Anti-Aging Kit', 20, yPosition);
     yPosition += 8;
     doc.setFontSize(10);
     doc.setTextColor(0, 0, 0);
@@ -1459,7 +1459,7 @@ function ConsultationPage() {
               </p>
             </div>
             <div className="text-center">
-              <p className="text-green-200 text-sm mb-2">Celesta Glow Advanced Anti-Aging Serum</p>
+              <p className="text-green-200 text-sm mb-2">Celesta Glow Complete Anti-Aging Kit</p>
               <p className="text-2xl font-bold">From ₹499 <span className="text-sm font-normal text-green-200 line-through">₹1,499</span></p>
             </div>
           </div>
