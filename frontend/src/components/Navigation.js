@@ -1,13 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Menu, X, Search, ShoppingBag, Stethoscope, Globe } from 'lucide-react';
+import { Menu, X, Search, ShoppingCart, Stethoscope, Package } from 'lucide-react';
+
+const getCartCount = () => {
+  try {
+    const cart = JSON.parse(sessionStorage.getItem('cart') || '{"items":[]}');
+    return cart.items.reduce((sum, i) => sum + (i.quantity || 1), 0);
+  } catch { return 0; }
+};
 
 function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [cartCount, setCartCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const update = () => setCartCount(getCartCount());
+    update();
+    window.addEventListener('cartUpdated', update);
+    return () => window.removeEventListener('cartUpdated', update);
+  }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -20,101 +35,67 @@ function Navigation() {
 
   const navLinks = [
     { path: '/', label: 'Home' },
-    { path: '/product/anti-aging-serum', label: 'Shop' },
+    { path: '/shop', label: 'Shop' },
     { path: '/consultation', label: 'Skin Analysis', icon: Stethoscope, highlight: true },
-    { path: '/track-order', label: 'Track Order', icon: ShoppingBag },
+    { path: '/track-order', label: 'Track Order', icon: Package },
     { path: '/blog', label: 'Beauty Tips' },
+    { path: '/about', label: 'About Us' },
+    { path: '/contact', label: 'Contact' },
   ];
 
   return (
     <>
-      {/* Main Header - Centered Logo */}
       <header className="sticky top-0 z-40 bg-white border-b border-gray-100">
         <div className="flex items-center justify-between px-4 h-14">
-          {/* Menu Button */}
-          <button
-            onClick={() => setIsMenuOpen(true)}
-            className="p-2 -ml-2 w-10"
-            data-testid="menu-button"
-            aria-label="Open menu"
-          >
+          <button onClick={() => setIsMenuOpen(true)} className="p-2 -ml-2 w-10" data-testid="menu-button" aria-label="Open menu">
             <Menu size={24} className="text-gray-900" />
           </button>
 
-          {/* Centered Logo */}
-          <Link 
-            to="/" 
-            className="absolute left-1/2 transform -translate-x-1/2 text-center"
-            data-testid="logo-link"
-          >
+          <Link to="/" className="absolute left-1/2 transform -translate-x-1/2 text-center" data-testid="logo-link">
             <span className="font-heading text-xl font-bold tracking-[0.15em] text-gray-900">CELESTA</span>
             <span className="block text-[10px] tracking-[0.4em] text-gray-500 -mt-0.5">G L O W</span>
           </Link>
 
-          {/* Right Actions */}
           <div className="flex items-center gap-0">
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="p-2"
-              data-testid="search-button"
-              aria-label="Search"
-            >
+            <button onClick={() => setIsSearchOpen(true)} className="p-2" data-testid="search-button" aria-label="Search">
               <Search size={22} className="text-gray-900" />
             </button>
-            <Link
-              to="/product/anti-aging-serum"
-              className="p-2"
-              data-testid="cart-button"
-              aria-label="Shop"
-            >
-              <ShoppingBag size={22} className="text-gray-900" />
+            <Link to="/cart" className="p-2 relative" data-testid="cart-button" aria-label="Cart">
+              <ShoppingCart size={22} className="text-gray-900" />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-emerald-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{cartCount}</span>
+              )}
             </Link>
           </div>
         </div>
       </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50 bg-black/30" onClick={() => setIsMenuOpen(false)}>
-          <div 
-            className="absolute left-0 top-0 bottom-0 w-80 bg-white shadow-xl"
-            onClick={e => e.stopPropagation()}
-          >
+          <div className="absolute left-0 top-0 bottom-0 w-80 bg-white shadow-xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <div className="text-center">
+              <div>
                 <span className="font-heading text-lg font-bold tracking-[0.15em] text-gray-900">CELESTA</span>
                 <span className="block text-[9px] tracking-[0.4em] text-gray-500 -mt-0.5">G L O W</span>
               </div>
-              <button
-                onClick={() => setIsMenuOpen(false)}
-                className="p-2 -mr-2"
-                data-testid="close-menu-button"
-              >
+              <button onClick={() => setIsMenuOpen(false)} className="p-2 -mr-2" data-testid="close-menu-button">
                 <X size={24} className="text-gray-900" />
               </button>
             </div>
-            
             <nav className="p-5">
               <ul className="space-y-1">
                 {navLinks.map(link => (
                   <li key={link.path}>
-                    <Link
-                      to={link.path}
-                      onClick={() => setIsMenuOpen(false)}
-                      className={`block py-4 px-4 rounded-xl text-base font-medium transition-all flex items-center gap-2 ${
-                        link.highlight
-                          ? 'bg-purple-50 text-purple-600 border border-purple-200'
-                          : location.pathname === link.path
-                          ? 'bg-green-50 text-green-600'
+                    <Link to={link.path} onClick={() => setIsMenuOpen(false)}
+                      className={`block py-3.5 px-4 rounded-xl text-base font-medium transition-all flex items-center gap-2 ${
+                        link.highlight ? 'bg-purple-50 text-purple-600 border border-purple-200'
+                          : location.pathname === link.path ? 'bg-green-50 text-green-600'
                           : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                      data-testid={`nav-link-${link.label.toLowerCase().replace(' ', '-')}`}
-                    >
+                      }`} data-testid={`nav-link-${link.label.toLowerCase().replace(/\s/g, '-')}`}>
                       {link.icon && <link.icon size={18} />}
                       {link.label}
-                      {link.highlight && (
-                        <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">FREE</span>
-                      )}
+                      {link.highlight && <span className="ml-auto text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">FREE</span>}
                     </Link>
                   </li>
                 ))}
@@ -128,38 +109,20 @@ function Navigation() {
       {isSearchOpen && (
         <div className="fixed inset-0 z-50 bg-white">
           <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-            <button
-              onClick={() => setIsSearchOpen(false)}
-              className="p-2 -ml-2"
-              data-testid="close-search-button"
-            >
+            <button onClick={() => setIsSearchOpen(false)} className="p-2 -ml-2" data-testid="close-search-button">
               <X size={24} className="text-gray-900" />
             </button>
             <form onSubmit={handleSearch} className="flex-1">
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search skincare tips..."
-                className="w-full h-12 px-4 bg-gray-50 rounded-full text-base outline-none focus:ring-2 focus:ring-green-200"
-                autoFocus
-                data-testid="search-input"
-              />
+              <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search products, tips..." className="w-full h-12 px-4 bg-gray-50 rounded-full text-base outline-none focus:ring-2 focus:ring-green-200" autoFocus data-testid="search-input" />
             </form>
           </div>
           <div className="p-5">
             <p className="text-xs text-gray-500 uppercase tracking-wider mb-4">Popular Searches</p>
             <div className="flex flex-wrap gap-2">
-              {['anti-aging', 'retinol', 'wrinkles', 'fine lines'].map(term => (
-                <button
-                  key={term}
-                  onClick={() => {
-                    navigate(`/search?q=${term}`);
-                    setIsSearchOpen(false);
-                  }}
-                  className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-                  data-testid={`search-suggestion-${term}`}
-                >
+              {['anti-aging serum', 'sunscreen', 'night cream', 'under eye cream', 'cleanser', 'complete kit'].map(term => (
+                <button key={term} onClick={() => { navigate(`/search?q=${term}`); setIsSearchOpen(false); }}
+                  className="px-4 py-2 bg-gray-100 rounded-full text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors" data-testid={`search-suggestion-${term.replace(/\s/g, '-')}`}>
                   {term}
                 </button>
               ))}

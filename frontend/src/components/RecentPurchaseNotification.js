@@ -26,6 +26,20 @@ const ALL_LOCATIONS = [
   "Visakhapatnam", "Patna", "Ludhiana", "Agra", "Nashik", "Rajkot", "Varanasi"
 ];
 
+// Products for notification rotation
+const PRODUCT_NAMES = [
+  "Complete Anti-Aging Kit",
+  "Advanced Face Serum",
+  "Retinoid Night Cream",
+  "Caffeine Under Eye Cream",
+  "SPF 50 Sunscreen",
+  "Gentle Cleanser",
+  "Day & Night Power Duo",
+  "Glow Essentials Trio"
+];
+
+const getRandomProduct = () => PRODUCT_NAMES[Math.floor(Math.random() * PRODUCT_NAMES.length)];
+
 function RecentPurchaseNotification() {
   const [currentNotif, setCurrentNotif] = useState(null);
   const usedNamesRef = useRef([]);
@@ -69,6 +83,7 @@ function RecentPurchaseNotification() {
       type: 'order',
       name: getUniqueName(),
       location: getLocation(),
+      product: getRandomProduct(),
       id: Date.now()
     });
     countRef.current++;
@@ -233,7 +248,7 @@ function RecentPurchaseNotification() {
               </p>
               <p className="text-green-600 text-sm font-medium mt-2 flex items-center gap-1.5">
                 <ShoppingBag size={14} />
-                Celesta Glow Serum
+                Celesta Glow {currentNotif.product || 'Anti-Aging Kit'}
               </p>
             </div>
           </div>

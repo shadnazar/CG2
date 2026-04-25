@@ -85,7 +85,7 @@ function Footer() {
                 </Link>
               </li>
               <li>
-                <Link to="/product/anti-aging-serum" className="text-sm text-gray-400 hover:text-green-400 transition-colors">
+                <Link to="/shop" className="text-sm text-gray-400 hover:text-green-400 transition-colors">
                   Shop Now
                 </Link>
               </li>
