@@ -66,34 +66,23 @@ function ShopPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
-        {/* Complete Kit Bundle — TOP */}
+        {/* Compact Bundle on Shop Page */}
         {completeKit && (
-          <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-200 p-5 sm:p-6 mb-8" data-testid="shop-complete-kit">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-center">
-              <div className="aspect-[4/3] bg-white rounded-xl flex items-center justify-center overflow-hidden">
-                {settings.bundle_hero_image ? (
-                  <img src={settings.bundle_hero_image} alt="Complete Kit" className="w-full h-full object-contain p-3" />
-                ) : (
-                  <div className="text-center"><div className="w-16 h-16 mx-auto mb-2 bg-amber-100 rounded-2xl flex items-center justify-center"><Package className="w-8 h-8 text-amber-600" /></div><p className="text-xs text-gray-500">Complete Kit</p></div>
-                )}
+          <div className="bg-white rounded-2xl shadow-md border border-amber-200/40 overflow-hidden mb-8">
+            <div className="bg-amber-400 text-amber-900 py-1.5 px-4 text-center text-[10px] font-bold tracking-wider">BEST VALUE — SAVE {completeKit.discount_percent}% — ALL 5 PRODUCTS</div>
+            <div className="p-4 flex items-start gap-3.5">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-50 to-amber-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {settings.bundle_hero_image ? <img src={settings.bundle_hero_image} alt="Kit" className="w-16 h-16 object-contain" /> : <Package className="w-8 h-8 text-amber-500" />}
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-2"><Award size={16} className="text-amber-600" /><span className="text-sm font-bold text-amber-800">BEST VALUE</span></div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">{completeKit.name}</h2>
-                <div className="space-y-1.5 mb-4">
-                  {completeKit.product_slugs?.map(slug => {
-                    const p = products.find(pr => pr.slug === slug);
-                    return p ? <div key={slug} className="flex items-center gap-2 text-sm"><div className="w-1.5 h-1.5 rounded-full bg-green-500" /><span className="text-gray-700">{p.short_name}</span></div> : null;
-                  })}
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-black text-gray-900">{completeKit.name}</h3>
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {completeKit.product_slugs?.map(slug => { const p = products.find(pr => pr.slug === slug); return p ? <span key={slug} className="text-[8px] bg-green-50 text-green-700 border border-green-200/60 px-1.5 py-0.5 rounded-full font-medium">{p.short_name}</span> : null; })}
                 </div>
-                <div className="flex items-baseline gap-2 mb-3">
-                  <span className="text-2xl font-bold text-gray-900">₹{completeKit.combo_prepaid_price?.toLocaleString()}</span>
-                  <span className="text-gray-400 line-through">₹{completeKit.mrp_total?.toLocaleString()}</span>
-                  <span className="text-xs font-bold text-white bg-rose-500 px-2 py-0.5 rounded-full">{completeKit.discount_percent}% OFF</span>
+                <div className="flex items-center justify-between mt-2.5">
+                  <div><span className="text-xl font-black text-gray-900">₹{completeKit.combo_prepaid_price?.toLocaleString()}</span><span className="text-xs text-gray-400 line-through ml-1.5">₹{completeKit.mrp_total?.toLocaleString()}</span></div>
+                  <button onClick={() => handleAddCombo(completeKit.combo_id)} className="bg-green-600 text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-green-700 flex items-center gap-1" data-testid="shop-add-kit"><ShoppingCart size={12} /> Add Kit</button>
                 </div>
-                <button onClick={() => handleAddCombo(completeKit.combo_id)} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-full" data-testid="shop-add-kit">
-                  Add Complete Kit to Cart
-                </button>
               </div>
             </div>
           </div>

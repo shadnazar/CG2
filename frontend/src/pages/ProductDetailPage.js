@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Star, ChevronLeft, ChevronRight, Shield, Truck, Award, Clock, Check, Sparkles, Minus, Plus, ChevronDown, User, FlaskConical, Package, Leaf, Droplets, Sun } from 'lucide-react';
+import { Star, ChevronLeft, ChevronRight, Shield, Truck, Award, Clock, Check, Sparkles, Minus, Plus, ChevronDown, User, FlaskConical, Package, Leaf, Droplets, Sun, Zap } from 'lucide-react';
 import { addToCart, getCart, saveCart } from './Homepage';
 import { useTracking } from '../providers/TrackingProvider';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+// Urgency Timer
+function UrgencyTimer() {
+  const [timeLeft, setTimeLeft] = useState({ h: 0, m: 0, s: 0 });
+  useEffect(() => {
+    const end = sessionStorage.getItem('saleEnd') || (() => { const e = Date.now() + 4 * 3600000; sessionStorage.setItem('saleEnd', e); return e; })();
+    const tick = () => { const d = Math.max(0, Number(end) - Date.now()); setTimeLeft({ h: Math.floor(d/3600000), m: Math.floor((d%3600000)/60000), s: Math.floor((d%60000)/1000) }); };
+    tick(); const i = setInterval(tick, 1000); return () => clearInterval(i);
+  }, []);
+  const pad = n => String(n).padStart(2, '0');
+  return <span className="font-mono font-bold">{pad(timeLeft.h)}:{pad(timeLeft.m)}:{pad(timeLeft.s)}</span>;
+}
 
 const REVIEWS = [
   { name: 'Ritika M.', loc: 'Mumbai', r: 5, t: 'My skin looks 10 years younger! Visible difference in just 2 weeks. Absolutely love it.', v: true, days: '14 days ago' },
@@ -62,9 +74,14 @@ function ProductDetailPage() {
 
   return (
     <div className="min-h-screen bg-white" data-testid="product-detail-page">
-      {/* Subtle urgency */}
-      <div className="bg-green-800 text-green-100 py-1.5 px-4 text-center">
-        <p className="text-[11px] tracking-wide">Limited Offer | {product.discount_percent}% OFF | Free Shipping All India</p>
+      {/* Urgency Timer Bar */}
+      <div className="bg-gradient-to-r from-rose-600 to-red-600 text-white py-2 px-4">
+        <div className="flex items-center justify-center gap-2 text-xs">
+          <Clock size={13} />
+          <span className="font-semibold">Sale ends in</span>
+          <UrgencyTimer />
+          <span className="hidden sm:inline opacity-80">| Order now for fastest delivery</span>
+        </div>
       </div>
 
       {/* Breadcrumb */}
@@ -116,13 +133,21 @@ function ProductDetailPage() {
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-snug tracking-tight">{product.name}</h1>
             <p className="text-green-600 text-xs font-medium mt-1 tracking-wide">{product.tagline} | {product.size}</p>
 
-            {/* Price — Clean, single */}
-            <div className="mt-5 flex items-end gap-3">
-              <span className="text-4xl font-black text-gray-900 tracking-tight">₹{product.prepaid_price}</span>
-              <span className="text-lg text-gray-400 line-through mb-1">₹{product.mrp}</span>
-              <span className="bg-green-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full mb-1.5 tracking-wider">{product.discount_percent}% OFF</span>
+            {/* Price — with discount feel */}
+            <div className="mt-5 bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl p-4 border border-green-100">
+              <div className="flex items-end gap-2.5">
+                <span className="text-4xl font-black text-gray-900 tracking-tight">₹{product.prepaid_price}</span>
+                <span className="text-lg text-gray-400 line-through mb-1">₹{product.mrp}</span>
+                <span className="bg-rose-500 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full mb-1.5">{product.discount_percent}% OFF</span>
+              </div>
+              <p className="text-xs text-green-700 font-semibold mt-1">You save ₹{savings} on this product</p>
+              <p className="text-[10px] text-gray-500 mt-1">Free Shipping | COD ₹{product.cod_price} | Inclusive of all taxes</p>
+              {/* New user coupon auto-suggestion */}
+              <div className="mt-2.5 bg-white rounded-lg p-2 border border-amber-200/60 flex items-center gap-2">
+                <div className="w-6 h-6 bg-amber-100 rounded-full flex items-center justify-center flex-shrink-0"><Zap size={12} className="text-amber-600" /></div>
+                <p className="text-[10px] text-gray-700">Use code <span className="font-mono font-bold text-green-700 bg-green-50 px-1 rounded">WELCOME50</span> for extra ₹50 OFF at checkout</p>
+              </div>
             </div>
-            <p className="text-xs text-gray-500 mt-1.5">Free Shipping | COD Available (₹{product.cod_price}) | Inclusive of all taxes</p>
 
             {/* Key Ingredients — Premium cards */}
             <div className="mt-6">

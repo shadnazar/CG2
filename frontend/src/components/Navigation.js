@@ -45,7 +45,7 @@ function Navigation() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-white border-b border-gray-100">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm">
         <div className="flex items-center justify-between px-4 h-14">
           <button onClick={() => setIsMenuOpen(true)} className="p-2 -ml-2 w-10" data-testid="menu-button" aria-label="Open menu">
             <Menu size={24} className="text-gray-900" />
@@ -69,6 +69,8 @@ function Navigation() {
           </div>
         </div>
       </header>
+      {/* Spacer for fixed header */}
+      <div className="h-14" />
 
       {/* Mobile Menu */}
       {isMenuOpen && (

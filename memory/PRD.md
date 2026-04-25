@@ -1,28 +1,25 @@
 # Celesta Glow PRD
 
-## Latest: April 25, 2026
+## Latest: April 25, 2026 — Final Session
 
-### Changes Made
-- Brand green color unified (green-600/700 across all pages, matching notification green)
-- Auto-created 3 coupon codes: WELCOME50 (₹50 off), GLOW10 (10% off), NEWUSER (₹100 off)
-- Volume discounts: 2 items=5%, 3 items=10%, 4+=15% (admin configurable via site settings)
-- Volume discount banner on homepage + displayed in cart/checkout summaries
-- Complete Kit: compact badge layout with product tags + quality badges (FAST RESULTS, COMPLETE ROUTINE, FREE SHIPPING)
-- Trust stats: colorful differentiated badges (green/amber/purple/rose/blue)
-- Coupon promotion banner before footer (WELCOME50)
-- Cart image sizing bug fixed
-- Checkout: "Add More Save More" discount tier display + referral promotion
-- All pages use unified green-600 brand color
+### Key Changes
+- **Fixed navigation**: CELESTA GLOW + search + cart stays fixed at top on all pages (z-50)
+- **Brand green unified**: green-600/700 across entire platform
+- **Homepage**: Large bundle with product thumbnails + trust badges (50K+, 4.8, 30-Day, COD) in one row. No timer on homepage.
+- **Shop page**: Compact bundle (badge layout with product pills) + individual products
+- **Product page**: Urgency countdown timer (red bar), pricing with discount card (₹999 with save ₹700), auto coupon suggestion (WELCOME50)
+- **Volume discounts**: 2 items=5%, 3=10%, 4+=15% (backend calculated, displayed in cart/checkout)
+- **Coupons created**: WELCOME50 (₹50), GLOW10 (10%), NEWUSER (₹100), FEB25 (₹25), MAR30 (₹30)
+- **Product order**: Cleanser → Serum → Night Cream → Under Eye → Sunscreen
+- **Product cards**: Price in green discount card with "Save ₹X", trust icons (Genuine | Free Ship)
 
-### Active Coupons
-- WELCOME50: ₹50 off, min ₹499
-- GLOW10: 10% off, min ₹999
-- NEWUSER: ₹100 off, min ₹1499
-
-### Volume Discounts (admin configurable)
-- 2 items: 5% OFF
-- 3 items: 10% OFF
-- 4+ items: 15% OFF
+### Admin Configurable
+- Products: name, price, images, badge, visibility, sort order
+- Combos: pricing, products
+- Coupons: code, type, value, min order, expiry
+- Site Settings: hero text, bundle image, COD advance, pre-sale, volume discount tiers
+- Retention: 15/30-day follow-up
+- Before/After: image pairs per product
 
 ## Credentials
 - Admin: celestaglow2024
@@ -31,4 +28,4 @@
 ## Pending
 - Upload real product photos
 - Admin review management
-- Cleanup old ProductPage.js
+- Delete old ProductPage.js
