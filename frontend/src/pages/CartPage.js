@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { ShoppingCart, Trash2, Minus, Plus, ChevronRight, Shield, Truck, Tag, ArrowLeft, Sparkles, Zap, Award, Check, Clock, Package, Star } from 'lucide-react';
+import { ShoppingCart, Trash2, Minus, Plus, ChevronRight, Shield, Truck, Tag, ArrowLeft, Sparkles, Zap, Award, Check, Clock, Star, Lock, Package } from 'lucide-react';
 import { getCart, saveCart } from './Homepage';
 import { useTracking } from '../providers/TrackingProvider';
 
@@ -12,243 +12,217 @@ function CartPage() {
   const { trackAction } = useTracking();
   const [cartData, setCartData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [paymentMethod, setPaymentMethod] = useState('prepaid');
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [couponError, setCouponError] = useState('');
   const [upsellProducts, setUpsellProducts] = useState([]);
   const [combos, setCombos] = useState([]);
-  const [settings, setSettings] = useState({});
 
   const validateCart = useCallback(async () => {
     setLoading(true);
     const cart = getCart();
     if (!cart.items.length) { setCartData(null); setLoading(false); return; }
     try {
-      const res = await axios.post(`${API}/api/cart/validate`, { items: cart.items, coupon_code: appliedCoupon?.code || null, payment_method: paymentMethod });
+      const res = await axios.post(`${API}/api/cart/validate`, { items: cart.items, coupon_code: appliedCoupon?.code || null, payment_method: 'prepaid' });
       setCartData(res.data);
-      const [allProds, comboRes, settRes] = await Promise.all([
-        axios.get(`${API}/api/products`),
-        axios.get(`${API}/api/combos`),
-        axios.get(`${API}/api/site-settings`)
-      ]);
+      const [allProds, comboRes] = await Promise.all([axios.get(`${API}/api/products`), axios.get(`${API}/api/combos`)]);
       const cartSlugs = cart.items.map(i => i.product_slug).filter(Boolean);
       const cartCombos = cart.items.map(i => i.combo_id).filter(Boolean);
       setUpsellProducts(allProds.data.filter(p => !cartSlugs.includes(p.slug)));
       setCombos(comboRes.data.filter(c => !cartCombos.includes(c.combo_id)));
-      setSettings(settRes.data);
     } catch (err) { console.error(err); }
     setLoading(false);
-  }, [paymentMethod, appliedCoupon]);
+  }, [appliedCoupon]);
 
   useEffect(() => { validateCart(); }, [validateCart]);
 
-  const updateQuantity = (index, delta) => {
-    const cart = getCart();
-    const item = cart.items[index];
-    if (!item) return;
-    item.quantity = Math.max(1, (item.quantity || 1) + delta);
-    saveCart(cart);
-    validateCart();
-  };
-
-  const removeItem = (index) => {
-    const cart = getCart();
-    cart.items.splice(index, 1);
-    saveCart(cart);
-    validateCart();
-  };
-
-  const addUpsellToCart = (slug) => {
-    const cart = getCart();
-    const existing = cart.items.find(i => i.product_slug === slug);
-    if (existing) existing.quantity += 1;
-    else cart.items.push({ product_slug: slug, quantity: 1 });
-    saveCart(cart);
-    trackAction('upsell_add_to_cart', { slug });
-    validateCart();
-  };
+  const updateQuantity = (index, delta) => { const cart = getCart(); cart.items[index].quantity = Math.max(1, (cart.items[index].quantity || 1) + delta); saveCart(cart); validateCart(); };
+  const removeItem = (index) => { const cart = getCart(); cart.items.splice(index, 1); saveCart(cart); validateCart(); };
+  const addUpsellToCart = (slug) => { const cart = getCart(); const e = cart.items.find(i => i.product_slug === slug); if (e) e.quantity += 1; else cart.items.push({ product_slug: slug, quantity: 1 }); saveCart(cart); validateCart(); };
 
   const applyCoupon = async () => {
     setCouponError('');
     if (!couponCode.trim()) return;
-    try {
-      const res = await axios.post(`${API}/api/validate-coupon?code=${couponCode.trim()}&cart_total=${cartData?.subtotal || 0}`);
-      setAppliedCoupon({ code: couponCode.trim().toUpperCase(), ...res.data });
-    } catch (err) { setCouponError(err.response?.data?.detail || 'Invalid coupon'); setAppliedCoupon(null); }
+    try { const r = await axios.post(`${API}/api/validate-coupon?code=${couponCode.trim()}&cart_total=${cartData?.subtotal || 0}`); setAppliedCoupon({ code: couponCode.trim().toUpperCase(), ...r.data }); }
+    catch (e) { setCouponError(e.response?.data?.detail || 'Invalid coupon'); setAppliedCoupon(null); }
   };
 
   const proceedToCheckout = () => {
     if (!cartData?.items?.length) return;
     trackAction('initiate_checkout', { items: cartData.items.length, total: cartData.total });
-    if (typeof window !== 'undefined' && window.fbq) window.fbq('track', 'InitiateCheckout', { value: cartData.total, currency: 'INR', num_items: cartData.item_count });
-    navigate('/checkout', { state: { cartData, paymentMethod, coupon: appliedCoupon } });
+    if (window.fbq) window.fbq('track', 'InitiateCheckout', { value: cartData.total, currency: 'INR', num_items: cartData.item_count });
+    navigate('/checkout', { state: { cartData, paymentMethod: 'prepaid', coupon: appliedCoupon } });
   };
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-stone-50"><div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" /></div>;
 
   if (!cartData || !cartData.items?.length) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4" data-testid="empty-cart">
-        <div className="text-center max-w-sm">
-          <ShoppingCart className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-          <h2 className="text-xl font-bold text-gray-900 mb-2">Your cart is empty</h2>
-          <p className="text-gray-500 mb-6">Start your anti-aging journey today.</p>
-          <Link to="/shop" className="inline-flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-emerald-700">Shop Now <ChevronRight size={18} /></Link>
-        </div>
+      <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4" data-testid="empty-cart">
+        <div className="text-center"><ShoppingCart className="w-14 h-14 mx-auto mb-4 text-gray-200" />
+        <h2 className="text-lg font-bold text-gray-900 mb-2">Your cart is empty</h2>
+        <p className="text-sm text-gray-500 mb-6">Explore our anti-aging range to get started.</p>
+        <Link to="/shop" className="bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-emerald-700 inline-flex items-center gap-2">Shop Now <ChevronRight size={16} /></Link></div>
       </div>
     );
   }
 
-  const completeKit = combos.find(c => c.combo_id === 'complete-anti-aging-kit');
+  const kit = combos.find(c => c.combo_id === 'complete-anti-aging-kit');
 
   return (
-    <div className="min-h-screen bg-gray-50" data-testid="cart-page">
+    <div className="min-h-screen bg-stone-50" data-testid="cart-page">
       <div className="max-w-7xl mx-auto px-4 py-4 sm:py-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Link to="/shop" className="p-2 hover:bg-white rounded-xl"><ArrowLeft size={20} /></Link>
-          <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Cart ({cartData.item_count} items)</h1>
+        <div className="flex items-center gap-3 mb-5">
+          <Link to="/shop" className="p-2 hover:bg-white rounded-xl transition-colors"><ArrowLeft size={20} /></Link>
+          <div>
+            <h1 className="text-lg sm:text-xl font-bold text-gray-900">Shopping Cart</h1>
+            <p className="text-xs text-gray-400">{cartData.item_count} {cartData.item_count === 1 ? 'item' : 'items'}</p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           <div className="lg:col-span-2 space-y-3">
-            {/* Cart Items */}
+            {/* Items */}
             {cartData.items.map((item, index) => (
-              <div key={index} className="bg-white rounded-2xl p-3 sm:p-4 border border-gray-100 flex gap-3" data-testid={`cart-item-${index}`}>
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {item.image ? <img src={item.image} alt="" className="w-full h-full object-contain p-1" /> : <Sparkles className="w-6 h-6 text-emerald-400" />}
+              <div key={index} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex gap-3.5" data-testid={`cart-item-${index}`}>
+                <div className="w-18 h-18 sm:w-20 sm:h-20 bg-stone-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {item.image ? <img src={item.image} alt="" className="w-full h-full object-contain p-1" /> : <Package size={20} className="text-emerald-300" />}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-gray-900 text-sm leading-tight">{item.type === 'combo' ? item.name : item.short_name || item.name}</h3>
-                  {item.type === 'combo' && <p className="text-[10px] text-emerald-600">{item.product_slugs?.length} products</p>}
-                  <div className="flex items-baseline gap-2 mt-0.5">
-                    <span className="font-bold text-gray-900 text-sm">₹{item.price}</span>
+                  <h3 className="font-bold text-gray-900 text-sm leading-tight">{item.type === 'combo' ? item.name : item.short_name || item.name}</h3>
+                  {item.type === 'combo' && <p className="text-[10px] text-emerald-600 font-medium">{item.product_slugs?.length} products included</p>}
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="font-bold text-gray-900">₹{item.price}</span>
                     {(item.mrp || item.mrp_total) > item.price && <span className="text-[10px] text-gray-400 line-through">₹{item.mrp || item.mrp_total}</span>}
                   </div>
-                  <div className="flex items-center gap-2 mt-1.5">
-                    <div className="flex items-center border border-gray-200 rounded-lg">
-                      <button onClick={() => updateQuantity(index, -1)} className="p-1"><Minus size={14} /></button>
+                  <div className="flex items-center gap-3 mt-2">
+                    <div className="flex items-center border border-gray-200 rounded-lg bg-white shadow-sm">
+                      <button onClick={() => updateQuantity(index, -1)} className="px-2.5 py-1.5 text-gray-400 hover:text-gray-900"><Minus size={14} /></button>
                       <span className="w-7 text-center text-xs font-bold">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(index, 1)} className="p-1"><Plus size={14} /></button>
+                      <button onClick={() => updateQuantity(index, 1)} className="px-2.5 py-1.5 text-gray-400 hover:text-gray-900"><Plus size={14} /></button>
                     </div>
-                    <button onClick={() => removeItem(index)} className="text-red-400 hover:text-red-600 p-1"><Trash2 size={14} /></button>
-                    <span className="ml-auto font-bold text-gray-900 text-sm">₹{item.line_total}</span>
+                    <button onClick={() => removeItem(index)} className="text-gray-300 hover:text-red-500 transition-colors"><Trash2 size={14} /></button>
+                    <span className="ml-auto font-bold text-gray-900">₹{item.line_total}</span>
                   </div>
                 </div>
               </div>
             ))}
 
             {/* Bundle Push */}
-            {completeKit && (
-              <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border-2 border-amber-200">
-                <div className="flex items-center gap-2 mb-2"><Award size={16} className="text-amber-600" /><span className="font-bold text-amber-900 text-sm">Save 51% with Complete Kit!</span></div>
+            {kit && (
+              <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-200/60">
+                <div className="flex items-center gap-2 mb-2"><Award size={15} className="text-amber-600" /><span className="text-xs font-bold text-amber-800 tracking-wide">UPGRADE & SAVE {kit.discount_percent}%</span></div>
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-semibold text-gray-900">{completeKit.name}</p>
-                    <div className="flex items-baseline gap-2 mt-0.5">
-                      <span className="font-bold text-emerald-700">₹{completeKit.combo_prepaid_price?.toLocaleString()}</span>
-                      <span className="text-xs text-gray-400 line-through">₹{completeKit.mrp_total?.toLocaleString()}</span>
-                    </div>
+                    <p className="font-bold text-sm text-gray-900">{kit.name}</p>
+                    <p className="text-xs mt-0.5"><span className="font-bold text-emerald-700">₹{kit.combo_prepaid_price?.toLocaleString()}</span> <span className="text-gray-400 line-through text-[10px]">₹{kit.mrp_total?.toLocaleString()}</span></p>
                   </div>
-                  <button onClick={() => { const cart = getCart(); cart.items = [{ combo_id: completeKit.combo_id, quantity: 1 }]; saveCart(cart); validateCart(); }}
-                    className="bg-amber-500 hover:bg-amber-600 text-white px-4 py-2 rounded-xl font-bold text-xs">
-                    Switch to Kit
-                  </button>
+                  <button onClick={() => { const c = getCart(); c.items = [{ combo_id: kit.combo_id, quantity: 1 }]; saveCart(c); validateCart(); }}
+                    className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-sm">Switch to Kit</button>
                 </div>
               </div>
             )}
 
-            {/* Add More Products */}
+            {/* Upsell with images */}
             {upsellProducts.length > 0 && (
-              <div className="bg-white rounded-2xl p-4 border border-gray-100">
-                <p className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2"><Zap size={14} className="text-amber-600" /> Add More Products</p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {upsellProducts.slice(0, 3).map(p => (
-                    <div key={p.slug} className="flex items-center gap-2 bg-gray-50 rounded-xl p-2">
-                      <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                        {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-8 h-8 object-contain" /> : <Sparkles size={14} className="text-emerald-400" />}
+              <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Add to Your Order</p>
+                <div className="flex gap-2.5 overflow-x-auto pb-1">
+                  {upsellProducts.slice(0, 4).map(p => (
+                    <div key={p.slug} className="flex-shrink-0 w-28 text-center">
+                      <div className="w-20 h-20 mx-auto bg-stone-50 rounded-xl flex items-center justify-center mb-1.5 overflow-hidden">
+                        {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-16 h-16 object-contain" /> : <Sparkles size={16} className="text-emerald-300" />}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-[10px] text-gray-900 line-clamp-1">{p.short_name}</p>
-                        <p className="text-[10px] text-gray-500">₹{p.prepaid_price}</p>
-                      </div>
-                      <button onClick={() => addUpsellToCart(p.slug)} className="text-[10px] bg-emerald-600 text-white px-2 py-1 rounded-lg font-bold flex-shrink-0">+Add</button>
+                      <p className="text-[10px] font-semibold text-gray-800 line-clamp-1">{p.short_name}</p>
+                      <p className="text-[10px] text-gray-500">₹{p.prepaid_price}</p>
+                      <button onClick={() => addUpsellToCart(p.slug)} className="mt-1.5 w-full bg-emerald-600 text-white text-[9px] font-bold py-1.5 rounded-lg hover:bg-emerald-700">+ Add</button>
                     </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* Trust Badges */}
-            <div className="bg-white rounded-2xl p-4 border border-gray-100">
-              <div className="grid grid-cols-4 gap-2 text-center">
-                {[{ icon: Shield, t: 'Secure Checkout' }, { icon: Truck, t: 'Free Shipping' }, { icon: Clock, t: '30-Day Return' }, { icon: Star, t: '50K+ Customers' }].map((b, i) => (
-                  <div key={i}><b.icon size={16} className="mx-auto mb-1 text-emerald-600" /><p className="text-[9px] sm:text-[10px] font-medium text-gray-600">{b.t}</p></div>
+            {/* Trust Bar */}
+            <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
+              <div className="grid grid-cols-3 gap-3">
+                {[{ icon: Lock, t: '256-bit Secure', d: 'SSL Encrypted' }, { icon: Truck, t: 'Free Shipping', d: 'All India Delivery' }, { icon: Clock, t: '30-Day Return', d: 'Money Back Guarantee' }].map((b, i) => (
+                  <div key={i} className="text-center">
+                    <div className="w-9 h-9 mx-auto mb-1.5 bg-white rounded-xl flex items-center justify-center shadow-sm"><b.icon size={16} className="text-emerald-600" /></div>
+                    <p className="text-[10px] font-bold text-gray-800">{b.t}</p>
+                    <p className="text-[8px] text-gray-400 mt-0.5">{b.d}</p>
+                  </div>
                 ))}
+              </div>
+            </div>
+
+            {/* Mini Review */}
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Customers Love Us</p>
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0">R</div>
+                <div>
+                  <div className="flex gap-0.5 mb-0.5">{[1,2,3,4,5].map(i => <Star key={i} size={10} className="fill-amber-400 text-amber-400" />)}</div>
+                  <p className="text-xs text-gray-600">"Best anti-aging products I've ever used. Visible results in 2 weeks!"</p>
+                  <p className="text-[10px] text-gray-400 mt-0.5">Ritika M., Mumbai | Verified Purchase</p>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Order Summary */}
+          {/* Summary Column */}
           <div className="space-y-3">
-            {/* Savings Badge */}
             {cartData.savings > 0 && (
-              <div className="bg-emerald-50 rounded-2xl p-3 border border-emerald-200 text-center">
-                <p className="text-sm font-bold text-emerald-700">You're saving ₹{cartData.savings?.toLocaleString()} on this order!</p>
+              <div className="bg-gradient-to-r from-emerald-500 to-teal-500 rounded-2xl p-3.5 text-center text-white shadow-lg shadow-emerald-200/30">
+                <p className="text-sm font-bold">You're saving ₹{cartData.savings?.toLocaleString()}</p>
+                <p className="text-[10px] text-emerald-100">on this order</p>
               </div>
             )}
 
-            <div className="bg-white rounded-2xl p-4 border border-gray-100">
-              <p className="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-2"><Tag size={14} /> Coupon</p>
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-2">Have a Coupon?</p>
               {appliedCoupon ? (
-                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-2.5 flex items-center justify-between">
-                  <div><p className="font-bold text-emerald-700 text-sm">{appliedCoupon.code}</p><p className="text-[10px] text-emerald-600">-₹{appliedCoupon.discount}</p></div>
-                  <button onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="text-red-500 text-xs font-bold">Remove</button>
+                <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 flex items-center justify-between">
+                  <div><p className="font-bold text-emerald-700 text-sm">{appliedCoupon.code}</p><p className="text-[10px] text-emerald-600">Saving ₹{appliedCoupon.discount}</p></div>
+                  <button onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="text-gray-400 text-xs hover:text-red-500">Remove</button>
                 </div>
               ) : (
                 <div className="flex gap-2">
-                  <input type="text" value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())} placeholder="Code" className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm" />
-                  <button onClick={applyCoupon} className="px-4 py-2 bg-gray-900 text-white text-sm font-bold rounded-xl">Apply</button>
+                  <input type="text" value={couponCode} onChange={e => setCouponCode(e.target.value.toUpperCase())} placeholder="Enter code" className="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-stone-50 focus:bg-white focus:ring-2 focus:ring-emerald-200" />
+                  <button onClick={applyCoupon} className="px-4 py-2.5 bg-gray-900 text-white text-sm font-bold rounded-xl hover:bg-gray-800">Apply</button>
                 </div>
               )}
               {couponError && <p className="text-red-500 text-[10px] mt-1">{couponError}</p>}
             </div>
 
-            <div className="bg-white rounded-2xl p-4 border border-gray-100" data-testid="order-summary">
-              <p className="font-semibold text-gray-900 text-sm mb-2">Order Summary</p>
-              <div className="space-y-1.5 text-sm">
-                <div className="flex justify-between text-gray-500"><span>MRP Total</span><span className="line-through">₹{cartData.mrp_total?.toLocaleString()}</span></div>
-                <div className="flex justify-between text-gray-700"><span>Subtotal</span><span>₹{cartData.subtotal?.toLocaleString()}</span></div>
-                {cartData.discount > 0 && <div className="flex justify-between text-emerald-600"><span>Coupon</span><span>-₹{cartData.discount}</span></div>}
-                <div className="flex justify-between text-gray-500"><span>Shipping</span><span className="text-emerald-600 font-medium">FREE</span></div>
-                <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-gray-900 text-base"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm" data-testid="order-summary">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Order Summary</p>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-gray-400"><span>MRP</span><span className="line-through">₹{cartData.mrp_total?.toLocaleString()}</span></div>
+                <div className="flex justify-between text-gray-700"><span>Subtotal</span><span className="font-medium">₹{cartData.subtotal?.toLocaleString()}</span></div>
+                {cartData.discount > 0 && <div className="flex justify-between text-emerald-600"><span>Coupon Discount</span><span>-₹{cartData.discount}</span></div>}
+                <div className="flex justify-between text-gray-400"><span>Shipping</span><span className="text-emerald-600 font-medium">FREE</span></div>
+                <div className="border-t border-gray-100 pt-2.5 flex justify-between font-bold text-gray-900 text-lg"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>
               </div>
             </div>
 
-            <button onClick={proceedToCheckout} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-2xl text-base shadow-lg shadow-emerald-200" data-testid="proceed-checkout-btn">
+            <button onClick={proceedToCheckout} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-4 rounded-2xl text-base shadow-xl shadow-emerald-200/40 transition-all" data-testid="proceed-checkout-btn">
               Proceed to Checkout
             </button>
 
-            {/* Trust Badges — Orders / Rating / Customers */}
+            {/* Social Proof Badges */}
             <div className="grid grid-cols-3 gap-2">
-              <div className="bg-amber-50 rounded-xl p-2.5 text-center border border-amber-100">
-                <p className="text-lg font-bold text-amber-700">127</p>
-                <p className="text-[9px] text-amber-600 font-medium">Orders Today</p>
+              <div className="bg-gradient-to-b from-amber-50 to-orange-50 rounded-xl p-3 text-center border border-amber-100/60">
+                <p className="text-xl font-black text-amber-700">127</p>
+                <p className="text-[9px] text-amber-600 font-semibold tracking-wide">ORDERS TODAY</p>
               </div>
-              <div className="bg-rose-50 rounded-xl p-2.5 text-center border border-rose-100">
-                <p className="text-lg font-bold text-rose-700">4.8</p>
-                <p className="text-[9px] text-rose-600 font-medium">Avg Rating</p>
+              <div className="bg-gradient-to-b from-rose-50 to-pink-50 rounded-xl p-3 text-center border border-rose-100/60">
+                <p className="text-xl font-black text-rose-700">4.8</p>
+                <p className="text-[9px] text-rose-600 font-semibold tracking-wide">AVG RATING</p>
               </div>
-              <div className="bg-purple-50 rounded-xl p-2.5 text-center border border-purple-100">
-                <p className="text-lg font-bold text-purple-700">50K+</p>
-                <p className="text-[9px] text-purple-600 font-medium">Happy Customers</p>
+              <div className="bg-gradient-to-b from-purple-50 to-violet-50 rounded-xl p-3 text-center border border-purple-100/60">
+                <p className="text-xl font-black text-purple-700">50K+</p>
+                <p className="text-[9px] text-purple-600 font-semibold tracking-wide">CUSTOMERS</p>
               </div>
-            </div>
-
-            <div className="text-center text-[10px] text-gray-400 flex items-center justify-center gap-3">
-              <span className="flex items-center gap-1"><Shield size={10} /> Secure</span>
-              <span className="flex items-center gap-1"><Truck size={10} /> Free Ship</span>
-              <span className="flex items-center gap-1"><Check size={10} /> 30 Day Guarantee</span>
             </div>
           </div>
         </div>

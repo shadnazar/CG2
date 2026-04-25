@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
-import { ShoppingCart, Shield, Truck, ArrowLeft, Check, MapPin, Clock, Star, Award, Gift } from 'lucide-react';
+import { Shield, Truck, ArrowLeft, Check, MapPin, Clock, Star, Award, Gift, Lock, Users } from 'lucide-react';
 import { getCart, saveCart, addToCart } from './Homepage';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -18,191 +18,190 @@ function CheckoutPage() {
 
   useEffect(() => {
     if (!cartData) {
-      // Re-validate cart
       const cart = getCart();
       if (!cart.items.length) { navigate('/cart'); return; }
       axios.post(`${API}/api/cart/validate`, { items: cart.items, payment_method: paymentMethod, coupon_code: coupon?.code })
-        .then(res => setCartData(res.data))
-        .catch(() => navigate('/cart'));
+        .then(res => setCartData(res.data)).catch(() => navigate('/cart'));
     }
   }, []);
 
   const handlePincodeChange = async (pincode) => {
     setFormData(prev => ({ ...prev, pincode }));
     if (pincode.length === 6) {
-      try {
-        const res = await axios.get(`${API}/api/pincode/${pincode}`);
-        if (res.data.state) setFormData(prev => ({ ...prev, state: res.data.state }));
-      } catch (e) {}
+      try { const res = await axios.get(`${API}/api/pincode/${pincode}`); if (res.data.state) setFormData(prev => ({ ...prev, state: res.data.state })); } catch {}
     }
   };
 
   const validate = () => {
     const e = {};
     if (!formData.name.trim()) e.name = 'Required';
-    if (!formData.phone.match(/^[6-9]\d{9}$/)) e.phone = 'Valid 10-digit phone required';
+    if (!formData.phone.match(/^[6-9]\d{9}$/)) e.phone = 'Valid 10-digit phone';
     if (!formData.house_number.trim()) e.house_number = 'Required';
     if (!formData.area.trim()) e.area = 'Required';
-    if (!formData.pincode.match(/^\d{6}$/)) e.pincode = 'Valid 6-digit pincode required';
+    if (!formData.pincode.match(/^\d{6}$/)) e.pincode = 'Valid pincode';
     if (!formData.state.trim()) e.state = 'Required';
-    setErrors(e);
-    return Object.keys(e).length === 0;
+    setErrors(e); return Object.keys(e).length === 0;
   };
 
   const placeOrder = async () => {
     if (!validate() || !cartData) return;
     setSubmitting(true);
-
-    const orderPayload = {
-      ...formData,
-      payment_method: paymentMethod,
-      amount: cartData.total,
-      items: cartData.items,
-      coupon_code: coupon?.code || null,
-      coupon_discount: coupon?.discount || 0
-    };
-
+    const payload = { ...formData, payment_method: paymentMethod, amount: cartData.total, items: cartData.items, coupon_code: coupon?.code || null, coupon_discount: coupon?.discount || 0 };
     try {
       if (paymentMethod === 'prepaid') {
-        // Create Razorpay order
         const rzpOrder = await axios.post(`${API}/api/razorpay/create-order`, { amount: cartData.total });
         const options = {
-          key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_key',
-          amount: rzpOrder.data.amount,
-          currency: 'INR',
-          name: 'Celesta Glow',
-          description: `Order - ${cartData.item_count} items`,
-          order_id: rzpOrder.data.id,
+          key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_key', amount: rzpOrder.data.amount, currency: 'INR',
+          name: 'Celesta Glow', description: `Order - ${cartData.item_count} items`, order_id: rzpOrder.data.id,
           handler: async (response) => {
-            try {
-              await axios.post(`${API}/api/razorpay/verify-payment`, response);
-              const order = await axios.post(`${API}/api/orders`, orderPayload);
-              saveCart({ items: [] });
-              navigate(`/order-success/${order.data.order_id}`);
-            } catch (err) { alert('Payment verification failed'); setSubmitting(false); }
+            try { await axios.post(`${API}/api/razorpay/verify-payment`, response); const order = await axios.post(`${API}/api/orders`, payload); saveCart({ items: [] }); navigate(`/order-success/${order.data.order_id}`); }
+            catch { alert('Payment verification failed'); setSubmitting(false); }
           },
           prefill: { name: formData.name, contact: formData.phone, email: formData.email },
           theme: { color: '#059669' }
         };
-        const rzp = new window.Razorpay(options);
-        rzp.open();
-        rzp.on('payment.failed', () => { alert('Payment failed. Try again.'); setSubmitting(false); });
+        const rzp = new window.Razorpay(options); rzp.open();
+        rzp.on('payment.failed', () => { alert('Payment failed.'); setSubmitting(false); });
       } else {
-        // COD order
-        const order = await axios.post(`${API}/api/orders`, orderPayload);
-        saveCart({ items: [] });
-        navigate(`/order-success/${order.data.order_id}`);
+        const order = await axios.post(`${API}/api/orders`, payload);
+        saveCart({ items: [] }); navigate(`/order-success/${order.data.order_id}`);
       }
-    } catch (err) {
-      alert('Order failed. Please try again.');
-      setSubmitting(false);
-    }
+    } catch { alert('Order failed. Please try again.'); setSubmitting(false); }
   };
 
   if (!cartData) return null;
 
-  const InputField = ({ label, field, type = 'text', placeholder }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
+  const Field = ({ label, field, type = 'text', placeholder, span }) => (
+    <div className={span ? 'sm:col-span-2' : ''}>
+      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">{label}</label>
       <input type={type} value={formData[field]} onChange={e => field === 'pincode' ? handlePincodeChange(e.target.value) : setFormData(prev => ({ ...prev, [field]: e.target.value }))}
-        placeholder={placeholder} className={`w-full px-3 py-2.5 border rounded-xl text-sm ${errors[field] ? 'border-red-400' : 'border-gray-200'} focus:ring-2 focus:ring-emerald-500 focus:border-transparent`} data-testid={`checkout-${field}`} />
-      {errors[field] && <p className="text-red-500 text-xs mt-1">{errors[field]}</p>}
+        placeholder={placeholder} className={`w-full px-4 py-3 border rounded-xl text-sm bg-stone-50 focus:bg-white focus:ring-2 focus:ring-emerald-200 transition-all ${errors[field] ? 'border-red-300' : 'border-gray-200'}`} data-testid={`checkout-${field}`} />
+      {errors[field] && <p className="text-red-500 text-[10px] mt-1">{errors[field]}</p>}
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50" data-testid="checkout-page">
-      {/* Trust Strip */}
-      <div className="bg-emerald-800 text-white py-2 px-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-center gap-4 sm:gap-8 text-[10px] sm:text-xs">
-          <span className="flex items-center gap-1"><Shield size={12} /> Secure Checkout</span>
-          <span className="flex items-center gap-1"><Truck size={12} /> Free Shipping</span>
-          <span className="flex items-center gap-1"><Star size={12} /> 50K+ Customers</span>
-          <span className="flex items-center gap-1 hidden sm:flex"><Clock size={12} /> 30-Day Guarantee</span>
+    <div className="min-h-screen bg-stone-50" data-testid="checkout-page">
+      {/* Premium Trust Strip */}
+      <div className="bg-emerald-800 text-white py-2.5 px-4">
+        <div className="max-w-4xl mx-auto flex items-center justify-center gap-5 sm:gap-8 text-[10px] sm:text-xs font-medium">
+          <span className="flex items-center gap-1.5"><Lock size={13} /> Secure Checkout</span>
+          <span className="flex items-center gap-1.5"><Truck size={13} /> Free Shipping</span>
+          <span className="flex items-center gap-1.5"><Star size={13} /> 4.8 Rating</span>
+          <span className="flex items-center gap-1.5 hidden sm:flex"><Shield size={13} /> 30-Day Guarantee</span>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-4 sm:py-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Link to="/cart" className="p-2 hover:bg-white rounded-xl"><ArrowLeft size={20} /></Link>
-          <h1 className="text-lg sm:text-xl font-bold text-gray-900">Checkout</h1>
+        <div className="flex items-center gap-3 mb-5">
+          <Link to="/cart" className="p-2 hover:bg-white rounded-xl transition-colors"><ArrowLeft size={20} /></Link>
+          <div>
+            <h1 className="text-lg font-bold text-gray-900">Checkout</h1>
+            <p className="text-[10px] text-gray-400">{cartData.item_count} items | Secure checkout</p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
           {/* Form */}
           <div className="lg:col-span-3 space-y-4">
-            <div className="bg-white rounded-2xl p-5 border border-gray-100">
-              <h2 className="font-bold text-gray-900 mb-4 flex items-center gap-2"><MapPin size={18} /> Delivery Address</h2>
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+              <h2 className="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2"><MapPin size={16} className="text-emerald-600" /> Delivery Address</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <InputField label="Full Name" field="name" placeholder="Enter your full name" />
-                <InputField label="Phone Number" field="phone" type="tel" placeholder="10-digit number" />
-                <div className="sm:col-span-2"><InputField label="Email (Optional)" field="email" type="email" placeholder="email@example.com" /></div>
-                <div className="sm:col-span-2"><InputField label="House/Flat No." field="house_number" placeholder="House no, building, floor" /></div>
-                <div className="sm:col-span-2"><InputField label="Area/Locality" field="area" placeholder="Street, area, landmark" /></div>
-                <InputField label="Pincode" field="pincode" placeholder="6-digit pincode" />
-                <InputField label="State" field="state" placeholder="State" />
+                <Field label="Full Name" field="name" placeholder="Your full name" />
+                <Field label="Phone" field="phone" type="tel" placeholder="10-digit number" />
+                <Field label="Email (Optional)" field="email" type="email" placeholder="email@example.com" span />
+                <Field label="House / Flat No." field="house_number" placeholder="House no, building, floor" span />
+                <Field label="Area / Locality" field="area" placeholder="Street, area, landmark" span />
+                <Field label="Pincode" field="pincode" placeholder="6-digit pincode" />
+                <Field label="State" field="state" placeholder="State" />
               </div>
             </div>
 
-            {/* Payment Summary for mobile */}
-            <div className="lg:hidden bg-white rounded-2xl p-4 border border-gray-100">
-              <div className="flex justify-between font-bold text-gray-900"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>
-              <p className="text-xs text-gray-500 mt-1">{cartData.item_count} items | {paymentMethod === 'prepaid' ? 'Prepaid' : 'COD (₹29 advance)'} | Free Shipping</p>
+            {/* Payment Method — on checkout only */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+              <h2 className="font-bold text-gray-900 text-sm mb-3">Payment Method</h2>
+              <div className="space-y-2.5">
+                <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'prepaid' ? 'border-emerald-500 bg-emerald-50/50' : 'border-gray-100 hover:border-gray-200'}`}>
+                  <input type="radio" name="pay" checked={paymentMethod === 'prepaid'} onChange={() => setPaymentMethod('prepaid')} className="text-emerald-600 w-4 h-4" />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <p className="font-bold text-sm text-gray-900">Prepaid (UPI / Card)</p>
+                      {paymentMethod === 'prepaid' && <span className="text-[9px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-bold">RECOMMENDED</span>}
+                    </div>
+                    <p className="text-[10px] text-emerald-600 font-medium mt-0.5">Faster Delivery 1-2 days</p>
+                  </div>
+                </label>
+                <label className={`flex items-center gap-3 p-3.5 rounded-xl border-2 cursor-pointer transition-all ${paymentMethod === 'COD' ? 'border-emerald-500 bg-emerald-50/50' : 'border-gray-100 hover:border-gray-200'}`}>
+                  <input type="radio" name="pay" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} className="text-emerald-600 w-4 h-4" />
+                  <div>
+                    <p className="font-bold text-sm text-gray-900">Cash on Delivery</p>
+                    <p className="text-[10px] text-gray-500 mt-0.5">₹29 advance | Pay rest on delivery</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Referral Program Promotion */}
+            <div className="bg-gradient-to-r from-purple-50 to-violet-50 rounded-2xl p-4 border border-purple-100">
+              <div className="flex items-center gap-2 mb-2"><Gift size={16} className="text-purple-600" /><p className="text-xs font-bold text-purple-800">Earn Rewards After Purchase!</p></div>
+              <p className="text-xs text-gray-600 leading-relaxed">Refer friends after checkout and earn ₹50 for every successful referral. <span className="font-semibold text-purple-700">2,847 customers referred friends this month!</span></p>
+              <div className="grid grid-cols-2 gap-2 mt-3">
+                <div className="bg-white rounded-xl p-2.5 text-center border border-purple-100">
+                  <p className="text-base font-black text-purple-700">2,847</p>
+                  <p className="text-[9px] text-purple-500 font-medium">Referrals This Month</p>
+                </div>
+                <div className="bg-white rounded-xl p-2.5 text-center border border-purple-100">
+                  <p className="text-base font-black text-purple-700">₹1.42L</p>
+                  <p className="text-[9px] text-purple-500 font-medium">Rewards Earned</p>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Order Summary */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-2xl p-4 border border-gray-100 sticky top-4">
-              <h2 className="font-bold text-gray-900 mb-3">Order Summary</h2>
-              <div className="space-y-2 mb-3 max-h-48 overflow-y-auto">
+            <div className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm sticky top-4">
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] mb-3">Order Summary</p>
+              <div className="space-y-2 mb-3 max-h-36 overflow-y-auto">
                 {cartData.items?.map((item, i) => (
-                  <div key={i} className="flex justify-between text-sm">
-                    <span className="text-gray-600 truncate mr-2">{item.short_name || item.name} x{item.quantity}</span>
-                    <span className="font-medium text-gray-900 flex-shrink-0">₹{item.line_total}</span>
+                  <div key={i} className="flex justify-between items-center text-sm">
+                    <span className="text-gray-600 truncate mr-2 flex-1">{item.short_name || item.name}</span>
+                    <span className="text-[10px] text-gray-400 mr-2">x{item.quantity}</span>
+                    <span className="font-medium text-gray-900">₹{item.line_total}</span>
                   </div>
                 ))}
               </div>
               <div className="border-t border-gray-100 pt-3 space-y-1.5 text-sm">
-                <div className="flex justify-between text-gray-500"><span>Subtotal</span><span>₹{cartData.subtotal?.toLocaleString()}</span></div>
+                <div className="flex justify-between text-gray-400"><span>Subtotal</span><span>₹{cartData.subtotal?.toLocaleString()}</span></div>
                 {cartData.discount > 0 && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-₹{cartData.discount}</span></div>}
-                <div className="flex justify-between text-gray-500"><span>Shipping</span><span className="text-emerald-600">FREE</span></div>
-                <div className="flex justify-between font-bold text-gray-900 text-base pt-2 border-t border-gray-100"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>
+                <div className="flex justify-between text-gray-400"><span>Shipping</span><span className="text-emerald-600 font-medium">FREE</span></div>
+                <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-gray-900 text-lg"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>
               </div>
 
-              <button onClick={placeOrder} disabled={submitting} className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white font-bold py-3.5 rounded-xl mt-4 transition-colors" data-testid="place-order-btn">
-                {submitting ? 'Processing...' : paymentMethod === 'prepaid' ? `Pay ₹${cartData.total?.toLocaleString()}` : `Place COD Order (₹29 advance)`}
-              </button>
-
-              <div className="flex items-center justify-center gap-3 mt-3 text-xs text-gray-400">
-                <span className="flex items-center gap-1"><Shield size={12} /> Secure</span>
-                <span className="flex items-center gap-1"><Truck size={12} /> Free Ship</span>
-                <span className="flex items-center gap-1"><Check size={12} /> 30-day Guarantee</span>
-              </div>
-
-              {/* Trust Section */}
-              <div className="mt-4 bg-emerald-50 rounded-xl p-3">
-                <p className="text-xs text-emerald-800 font-medium text-center mb-2">Trusted by 50,000+ Customers</p>
-                <div className="flex justify-center gap-1">
-                  {[1,2,3,4,5].map(i => <span key={i} className="text-amber-400 text-xs">&#9733;</span>)}
-                  <span className="text-xs text-gray-600 ml-1">4.8/5 Average Rating</span>
-                </div>
-              </div>
-
-              {/* Savings Highlight */}
               {cartData.savings > 0 && (
-                <div className="mt-3 bg-rose-50 border border-rose-100 rounded-xl p-3 text-center">
-                  <p className="text-sm font-bold text-rose-700">You're saving ₹{cartData.savings?.toLocaleString()} on this order!</p>
-                  <p className="text-xs text-rose-500 mt-0.5">Free shipping included</p>
+                <div className="mt-3 bg-emerald-50 rounded-xl p-2.5 text-center border border-emerald-100">
+                  <p className="text-xs font-bold text-emerald-700">You're saving ₹{cartData.savings?.toLocaleString()} on this order!</p>
                 </div>
               )}
 
+              <button onClick={placeOrder} disabled={submitting} className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 text-white font-bold py-3.5 rounded-2xl mt-4 text-sm shadow-xl shadow-emerald-200/40 transition-all" data-testid="place-order-btn">
+                {submitting ? 'Processing...' : paymentMethod === 'prepaid' ? `Pay ₹${cartData.total?.toLocaleString()}` : `Place COD Order`}
+              </button>
+
               {/* Delivery Timeline */}
-              <div className="mt-3 text-xs text-gray-500 text-center">
-                {paymentMethod === 'prepaid' 
-                  ? <p>Estimated delivery: <strong className="text-emerald-600">1-2 business days</strong></p>
-                  : <p>Estimated delivery: <strong>5-7 business days</strong></p>
-                }
+              <div className="mt-3 text-center text-xs text-gray-500">
+                {paymentMethod === 'prepaid' ? (
+                  <p>Estimated delivery: <strong className="text-emerald-600">1-2 business days</strong></p>
+                ) : (
+                  <p>Estimated delivery: <strong>5-7 business days</strong></p>
+                )}
+              </div>
+
+              {/* Trust Icons */}
+              <div className="mt-3 flex items-center justify-center gap-4 text-[9px] text-gray-400 font-medium">
+                <span className="flex items-center gap-1"><Lock size={10} /> SSL Secure</span>
+                <span className="flex items-center gap-1"><Shield size={10} /> Verified Brand</span>
+                <span className="flex items-center gap-1"><Users size={10} /> 50K+ Served</span>
               </div>
             </div>
           </div>
