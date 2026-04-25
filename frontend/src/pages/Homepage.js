@@ -115,12 +115,7 @@ function Homepage() {
         <p className="text-[11px] sm:text-xs tracking-wide">FREE SHIPPING All India | COD Available | 30 Day Money Back Guarantee | Trusted by 50,000+</p>
       </div>
 
-      {/* Floating Cart */}
-      {cartCount > 0 && (
-        <Link to="/cart" className="fixed bottom-4 right-4 z-50 bg-emerald-600 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-2 hover:bg-emerald-700 transition-all" data-testid="floating-cart-btn">
-          <ShoppingCart size={20} /><span className="font-bold">{cartCount}</span><span className="text-sm">View Cart</span>
-        </Link>
-      )}
+      {/* No floating cart on homepage — use nav cart icon instead */}
 
       {/* Hero */}
       <section className="relative bg-gradient-to-br from-stone-50 via-white to-emerald-50 overflow-hidden" data-testid="hero-section">
@@ -267,24 +262,36 @@ function Homepage() {
         </div>
       </section>
 
-      {/* Other Combo Deals */}
+      {/* Other Combo Deals — compact with image */}
       {otherCombos.length > 0 && (
         <section className="bg-gray-50 py-10 sm:py-14" data-testid="combos-section">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">More Combo Deals</h2>
-              <p className="text-gray-500 mt-2">Build your routine and save more</p>
+            <div className="text-center mb-6">
+              <h2 className="text-xl sm:text-2xl font-bold text-gray-900">More Combo Deals</h2>
+              <p className="text-sm text-gray-500 mt-1">Build your routine and save more</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {otherCombos.map(combo => (
                 <div key={combo.combo_id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all" data-testid={`combo-card-${combo.combo_id}`}>
-                  {combo.badge && <div className={`text-sm font-bold px-4 py-2 text-center ${combo.badge === 'Popular' ? 'bg-rose-500 text-white' : 'bg-emerald-600 text-white'}`}>{combo.badge} — Save {combo.discount_percent}%</div>}
-                  <div className="p-5">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">{combo.name}</h3>
-                    <p className="text-sm text-gray-500 mb-3">{combo.description}</p>
-                    <div className="flex items-center justify-between">
-                      <div><span className="text-gray-400 line-through text-sm">₹{combo.mrp_total?.toLocaleString()}</span><span className="text-2xl font-bold text-gray-900 ml-2">₹{combo.combo_prepaid_price?.toLocaleString()}</span></div>
-                      <button onClick={() => handleAddCombo(combo.combo_id)} className="bg-emerald-600 text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-emerald-700" data-testid={`add-combo-${combo.combo_id}`}>Add to Cart</button>
+                  {/* 16:9 Image Slot */}
+                  <div className="aspect-[16/9] bg-gradient-to-br from-emerald-50 to-amber-50 flex items-center justify-center">
+                    {settings[`combo_image_${combo.combo_id}`] ? (
+                      <img src={settings[`combo_image_${combo.combo_id}`]} alt={combo.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-center"><Package className="w-10 h-10 mx-auto mb-1 text-emerald-400" /><p className="text-xs text-gray-400">{combo.name}</p></div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    {combo.badge && <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${combo.badge === 'Popular' ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>{combo.badge}</span>}
+                    <h3 className="text-base font-bold text-gray-900 mt-1">{combo.name}</h3>
+                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-1">{combo.description}</p>
+                    <div className="flex items-center justify-between mt-3">
+                      <div>
+                        <span className="text-lg font-bold text-gray-900">₹{combo.combo_prepaid_price?.toLocaleString()}</span>
+                        <span className="text-xs text-gray-400 line-through ml-1.5">₹{combo.mrp_total?.toLocaleString()}</span>
+                        <span className="text-[10px] font-bold text-rose-600 ml-1.5">{combo.discount_percent}% OFF</span>
+                      </div>
+                      <button onClick={() => handleAddCombo(combo.combo_id)} className="bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold text-xs hover:bg-emerald-700" data-testid={`add-combo-${combo.combo_id}`}>Add to Cart</button>
                     </div>
                   </div>
                 </div>

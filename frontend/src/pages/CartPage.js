@@ -191,19 +191,12 @@ function CartPage() {
 
           {/* Order Summary */}
           <div className="space-y-3">
-            <div className="bg-white rounded-2xl p-4 border border-gray-100">
-              <p className="font-semibold text-gray-900 text-sm mb-3">Payment Method</p>
-              <div className="space-y-2">
-                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer ${paymentMethod === 'prepaid' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-100'}`}>
-                  <input type="radio" name="payment" checked={paymentMethod === 'prepaid'} onChange={() => setPaymentMethod('prepaid')} className="text-emerald-600" />
-                  <div><p className="font-semibold text-sm text-gray-900">Prepaid (UPI/Card)</p><p className="text-[10px] text-emerald-600">Faster Delivery 1-2 days</p></div>
-                </label>
-                <label className={`flex items-center gap-3 p-3 rounded-xl border-2 cursor-pointer ${paymentMethod === 'COD' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-100'}`}>
-                  <input type="radio" name="payment" checked={paymentMethod === 'COD'} onChange={() => setPaymentMethod('COD')} className="text-emerald-600" />
-                  <div><p className="font-semibold text-sm text-gray-900">Cash on Delivery</p><p className="text-[10px] text-gray-500">₹{settings.cod_advance_amount || 29} advance</p></div>
-                </label>
+            {/* Savings Badge */}
+            {cartData.savings > 0 && (
+              <div className="bg-emerald-50 rounded-2xl p-3 border border-emerald-200 text-center">
+                <p className="text-sm font-bold text-emerald-700">You're saving ₹{cartData.savings?.toLocaleString()} on this order!</p>
               </div>
-            </div>
+            )}
 
             <div className="bg-white rounded-2xl p-4 border border-gray-100">
               <p className="font-semibold text-gray-900 text-sm mb-2 flex items-center gap-2"><Tag size={14} /> Coupon</p>
@@ -229,7 +222,6 @@ function CartPage() {
                 {cartData.discount > 0 && <div className="flex justify-between text-emerald-600"><span>Coupon</span><span>-₹{cartData.discount}</span></div>}
                 <div className="flex justify-between text-gray-500"><span>Shipping</span><span className="text-emerald-600 font-medium">FREE</span></div>
                 <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-gray-900 text-base"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>
-                {cartData.savings > 0 && <p className="text-center text-xs text-emerald-600 font-semibold bg-emerald-50 rounded-xl py-1.5">You save ₹{cartData.savings?.toLocaleString()}!</p>}
               </div>
             </div>
 
@@ -237,9 +229,25 @@ function CartPage() {
               Proceed to Checkout
             </button>
 
+            {/* Trust Badges — Orders / Rating / Customers */}
+            <div className="grid grid-cols-3 gap-2">
+              <div className="bg-amber-50 rounded-xl p-2.5 text-center border border-amber-100">
+                <p className="text-lg font-bold text-amber-700">127</p>
+                <p className="text-[9px] text-amber-600 font-medium">Orders Today</p>
+              </div>
+              <div className="bg-rose-50 rounded-xl p-2.5 text-center border border-rose-100">
+                <p className="text-lg font-bold text-rose-700">4.8</p>
+                <p className="text-[9px] text-rose-600 font-medium">Avg Rating</p>
+              </div>
+              <div className="bg-purple-50 rounded-xl p-2.5 text-center border border-purple-100">
+                <p className="text-lg font-bold text-purple-700">50K+</p>
+                <p className="text-[9px] text-purple-600 font-medium">Happy Customers</p>
+              </div>
+            </div>
+
             <div className="text-center text-[10px] text-gray-400 flex items-center justify-center gap-3">
               <span className="flex items-center gap-1"><Shield size={10} /> Secure</span>
-              <span className="flex items-center gap-1"><Truck size={10} /> Free Shipping</span>
+              <span className="flex items-center gap-1"><Truck size={10} /> Free Ship</span>
               <span className="flex items-center gap-1"><Check size={10} /> 30 Day Guarantee</span>
             </div>
           </div>

@@ -52,11 +52,7 @@ function ShopPage() {
 
   return (
     <div className="min-h-screen bg-gray-50" data-testid="shop-page">
-      {cartCount > 0 && (
-        <Link to="/cart" className="fixed bottom-4 right-4 z-50 bg-emerald-600 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-2">
-          <ShoppingCart size={20} /><span className="font-bold">{cartCount}</span><span className="text-sm">View Cart</span>
-        </Link>
-      )}
+      {/* Nav cart icon handles cart count — no floating button */}
 
       {/* Header */}
       <div className="bg-white border-b border-gray-100">
