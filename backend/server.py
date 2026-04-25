@@ -32,6 +32,7 @@ from services.referral_service import ReferralService
 from services.delhivery_service import init_delhivery_service
 from services.landing_page_service import LandingPageService
 from routes import landing_pages as landing_page_routes
+from routes import products as product_routes
 
 
 ROOT_DIR = Path(__file__).parent
@@ -59,6 +60,9 @@ from services.employee_service import EmployeeService
 from services.customer_service import CustomerService
 employee_service = EmployeeService(db)
 customer_service = CustomerService(db)
+
+# Initialize product routes
+product_routes.set_db(db)
 
 # Initialize admin routes with database
 admin_routes.set_db(db)
@@ -88,8 +92,12 @@ class OrderCreate(BaseModel):
     payment_method: str
     amount: float
     email: Optional[str] = None
-    referral_code: Optional[str] = None  # Referral code if user came through referral link
-    referral_discount: Optional[float] = 0  # Discount applied from referral
+    referral_code: Optional[str] = None
+    referral_discount: Optional[float] = 0
+    items: Optional[List[Dict[str, Any]]] = None  # Multi-product: [{slug, name, quantity, price}]
+    combo_id: Optional[str] = None
+    coupon_code: Optional[str] = None
+    coupon_discount: Optional[float] = 0
 
 
 class Order(BaseModel):
@@ -350,6 +358,17 @@ async def create_order(order_input: OrderCreate):
     
     doc = order_obj.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
+    
+    # Store multi-product items if provided
+    if order_input.items:
+        doc['items'] = order_input.items
+    if order_input.combo_id:
+        doc['combo_id'] = order_input.combo_id
+    if order_input.coupon_code:
+        doc['coupon_code'] = order_input.coupon_code
+        doc['coupon_discount'] = order_input.coupon_discount
+        # Increment coupon usage
+        await db.coupons.update_one({"code": order_input.coupon_code.upper()}, {"$inc": {"used_count": 1}})
     
     # Check if this order was made through a referral
     referral_code = order_input.referral_code if hasattr(order_input, 'referral_code') else None
@@ -1163,6 +1182,10 @@ landing_page_routes.set_admin_sessions(admin_sessions)
 
 # Share employee_sessions with landing pages routes for employee access
 landing_page_routes.set_employee_sessions(employee_sessions)
+
+# Share sessions with product routes
+product_routes.set_admin_sessions(admin_sessions)
+product_routes.set_employee_sessions(employee_sessions)
 
 # Share admin_sessions with consultation routes for token verification
 consultation_routes.set_admin_sessions(admin_sessions)
@@ -2629,6 +2652,7 @@ app.include_router(admin_routes.router, prefix="/api")
 app.include_router(i18n_routes.router, prefix="/api")
 app.include_router(consultation_routes.router, prefix="/api")
 app.include_router(landing_page_routes.router, prefix="/api")
+app.include_router(product_routes.router, prefix="/api")
 
 app.add_middleware(
     CORSMiddleware,
@@ -2643,6 +2667,14 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup_seed():
+    """Seed product catalog on startup"""
+    try:
+        await product_routes.seed_products()
+    except Exception as e:
+        logging.error(f"Failed to seed products: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

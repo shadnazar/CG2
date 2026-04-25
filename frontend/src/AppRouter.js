@@ -6,7 +6,12 @@ import PublicLayout from './layouts/PublicLayout';
 
 // Eagerly loaded pages (critical for first paint)
 import Homepage from './pages/Homepage';
-import ProductPage from './pages/ProductPage';
+
+// Lazy loaded public pages
+const ProductDetailPage = lazy(() => import('./pages/ProductDetailPage'));
+const ShopPage = lazy(() => import('./pages/ShopPage'));
+const CartPage = lazy(() => import('./pages/CartPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
 
 // Lazy loaded public pages (loaded on demand)
 const OrderSuccessPage = lazy(() => import('./pages/OrderSuccessPage'));
@@ -39,6 +44,7 @@ const AdminReferrals = lazy(() => import('./pages/admin/AdminReferrals'));
 const AdminLandingPages = lazy(() => import('./pages/admin/AdminLandingPages'));
 const AdminEmployees = lazy(() => import('./pages/admin/AdminEmployees'));
 const AdminCustomers = lazy(() => import('./pages/admin/AdminCustomers'));
+const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 
 // Employee Pages
 const EmployeeLogin = lazy(() => import('./pages/employee/EmployeeLogin'));
@@ -107,6 +113,7 @@ function App() {
         <Route path="/admin/landing-pages" element={<AdminLayout><AdminLandingPages /></AdminLayout>} />
         <Route path="/admin/employees" element={<AdminLayout><AdminEmployees /></AdminLayout>} />
         <Route path="/admin/customers" element={<AdminLayout><AdminCustomers /></AdminLayout>} />
+        <Route path="/admin/products" element={<AdminLayout><AdminProducts /></AdminLayout>} />
         
         {/* Employee Routes */}
         <Route path="/employee/login" element={
@@ -206,7 +213,18 @@ function App() {
               
               {/* Main Public Routes */}
               <Route path="/" element={<PublicLayout><Homepage /></PublicLayout>} />
-              <Route path="/product/:slug" element={<PublicLayout><ProductPage /></PublicLayout>} />
+              <Route path="/shop" element={
+                <PublicLayout><Suspense fallback={<PageLoader />}><ShopPage /></Suspense></PublicLayout>
+              } />
+              <Route path="/product/:slug" element={
+                <PublicLayout><Suspense fallback={<PageLoader />}><ProductDetailPage /></Suspense></PublicLayout>
+              } />
+              <Route path="/cart" element={
+                <PublicLayout><Suspense fallback={<PageLoader />}><CartPage /></Suspense></PublicLayout>
+              } />
+              <Route path="/checkout" element={
+                <PublicLayout><Suspense fallback={<PageLoader />}><CheckoutPage /></Suspense></PublicLayout>
+              } />
               <Route path="/order-success/:orderId" element={
                 <PublicLayout>
                   <Suspense fallback={<PageLoader />}><OrderSuccessPage /></Suspense>
