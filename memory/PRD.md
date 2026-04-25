@@ -1,47 +1,51 @@
 # Celesta Glow - PRD
 
-## Latest Update: April 25, 2026 — Premium UI Overhaul
+## Latest: April 25, 2026 — Premium UI Overhaul v2
 
-### Product Page
-- Clean single price (₹999 with MRP strikethrough, no Prepaid/COD cards)
-- "Free Shipping | COD Available | Inclusive of taxes" subtext
-- Key Ingredients as gradient cards with icons
-- Benefits in styled card rows with green circles
-- Trust badges with subtitles (Free Shipping/All India, Genuine/100% Authentic, Certified/Lab Tested, 30 Days/Easy Return)
-- Description accordion with left emerald accent border
-- Clinical stats in gradient dark section with glass cards
-- Dermatologist section with ring avatars and credential badges
-- Reviews with gradient avatars, "Verified Purchase" badges, time stamps
-- Related products with hover effects and Add to Cart
-- FAQ with active state color change
+### Bugs Fixed
+- Cart page image sizing (was full-width, now 16x16/20x20 thumbnails)
+- Nav header is sticky across all pages with cart count badge
+- Cart count updates in real-time when adding products from any page
 
-### Cart Page
-- No payment method selector (moved to checkout)
-- Savings banner as gradient emerald pill
-- Bundle upgrade push with gradient CTA
-- Upsell products as horizontal scroll with images
-- Trust bar: 256-bit Secure, Free Shipping, 30-Day Return (icon cards)
-- Mini customer review quote
-- Social proof: 127 Orders Today, 4.8 Rating, 50K+ Customers (gradient badges)
+### Homepage Premium
+- Animated gradient hero background, glass-morphism brand badge
+- Stats in card backgrounds with borders
+- Product cards with "Save ₹X" text, cart icon on buttons, hover lift+shadow
+- Section headings with decorative accent lines
+- Complete Kit with product thumbnails in "What You Get" list
+- Combos with 16:9 image slots + product count + discount badges
+- Timeline-connected 3-step routine
+- Clinical stats with glass-morphism cards on gradient background
+- FAQ on gradient stone background
+- Skin Analysis CTA section before footer
 
-### Checkout Page  
-- Premium trust strip (Lock Secure, Free Ship, 4.8 Rating, 30-Day)
-- Payment method with "RECOMMENDED" badge on prepaid
-- Referral promotion: "2,847 referrals this month | ₹1.42L rewards earned"
-- Savings highlight box
-- Delivery timeline
-- Trust icons (SSL, Verified, 50K+ Served)
+### Product Page Premium
+- Single clean price (no dual Prepaid/COD cards)
+- Ingredient cards with leaf/droplet/sun icons
+- Benefits in styled card rows
+- Trust badges with subtitles in glass cards
+- Accordion with emerald accent borders
+- Dermatologist with ring avatars
+- Reviews with gradient avatars + "Verified Purchase" badges
+- Bundle push + clinical stats + FAQ
 
-### Homepage
-- No floating cart button (nav icon has count)
-- Combo deals with 16:9 image slots
-- Product cards with proper order (Cleanser → Serum → Cream → Eye → Sunscreen)
+### Cart Page Premium
+- Fixed image sizing
+- Bundle upgrade push
+- "ADD TO YOUR ORDER" upsell with product images
+- Trust bar (256-bit, Free Shipping, 30-Day)
+- Customer review quote
+- Social proof badges (Orders Today, Rating, Customers)
+
+### Checkout Premium
+- Trust strip, referral banner, payment with RECOMMENDED badge
+- Savings highlight, delivery timeline
 
 ## Credentials
 - Admin: celestaglow2024
 - Employees: orderteam/VclhxCbJ, testadmin/TestPass123
 
 ## Pending
-- Upload real product photos
+- Upload real product photos via Admin
 - Admin review management
-- Old ProductPage.js cleanup
+- Old ProductPage.js cleanup (dead code)

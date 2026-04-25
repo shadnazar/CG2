@@ -85,8 +85,8 @@ function CartPage() {
             {/* Items */}
             {cartData.items.map((item, index) => (
               <div key={index} className="bg-white rounded-2xl p-4 border border-gray-100 shadow-sm flex gap-3.5" data-testid={`cart-item-${index}`}>
-                <div className="w-18 h-18 sm:w-20 sm:h-20 bg-stone-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {item.image ? <img src={item.image} alt="" className="w-full h-full object-contain p-1" /> : <Package size={20} className="text-emerald-300" />}
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-stone-50 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  {item.image ? <img src={item.image} alt="" className="w-14 h-14 sm:w-16 sm:h-16 object-contain" /> : <Package size={20} className="text-emerald-300" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-gray-900 text-sm leading-tight">{item.type === 'combo' ? item.name : item.short_name || item.name}</h3>
