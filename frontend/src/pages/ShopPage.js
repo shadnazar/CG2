@@ -118,11 +118,6 @@ function ShopPage() {
               <Link to={`/product/${product.slug}`}>
                 <div className="aspect-square bg-stone-50 flex items-center justify-center p-4 group-hover:scale-105 transition-transform relative">
                   {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-green-200" />}
-                  {product.is_to_be_launched && (
-                    <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center">
-                      <span className="bg-white/95 text-purple-700 font-black text-xs sm:text-sm px-4 py-2 rounded-full border border-purple-200 shadow-sm">TBL — Coming Soon</span>
-                    </div>
-                  )}
                 </div>
               </Link>
               {/* Live activity strip — neat row BELOW image */}

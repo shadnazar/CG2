@@ -57,6 +57,18 @@ DEFAULT_BANNERS = [
     },
 ]
 
+# Combo sample images — admin can replace these via Admin > Banners/Combos
+COMBO_IMAGE_MAP = {
+    "complete-anti-aging-kit": "https://images.pexels.com/photos/4465124/pexels-photo-4465124.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "day-night-duo": "https://images.pexels.com/photos/4465815/pexels-photo-4465815.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "glow-essentials": "https://images.pexels.com/photos/3737576/pexels-photo-3737576.jpeg?auto=compress&cs=tinysrgb&w=1200",
+}
+
+# Default landscape feature image for the homepage hero side panel (replaces 3-product card grid)
+DEFAULT_HOMEPAGE_FEATURE_IMAGE = "https://images.pexels.com/photos/3762871/pexels-photo-3762871.jpeg?auto=compress&cs=tinysrgb&w=1600"
+DEFAULT_HOMEPAGE_FEATURE_TITLE = "Complete Skin Renewal System"
+DEFAULT_HOMEPAGE_FEATURE_SUBTITLE = "5 clinically-formulated products. One radiant transformation."
+
 # Only the anti-aging serum stays live; everything else is TBL with a 25-day countdown
 LIVE_PRODUCT_SLUGS = {"anti-aging-serum"}
 
@@ -110,22 +122,66 @@ async def migrate_products_tbl_and_images(db):
 
 
 async def migrate_banner_carousel(db):
-    """Ensure site_settings has a banner_carousel array. Idempotent."""
-    settings = await db.site_settings.find_one({"_id": "main"}, {"_id": 0})
-    if settings and isinstance(settings.get("banner_carousel"), list) and len(settings["banner_carousel"]) > 0:
-        return 0  # Already set up
+    """Ensure site_settings has banner_carousel + homepage feature image. Idempotent."""
+    settings = await db.site_settings.find_one({"_id": "main"}, {"_id": 0}) or {}
+    update = {}
 
-    await db.site_settings.update_one(
-        {"_id": "main"},
-        {"$set": {
-            "banner_carousel": DEFAULT_BANNERS,
-            "carousel_autoplay_ms": 2000,
-            "updated_at": datetime.now(timezone.utc).isoformat(),
-        }},
-        upsert=True
-    )
-    logging.info(f"[migration] Initialized banner_carousel with {len(DEFAULT_BANNERS)} banners")
-    return len(DEFAULT_BANNERS)
+    if not (isinstance(settings.get("banner_carousel"), list) and len(settings.get("banner_carousel", [])) > 0):
+        update["banner_carousel"] = DEFAULT_BANNERS
+        update["carousel_autoplay_ms"] = 2000
+
+    if not settings.get("homepage_feature_image"):
+        update["homepage_feature_image"] = DEFAULT_HOMEPAGE_FEATURE_IMAGE
+    if not settings.get("homepage_feature_title"):
+        update["homepage_feature_title"] = DEFAULT_HOMEPAGE_FEATURE_TITLE
+    if not settings.get("homepage_feature_subtitle"):
+        update["homepage_feature_subtitle"] = DEFAULT_HOMEPAGE_FEATURE_SUBTITLE
+
+    if not update:
+        return 0
+    update["updated_at"] = datetime.now(timezone.utc).isoformat()
+    await db.site_settings.update_one({"_id": "main"}, {"$set": update}, upsert=True)
+    logging.info(f"[migration] Initialized site settings: keys={list(update.keys())}")
+    return len(update)
+
+
+async def migrate_combos_tbl_and_images(db):
+    """Set TBL + sample images on combos. Idempotent — only adds missing data.
+    All combos default to TBL since they bundle multiple products that are themselves TBL."""
+    now = datetime.now(timezone.utc)
+    default_launch = (now + timedelta(days=25)).isoformat()
+    combos = await db.combos.find({}, {"_id": 0}).to_list(100)
+    updated = 0
+    for c in combos:
+        cid = c.get("combo_id")
+        update = {}
+        if "is_to_be_launched" not in c:
+            # All combos start as TBL since they bundle TBL products
+            update["is_to_be_launched"] = True
+        if "launch_date" not in c:
+            update["launch_date"] = default_launch
+        if "preorder_enabled" not in c:
+            update["preorder_enabled"] = True
+        if not c.get("image") and cid in COMBO_IMAGE_MAP:
+            update["image"] = COMBO_IMAGE_MAP[cid]
+
+        # Auto-flip TBL → launched if launch_date passed
+        if c.get("is_to_be_launched") and c.get("launch_date"):
+            try:
+                ld = datetime.fromisoformat(str(c["launch_date"]).replace("Z", "+00:00"))
+                if ld <= now:
+                    update["is_to_be_launched"] = False
+                    update["launch_date"] = None
+            except Exception:
+                pass
+
+        if update:
+            update["updated_at"] = now.isoformat()
+            await db.combos.update_one({"combo_id": cid}, {"$set": update})
+            updated += 1
+    if updated:
+        logging.info(f"[migration] TBL/images updated for {updated} combos")
+    return updated
 
 
 async def auto_flip_launched_products(db):
@@ -160,6 +216,7 @@ async def run_all_migrations(db):
     """Run all migrations on startup. Safe to run repeatedly."""
     try:
         await migrate_products_tbl_and_images(db)
+        await migrate_combos_tbl_and_images(db)
         await migrate_banner_carousel(db)
         await auto_flip_launched_products(db)
         logging.info("[migration] All migrations completed successfully")

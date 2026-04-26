@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Phone, Mail, Clock, Shield, Truck, CreditCard, MessageCircle } from 'lucide-react';
+import { Phone, Mail, Clock, Shield, Truck, CreditCard, MessageCircle } from 'lucide-react';
 
 const WHATSAPP_NUMBER = '919446125745';
 const SUPPORT_EMAIL = 'support@celestaglow.com';
@@ -60,13 +60,14 @@ function Footer() {
               India's #1 Complete Anti-Aging Solution. 5 clinically-formulated products to fight aging — Serum, Night Cream, Under Eye Cream, Sunscreen & Cleanser.
             </p>
             
-            {/* Company Address */}
-            <div className="space-y-3">
-              <h3 className="text-sm font-semibold text-white">Sold & Marketed By:</h3>
-              <div className="flex items-start gap-2 text-sm">
-                <MapPin className="w-4 h-4 text-green-400 mt-1 flex-shrink-0" />
-                <address className="not-italic text-gray-400">
-                  <strong className="text-gray-300">Veegal Enterprises LLP</strong><br />
+            {/* Company Address — parallel layout, no location icon */}
+            <div className="border-t border-gray-800 pt-4 mt-2">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:gap-6">
+                <h3 className="text-sm font-semibold text-white tracking-wide flex-shrink-0 sm:min-w-[170px] mb-2 sm:mb-0">
+                  Sold &amp; Marketed By:
+                </h3>
+                <address className="not-italic text-sm text-gray-400 leading-relaxed">
+                  <strong className="text-gray-200 block">Veegal Enterprises LLP</strong>
                   1st Floor, 38, Booth No. 62,<br />
                   Ashwini Layout, 2nd Main, Egipura,<br />
                   Bengaluru, Karnataka – 560047, India

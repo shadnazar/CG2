@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Package, Plus, Edit, Trash2, Image as ImageIcon, DollarSign, Eye, EyeOff, Save, X, ChevronDown, Tag, Settings, Layers, Upload, Trash, Clock, Rocket, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { Package, Plus, Edit, Trash2, Image as ImageIcon, DollarSign, Eye, EyeOff, Save, X, ChevronDown, Tag, Settings, Layers, Upload, Trash, Clock, Rocket, GripVertical, ArrowUp, ArrowDown, ArrowLeft, LayoutDashboard } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -205,10 +205,32 @@ function AdminProducts() {
 
   return (
     <div className="space-y-6" data-testid="admin-products">
+      {/* Header with back button */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Product Management</h1>
-          <p className="text-gray-500 text-sm">{products.length} products, {combos.length} combos, {coupons.length} coupons</p>
+        <div className="flex items-center gap-3 min-w-0">
+          <button
+            type="button"
+            onClick={() => navigate('/admin')}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white border border-gray-200 hover:border-green-500 hover:text-green-700 text-gray-700 transition-colors text-sm font-semibold shadow-sm"
+            title="Back to dashboard"
+            data-testid="admin-back-btn"
+          >
+            <ArrowLeft size={16} /> <span className="hidden sm:inline">Dashboard</span>
+          </button>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-bold text-gray-900 truncate">Catalog Management</h1>
+            <p className="text-gray-500 text-sm">{products.length} products · {combos.length} combos · {coupons.length} coupons</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => navigate('/admin')}
+            className="hidden sm:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-medium"
+            title="Open dashboard"
+          >
+            <LayoutDashboard size={16} /> Dashboard
+          </button>
         </div>
       </div>
 
@@ -368,22 +390,83 @@ function AdminProducts() {
                     <div><label className="text-xs font-semibold text-gray-500">Discount %</label><input type="number" value={editCombo.discount_percent} onChange={e => setEditCombo({...editCombo, discount_percent: Number(e.target.value)})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
                   </div>
                   <div><label className="text-xs font-semibold text-gray-500">Description</label><textarea value={editCombo.description || ''} onChange={e => setEditCombo({...editCombo, description: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" rows={2} /></div>
+
+                  {/* Image upload for combo */}
+                  <ImageManager
+                    images={editCombo.image || ''}
+                    onChange={(url) => setEditCombo({...editCombo, image: url})}
+                    label="Combo Image (kit packaging shot)"
+                    single
+                    headers={headers}
+                  />
+
+                  {/* TBL controls for combos */}
+                  <div className="rounded-xl border border-purple-100 bg-purple-50/40 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock size={14} className="text-purple-700" />
+                      <span className="text-xs font-bold text-purple-900 tracking-wide">LAUNCH STATUS</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setEditCombo({
+                          ...editCombo,
+                          is_to_be_launched: !editCombo.is_to_be_launched,
+                          launch_date: !editCombo.is_to_be_launched
+                            ? (editCombo.launch_date || new Date(Date.now() + 25 * 86400000).toISOString())
+                            : null,
+                          preorder_enabled: !editCombo.is_to_be_launched ? true : false,
+                        })}
+                        className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${editCombo.is_to_be_launched ? 'bg-purple-600 text-white' : 'bg-green-100 text-green-800'}`}
+                        data-testid={`combo-tbl-toggle-${combo.combo_id}`}
+                      >
+                        {editCombo.is_to_be_launched ? 'TBL — To Be Launched' : 'Live — Available Now'}
+                      </button>
+                      {editCombo.is_to_be_launched && (
+                        <>
+                          <div className="flex items-center gap-1.5">
+                            <label className="text-xs text-gray-600">Launch:</label>
+                            <input
+                              type="date"
+                              value={editCombo.launch_date ? editCombo.launch_date.slice(0, 10) : ''}
+                              onChange={e => setEditCombo({...editCombo, launch_date: e.target.value ? new Date(e.target.value).toISOString() : null})}
+                              className="px-2 py-1.5 border rounded-lg text-xs"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setEditCombo({...editCombo, preorder_enabled: !editCombo.preorder_enabled})}
+                            className={`px-3 py-1.5 rounded-full text-xs font-bold ${editCombo.preorder_enabled ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-600'}`}
+                          >
+                            Preorder: {editCombo.preorder_enabled ? 'ON' : 'OFF'}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="flex gap-2">
                     <button onClick={() => updateCombo(combo.combo_id, editCombo)} className="flex items-center gap-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold"><Save size={14} /> Save</button>
                     <button onClick={() => setEditCombo(null)} className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm">Cancel</button>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center justify-between">
-                  <div>
-                    <div className="flex items-center gap-2">
+                <div className="flex items-start justify-between gap-3">
+                  {combo.image && <img src={combo.image} alt="" className="w-20 h-20 rounded-lg object-cover flex-shrink-0 border border-gray-100" />}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-bold text-gray-900">{combo.name}</h3>
+                      {combo.is_to_be_launched && (
+                        <span className="text-[10px] px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-bold flex items-center gap-1">
+                          <Clock size={10} /> TBL{combo.days_to_launch != null ? ` · ${combo.days_to_launch}d` : ''}
+                        </span>
+                      )}
                       {combo.badge && <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full">{combo.badge}</span>}
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">{combo.product_slugs?.join(', ')} | {combo.discount_percent}% OFF</p>
+                    <p className="text-sm text-gray-500 mt-1 truncate">{combo.product_slugs?.join(', ')} | {combo.discount_percent}% OFF</p>
                     <p className="text-sm font-bold text-gray-900 mt-1">Prepaid: ₹{combo.combo_prepaid_price} | COD: ₹{combo.combo_cod_price} <span className="text-gray-400 line-through ml-2">MRP: ₹{combo.mrp_total}</span></p>
                   </div>
-                  <button onClick={() => setEditCombo({...combo})} className="p-2 hover:bg-gray-100 rounded-lg"><Edit size={16} className="text-gray-500" /></button>
+                  <button onClick={() => setEditCombo({...combo})} className="p-2 hover:bg-gray-100 rounded-lg flex-shrink-0"><Edit size={16} className="text-gray-500" /></button>
                 </div>
               )}
             </div>
@@ -435,6 +518,19 @@ function AdminProducts() {
               <div><label className="text-xs font-semibold text-gray-500">Hero Subtitle</label><textarea value={editSettings.hero_subtitle || ''} onChange={e => setEditSettings({...editSettings, hero_subtitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" rows={2} /></div>
               <ImageManager images={editSettings.hero_banner_image || ''} onChange={(url) => setEditSettings({...editSettings, hero_banner_image: url})} label="Hero Banner Image (under main heading)" single headers={headers} />
               <ImageManager images={editSettings.bundle_hero_image || ''} onChange={(url) => setEditSettings({...editSettings, bundle_hero_image: url})} label="Bundle Kit Image (Complete Anti-Aging Kit)" single headers={headers} />
+
+              {/* NEW: Homepage Feature Banner (replaces 3-product side panel on hero) */}
+              <div className="rounded-xl border border-emerald-100 bg-emerald-50/40 p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <ImageIcon size={14} className="text-emerald-700" />
+                  <span className="text-xs font-bold text-emerald-900 tracking-wide">HOMEPAGE FEATURE BANNER (right of "India's #1" section)</span>
+                </div>
+                <ImageManager images={editSettings.homepage_feature_image || ''} onChange={(url) => setEditSettings({...editSettings, homepage_feature_image: url})} label="Landscape Feature Image" single headers={headers} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div><label className="text-xs font-semibold text-gray-500">Feature Title</label><input value={editSettings.homepage_feature_title || ''} onChange={e => setEditSettings({...editSettings, homepage_feature_title: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g., Complete Skin Renewal System" /></div>
+                  <div><label className="text-xs font-semibold text-gray-500">Feature Subtitle</label><input value={editSettings.homepage_feature_subtitle || ''} onChange={e => setEditSettings({...editSettings, homepage_feature_subtitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" placeholder="e.g., 5 clinical products. One transformation." /></div>
+                </div>
+              </div>
               <div><label className="text-xs font-semibold text-gray-500">COD Advance Amount (₹)</label><input type="number" value={editSettings.cod_advance_amount || 29} onChange={e => setEditSettings({...editSettings, cod_advance_amount: Number(e.target.value)})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div className="flex items-center gap-3">
                 <label className="text-xs font-semibold text-gray-500">Pre-Sale Mode</label>

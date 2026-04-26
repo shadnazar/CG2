@@ -267,6 +267,11 @@ class ComboCreate(BaseModel):
     badge: str = ""
     is_active: bool = True
     sort_order: int = 99
+    image: Optional[str] = None
+    # TBL / Preorder
+    is_to_be_launched: bool = False
+    launch_date: Optional[str] = None
+    preorder_enabled: bool = False
 
 class ComboUpdate(BaseModel):
     name: Optional[str] = None
@@ -279,14 +284,72 @@ class ComboUpdate(BaseModel):
     badge: Optional[str] = None
     is_active: Optional[bool] = None
     sort_order: Optional[int] = None
+    image: Optional[str] = None
+    # TBL / Preorder
+    is_to_be_launched: Optional[bool] = None
+    launch_date: Optional[str] = None
+    preorder_enabled: Optional[bool] = None
 
 
 @router.get("/combos")
 async def get_all_combos(active_only: bool = Query(True)):
-    """Public: Get all active combos"""
+    """Public: Get all active combos with TBL auto-flip + countdown"""
     query = {"is_active": True} if active_only else {}
     combos = await db.combos.find(query, {"_id": 0}).sort("sort_order", 1).to_list(50)
+    now = datetime.now(timezone.utc)
+    for c in combos:
+        if c.get("is_to_be_launched") and c.get("launch_date"):
+            try:
+                ld = datetime.fromisoformat(str(c["launch_date"]).replace("Z", "+00:00"))
+                if ld <= now:
+                    c["is_to_be_launched"] = False
+                    c["launch_date"] = None
+                    await db.combos.update_one(
+                        {"combo_id": c["combo_id"]},
+                        {"$set": {"is_to_be_launched": False, "launch_date": None,
+                                  "updated_at": now.isoformat()}}
+                    )
+                else:
+                    delta = ld - now
+                    c["days_to_launch"] = max(0, delta.days)
+                    c["hours_to_launch"] = max(0, int(delta.total_seconds() // 3600))
+            except Exception:
+                pass
+        else:
+            c["days_to_launch"] = None
     return combos
+
+
+@router.put("/admin/combos/{combo_id}/launch-status")
+async def set_combo_launch_status(
+    combo_id: str,
+    data: LaunchStatusUpdate,
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    """Admin: Toggle a combo's TBL status."""
+    verify_auth(x_admin_token=x_admin_token)
+    combo = await db.combos.find_one({"combo_id": combo_id})
+    if not combo:
+        raise HTTPException(status_code=404, detail="Combo not found")
+
+    update = {
+        "is_to_be_launched": data.is_to_be_launched,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if data.is_to_be_launched:
+        if data.launch_date:
+            update["launch_date"] = data.launch_date
+        else:
+            from datetime import timedelta as _td
+            update["launch_date"] = (datetime.now(timezone.utc) + _td(days=25)).isoformat()
+        if data.preorder_enabled is not None:
+            update["preorder_enabled"] = data.preorder_enabled
+    else:
+        update["launch_date"] = None
+        update["preorder_enabled"] = False
+
+    await db.combos.update_one({"combo_id": combo_id}, {"$set": update})
+    return {"success": True, "combo_id": combo_id, "is_to_be_launched": data.is_to_be_launched}
 
 
 @router.post("/admin/combos")
@@ -511,6 +574,9 @@ class SiteSettingsUpdate(BaseModel):
     before_after_images: Optional[List[Dict]] = None
     result_images: Optional[List[str]] = None
     bundle_hero_image: Optional[str] = None
+    homepage_feature_image: Optional[str] = None  # NEW: editable landscape banner that replaces 3-product hero side panel
+    homepage_feature_title: Optional[str] = None
+    homepage_feature_subtitle: Optional[str] = None
     volume_discounts: Optional[List[Dict]] = None  # [{min_items: 2, discount_percent: 5}, ...]
     # Multi-banner hero carousel
     banner_carousel: Optional[List[Dict]] = None  # [{id, image, title, subtitle, cta_text, cta_link, sort_order}, ...]

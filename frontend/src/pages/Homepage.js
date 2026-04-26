@@ -45,12 +45,18 @@ function Homepage() {
   const kit = combos.find(c => c.combo_id === 'complete-anti-aging-kit');
   const otherCombos = combos.filter(c => c.combo_id !== 'complete-anti-aging-kit');
   const faqs = [
-    { q: "What makes Celesta Glow different?", a: "India's first complete 5-product anti-aging system with clinically-proven actives." },
-    { q: "Suitable for all skin types?", a: "Yes. Dermatologist-tested, pH-balanced for every Indian skin type." },
-    { q: "How soon will I see results?", a: "Most customers see visible improvement in 2-4 weeks with daily use." },
-    { q: "Can I use these together?", a: "Designed as a system! Morning: Cleanser + Serum + Sunscreen. Night: Cleanser + Night Cream + Under Eye Cream." },
-    { q: "Return policy?", a: "30-day money-back guarantee. Full refund, no questions asked." },
-    { q: "Is COD available?", a: "Yes! COD with ₹29 advance. Prepaid gets faster delivery + better pricing." },
+    { q: "What makes Celesta Glow different?", a: "India's first complete 5-product anti-aging system with clinically-proven actives (Retinol, Niacinamide, Vitamin C, Hyaluronic Acid, Peptides). Each formula is dermatologist-tested and pH-balanced for Indian skin." },
+    { q: "Suitable for all skin types?", a: "Yes — including oily, dry, combination, and sensitive skin. All products are non-comedogenic, fragrance-free, and free of parabens, sulphates and harsh alcohols." },
+    { q: "How soon will I see results?", a: "Most customers see visible improvement in 2-4 weeks: smoother texture, brighter tone, reduced fine lines. Best results compound over 8-12 weeks of consistent daily use." },
+    { q: "Can I use these together?", a: "Absolutely — they're designed as a system. Morning: Cleanser → Serum → Sunscreen. Night: Cleanser → Under Eye Cream → Night Cream. Apply in order, wait 30 seconds between layers." },
+    { q: "What's your return policy?", a: "30-day money-back guarantee. If you're not satisfied, write to support@celestaglow.com — full refund processed within 5-7 business days. No questions asked." },
+    { q: "Is COD available?", a: "Yes! COD with ₹29 advance to confirm your order. Prepaid orders ship in 24 hours and unlock additional discounts via WELCOME50 and other offers." },
+    { q: "How long do products last?", a: "Each bottle/jar is sized for ~45-60 days of daily use. Our Complete Kit covers a full 2-month skincare regimen at a 30%+ discount vs. individual purchases." },
+    { q: "Are products cruelty-free and vegan?", a: "Yes — Certified cruelty-free. We never test on animals. All formulas are vegan except where collagen peptides are used (clearly labelled on packaging)." },
+    { q: "Where are products manufactured?", a: "Manufactured in FDA-approved, GMP-certified facilities in India under licence. Each batch undergoes microbial, stability and dermatological testing before shipment." },
+    { q: "Do you ship internationally?", a: "Currently we ship within India only. International shipping (UAE, Singapore, US) is launching mid-2026. Sign up for our newsletter to be notified first." },
+    { q: "Can I cancel/modify my order?", a: "Yes — within 4 hours of placing the order via the Track Order page or by emailing support@celestaglow.com. After 4 hours, the order enters fulfillment and cannot be modified." },
+    { q: "Is preorder safe? When will TBL products ship?", a: "Preorder is fully refundable until your item ships. To-Be-Launched (TBL) products ship within 24-48 hours of the launch date shown on the product page. You'll receive an email and SMS the moment it dispatches." },
   ];
 
   return (
@@ -107,16 +113,44 @@ function Homepage() {
               </div>
             </div>
             <div className="hidden lg:flex items-center justify-center">
-              <div className="grid grid-cols-3 gap-3">
-                {products.slice(0, 3).map(p => (
-                  <Link to={`/product/${p.slug}`} key={p.slug} className="bg-white rounded-2xl p-4 shadow-md hover:shadow-xl transition-all border border-gray-50 text-center group">
-                    <div className="w-24 h-24 mx-auto mb-2 bg-stone-50 rounded-xl flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
-                      {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-20 h-20 object-contain" /> : <Sparkles className="w-8 h-8 text-green-300" />}
+              {/* Editable landscape feature banner — admin sets via Site Settings > Homepage Feature Image */}
+              <div className="relative w-full rounded-3xl overflow-hidden shadow-xl group">
+                <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-emerald-100 to-amber-50">
+                  {settings.homepage_feature_image ? (
+                    <img
+                      src={settings.homepage_feature_image}
+                      alt={settings.homepage_feature_title || 'Celesta Glow'}
+                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      data-testid="homepage-feature-image"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Sparkles className="w-20 h-20 text-green-200" />
                     </div>
-                    <p className="text-xs font-bold text-gray-800">{p.short_name}</p>
-                    <p className="text-sm font-black text-green-600">₹{p.prepaid_price}</p>
-                  </Link>
-                ))}
+                  )}
+                  {/* Gradient overlay for legibility */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
+                  {/* Text overlay */}
+                  <div className="absolute inset-0 flex flex-col justify-end p-6 lg:p-8 text-white">
+                    {settings.homepage_feature_title && (
+                      <h3 className="font-heading text-2xl lg:text-3xl font-black leading-tight drop-shadow-lg">
+                        {settings.homepage_feature_title}
+                      </h3>
+                    )}
+                    {settings.homepage_feature_subtitle && (
+                      <p className="mt-2 text-sm lg:text-base text-white/90 max-w-md drop-shadow">
+                        {settings.homepage_feature_subtitle}
+                      </p>
+                    )}
+                    <Link
+                      to="/shop"
+                      className="inline-flex items-center gap-2 mt-4 self-start bg-white text-green-700 hover:bg-green-50 font-bold px-5 py-2.5 rounded-full text-sm shadow-lg transition-colors"
+                      data-testid="feature-banner-cta"
+                    >
+                      Discover the Range <ChevronRight size={16} />
+                    </Link>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -323,11 +357,6 @@ function Homepage() {
           </div>
         </div>
       </section>
-
-      {/* Coupon — orange */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 px-4 text-center">
-        <p className="text-xs font-bold">New User? Use <span className="bg-white/25 px-2 py-0.5 rounded font-mono mx-0.5">WELCOME50</span> for ₹50 OFF | This Month: <span className="bg-white/25 px-2 py-0.5 rounded font-mono mx-0.5">FEB25</span> for ₹25 OFF</p>
-      </div>
 
       {/* CTA */}
       <section className="bg-green-700 text-white py-8">
