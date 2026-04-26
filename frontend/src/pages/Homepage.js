@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useTracking } from '../providers/TrackingProvider';
 import DermatologistSection from '../components/DermatologistSection';
 import HeroCarousel from '../components/HeroCarousel';
+import { playCartSound } from '../utils/cartSound';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -16,8 +17,17 @@ const addToCart = (slug, quantity = 1) => {
   if (existing) existing.quantity += quantity;
   else cart.items.push({ product_slug: slug, quantity });
   saveCart(cart);
+  playCartSound();
 };
-export { getCart, saveCart, addToCart };
+const addComboToCart = (comboId, quantity = 1) => {
+  const cart = getCart();
+  const existing = cart.items.find(i => i.combo_id === comboId);
+  if (existing) existing.quantity += quantity;
+  else cart.items.push({ combo_id: comboId, quantity });
+  saveCart(cart);
+  playCartSound();
+};
+export { getCart, saveCart, addToCart, addComboToCart };
 
 function Homepage() {
   const navigate = useNavigate();
@@ -40,7 +50,7 @@ function Homepage() {
     addToCart(slug); trackAction('add_to_cart', { product_slug: slug });
     if (window.fbq) { const p = products.find(pr => pr.slug === slug); window.fbq('track', 'AddToCart', { content_name: p?.name, content_ids: [slug], value: p?.prepaid_price, currency: 'INR' }); }
   };
-  const handleAddCombo = (id) => { const cart = getCart(); const e = cart.items.find(i => i.combo_id === id); if (e) e.quantity += 1; else cart.items.push({ combo_id: id, quantity: 1 }); saveCart(cart); };
+  const handleAddCombo = (id) => { addComboToCart(id); };
 
   const kit = combos.find(c => c.combo_id === 'complete-anti-aging-kit');
   const otherCombos = combos.filter(c => c.combo_id !== 'complete-anti-aging-kit');
@@ -197,47 +207,128 @@ function Homepage() {
         </div>
       </section>
 
-      {/* Complete Kit — LARGE layout on homepage */}
+      {/* Complete Kit — PREMIUM design (homepage) */}
       {kit && (
-        <section className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-50 py-8 sm:py-12 border-y border-amber-100/60" data-testid="complete-kit-section">
-          <div className="max-w-5xl mx-auto px-4">
-            <div className="text-center mb-4">
-              <span className="inline-flex items-center gap-2 bg-amber-400 text-amber-900 px-4 py-1.5 rounded-full text-xs font-bold tracking-wide"><Award size={13} /> BEST VALUE — SAVE {kit.discount_percent}%</span>
+        <section className="relative py-12 sm:py-16 overflow-hidden" data-testid="complete-kit-section">
+          {/* Layered backdrop */}
+          <div className="absolute inset-0 bg-gradient-to-br from-[#0f1f17] via-[#13261d] to-[#0a1612]" />
+          <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(245,158,11,0.18) 0%, transparent 45%), radial-gradient(circle at 80% 70%, rgba(16,185,129,0.18) 0%, transparent 45%)' }} />
+          <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'n\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.85\' /%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23n)\' /%3E%3C/svg%3E")' }} />
+
+          <div className="relative max-w-6xl mx-auto px-4 sm:px-6">
+            {/* Section eyebrow */}
+            <div className="text-center mb-7">
+              <div className="inline-flex items-center gap-2 mb-3">
+                <span className="h-px w-10 bg-amber-400/60" />
+                <span className="text-[11px] tracking-[0.4em] text-amber-300 font-bold">SIGNATURE BUNDLE</span>
+                <span className="h-px w-10 bg-amber-400/60" />
+              </div>
+              <h2 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-white leading-tight">
+                The Complete <span className="italic text-amber-300">Anti-Aging</span> Ritual
+              </h2>
+              <p className="text-sm sm:text-base text-emerald-100/70 mt-2.5 max-w-xl mx-auto">
+                All 5 clinically-formulated essentials. Save up to {kit.discount_percent}%.
+              </p>
             </div>
-            <div className="bg-white rounded-3xl shadow-lg p-5 sm:p-7 border border-amber-200/40">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 items-center">
-                <div className="aspect-[4/3] bg-gradient-to-br from-green-50 to-amber-50 rounded-2xl flex items-center justify-center overflow-hidden">
-                  {settings.bundle_hero_image ? <img src={settings.bundle_hero_image} alt="Kit" className="w-full h-full object-contain p-3" /> : (
-                    <div className="text-center"><Package className="w-16 h-16 mx-auto mb-2 text-amber-400" /><p className="text-sm font-bold text-gray-600">Complete Kit</p></div>
-                  )}
+
+            {/* Premium card */}
+            <div className="relative rounded-[28px] overflow-hidden bg-white/[0.04] backdrop-blur-xl ring-1 ring-white/10 shadow-2xl shadow-black/40">
+              {/* Top status bar */}
+              <div className="flex items-center justify-between px-5 sm:px-7 py-3 border-b border-white/10 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+                  </span>
+                  <span className="text-[11px] tracking-widest text-amber-200 font-semibold">BEST SELLER · LIMITED STOCK</span>
                 </div>
-                <div>
-                  <h3 className="text-xl font-black text-gray-900">{kit.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1">{kit.description}</p>
-                  <div className="space-y-1.5 mt-3 mb-4">
+                <div className="flex items-center gap-1 text-amber-300">
+                  {[1,2,3,4,5].map(i => <Star key={i} size={13} className="fill-amber-300 text-amber-300" />)}
+                  <span className="text-[11px] text-amber-100/80 ml-1 font-semibold">4.9 · 12k+</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-0">
+                {/* LEFT — Image */}
+                <div className="lg:col-span-7 relative bg-gradient-to-br from-emerald-50 via-amber-50 to-rose-50/50 p-6 sm:p-8 lg:p-10 flex items-center justify-center">
+                  {/* Save badge */}
+                  <div className="absolute top-5 left-5 sm:top-7 sm:left-7 z-10">
+                    <div className="bg-amber-400 text-amber-950 font-black text-xs sm:text-sm px-3 py-1.5 rounded-full shadow-lg shadow-amber-900/40 tracking-wide">
+                      SAVE ₹{(kit.mrp_total - kit.combo_prepaid_price)?.toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="absolute top-5 right-5 sm:top-7 sm:right-7 z-10">
+                    <div className="bg-emerald-600 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wide">
+                      −{kit.discount_percent}% OFF
+                    </div>
+                  </div>
+
+                  <div className="relative w-full aspect-[4/3] sm:aspect-[5/4] flex items-center justify-center">
+                    {settings.bundle_hero_image ? (
+                      <img src={settings.bundle_hero_image} alt={kit.name} className="w-full h-full object-contain drop-shadow-2xl" />
+                    ) : (
+                      <div className="grid grid-cols-3 gap-3 w-full max-w-md">
+                        {kit.product_slugs?.slice(0,5).map((slug, i) => {
+                          const p = products.find(pr => pr.slug === slug);
+                          return (
+                            <div key={slug} className={`bg-white rounded-2xl shadow-xl shadow-emerald-900/10 ring-1 ring-emerald-100 p-3 aspect-square flex items-center justify-center ${i === 0 ? 'col-span-2 row-span-2' : ''}`}>
+                              {p?.images?.[0] ? <img src={p.images[0]} alt={p.short_name} className="w-full h-full object-contain" /> : <Sparkles className="w-8 h-8 text-emerald-300" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* RIGHT — Details */}
+                <div className="lg:col-span-5 p-6 sm:p-8 lg:p-10 text-white">
+                  <h3 className="font-heading text-2xl sm:text-3xl font-black leading-tight">{kit.name}</h3>
+                  <p className="text-sm text-emerald-100/70 mt-2 leading-relaxed">{kit.description}</p>
+
+                  {/* Included list */}
+                  <div className="mt-5 space-y-2.5">
+                    <p className="text-[11px] tracking-[0.25em] text-amber-300/80 font-semibold">WHAT'S INSIDE</p>
                     {kit.product_slugs?.map(slug => {
                       const p = products.find(pr => pr.slug === slug);
                       return p ? (
-                        <div key={slug} className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 bg-stone-50 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
-                            {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-5 h-5 object-contain" /> : <Sparkles size={10} className="text-green-400" />}
+                        <div key={slug} className="flex items-center gap-3">
+                          <div className="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0 ring-1 ring-white/10 overflow-hidden">
+                            {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-7 h-7 object-contain" /> : <Sparkles size={12} className="text-amber-300" />}
                           </div>
-                          <span className="text-sm text-gray-700 font-medium flex-1">{p.short_name}</span>
-                          <span className="text-xs text-gray-400 line-through">₹{p.mrp}</span>
+                          <span className="text-sm text-white/90 font-medium flex-1 truncate">{p.short_name}</span>
+                          <span className="text-xs text-emerald-200/60 line-through">₹{p.mrp}</span>
                         </div>
                       ) : null;
                     })}
                   </div>
-                  <div className="bg-green-50 rounded-xl p-2.5 text-center border border-green-100 mb-3">
-                    <p className="text-xs text-green-700 font-bold">You save ₹{(kit.mrp_total - kit.combo_prepaid_price)?.toLocaleString()}</p>
+
+                  {/* Price block */}
+                  <div className="mt-6 pt-5 border-t border-white/10">
+                    <div className="flex items-end gap-3 mb-1">
+                      <span className="text-4xl sm:text-5xl font-black text-white tracking-tight">₹{kit.combo_prepaid_price?.toLocaleString()}</span>
+                      <span className="text-base text-white/40 line-through mb-1.5">₹{kit.mrp_total?.toLocaleString()}</span>
+                    </div>
+                    <p className="text-xs text-amber-300 font-semibold">You save ₹{(kit.mrp_total - kit.combo_prepaid_price)?.toLocaleString()} · ~₹{Math.round(kit.combo_prepaid_price/60)}/day for 60 days</p>
                   </div>
-                  <div className="flex items-end gap-2 mb-3">
-                    <span className="text-3xl font-black text-gray-900">₹{kit.combo_prepaid_price?.toLocaleString()}</span>
-                    <span className="text-base text-gray-400 line-through mb-0.5">₹{kit.mrp_total?.toLocaleString()}</span>
-                  </div>
-                  <button onClick={() => handleAddCombo(kit.combo_id)} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3.5 rounded-2xl text-sm shadow-lg shadow-green-200/50 flex items-center justify-center gap-1.5" data-testid="add-complete-kit">
-                    <ShoppingCart size={15} /> Add Complete Kit
+
+                  {/* CTA */}
+                  <button
+                    onClick={() => handleAddCombo(kit.combo_id)}
+                    className="group/btn mt-5 w-full relative overflow-hidden bg-amber-400 hover:bg-amber-300 text-amber-950 font-black py-4 rounded-2xl text-sm tracking-wide shadow-2xl shadow-amber-900/40 transition-all hover:shadow-amber-400/30 hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                    data-testid="add-complete-kit"
+                  >
+                    <ShoppingCart size={18} />
+                    <span>ADD COMPLETE KIT</span>
+                    <ArrowRight size={16} className="transition-transform group-hover/btn:translate-x-1" />
                   </button>
+
+                  {/* Trust line */}
+                  <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-emerald-100/60">
+                    <span className="flex items-center gap-1"><Truck size={11} /> Free shipping</span>
+                    <span className="flex items-center gap-1"><Shield size={11} /> 30-day return</span>
+                    <span className="flex items-center gap-1"><Check size={11} /> COD avail.</span>
+                  </div>
                 </div>
               </div>
             </div>

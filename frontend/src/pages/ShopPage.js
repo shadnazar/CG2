@@ -1,192 +1,356 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Star, ShoppingCart, Sparkles, ChevronRight, Award, Zap, Package, Check, Clock } from 'lucide-react';
-import { addToCart, getCart, saveCart } from './Homepage';
+import { Star, ShoppingCart, Sparkles, ChevronRight, Award, Package, Check, Clock, ArrowRight, Truck, Shield, Filter } from 'lucide-react';
+import { addToCart, addComboToCart, getCart } from './Homepage';
 
 const API = process.env.REACT_APP_BACKEND_URL;
+
+const FILTERS = [
+  { id: 'all',        label: 'All' },
+  { id: 'bestsellers',label: 'Bestsellers' },
+  { id: 'new',        label: 'New Launch' },
+  { id: 'tbl',        label: 'Coming Soon' },
+];
 
 function ShopPage() {
   const [products, setProducts] = useState([]);
   const [combos, setCombos] = useState([]);
   const [settings, setSettings] = useState({});
-  const [cartCount, setCartCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
-    const fetchData = async () => {
+    (async () => {
       try {
         const [prodRes, comboRes, settRes] = await Promise.all([
           axios.get(`${API}/api/products`),
           axios.get(`${API}/api/combos`),
-          axios.get(`${API}/api/site-settings`)
+          axios.get(`${API}/api/site-settings`),
         ]);
         setProducts(prodRes.data);
         setCombos(comboRes.data);
         setSettings(settRes.data);
       } catch (err) { console.error(err); }
       setLoading(false);
-    };
-    fetchData();
+    })();
   }, []);
-
-  useEffect(() => {
-    const update = () => setCartCount(getCart().items.reduce((s, i) => s + (i.quantity || 1), 0));
-    update();
-    window.addEventListener('cartUpdated', update);
-    return () => window.removeEventListener('cartUpdated', update);
-  }, []);
-
-  const handleAddCombo = (comboId) => {
-    const cart = getCart();
-    const existing = cart.items.find(i => i.combo_id === comboId);
-    if (existing) existing.quantity += 1;
-    else cart.items.push({ combo_id: comboId, quantity: 1 });
-    saveCart(cart);
-  };
 
   const completeKit = combos.find(c => c.combo_id === 'complete-anti-aging-kit');
   const otherCombos = combos.filter(c => c.combo_id !== 'complete-anti-aging-kit');
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
+  const visibleProducts = useMemo(() => {
+    if (filter === 'all') return products;
+    if (filter === 'bestsellers') return products.filter(p => p.badge === 'Bestseller');
+    if (filter === 'new') return products.filter(p => p.badge === 'New Launch');
+    if (filter === 'tbl') return products.filter(p => p.is_to_be_launched);
+    return products;
+  }, [products, filter]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-50 to-emerald-50">
+        <div className="w-10 h-10 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50" data-testid="shop-page">
-      {/* Nav cart icon handles cart count — no floating button */}
-
-      {/* Header */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
-          <nav className="flex items-center gap-2 text-sm text-gray-400 mb-3">
-            <Link to="/" className="hover:text-green-600">Home</Link><ChevronRight size={14} /><span className="text-gray-900">Shop</span>
+    <div className="min-h-screen bg-gradient-to-b from-stone-50 via-white to-stone-50" data-testid="shop-page">
+      {/* HERO HEADER */}
+      <section className="relative overflow-hidden border-b border-emerald-100/60">
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 via-white to-amber-50/40" />
+        <div className="absolute inset-0 opacity-40" style={{ backgroundImage: 'radial-gradient(circle at 15% 30%, rgba(16,185,129,0.15) 0%, transparent 40%), radial-gradient(circle at 85% 60%, rgba(245,158,11,0.12) 0%, transparent 45%)' }} />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <nav className="flex items-center gap-2 text-xs sm:text-sm text-gray-500 mb-4">
+            <Link to="/" className="hover:text-emerald-700">Home</Link>
+            <ChevronRight size={13} />
+            <span className="text-gray-900 font-semibold">Shop</span>
           </nav>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">All Products</h1>
-          <p className="text-gray-500 mt-1">Complete anti-aging range, clinically formulated for Indian skin</p>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <span className="inline-flex items-center gap-2 text-[11px] tracking-[0.3em] text-emerald-700 font-bold uppercase mb-2">
+                <Sparkles size={12} /> Curated Collection
+              </span>
+              <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-[1.05] tracking-tight">
+                Shop the entire <span className="italic text-emerald-700">Celesta Glow</span> range
+              </h1>
+              <p className="text-sm sm:text-base text-gray-500 mt-3 max-w-2xl leading-relaxed">
+                Clinically-formulated for Indian skin. Free shipping · Cash on Delivery · 30-day return on every order.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 text-xs">
+              <div className="flex items-center gap-1.5 text-gray-700"><Truck size={14} className="text-emerald-600" /> Free Ship</div>
+              <div className="flex items-center gap-1.5 text-gray-700"><Shield size={14} className="text-emerald-600" /> 30-Day Return</div>
+              <div className="flex items-center gap-1.5 text-gray-700"><Check size={14} className="text-emerald-600" /> COD</div>
+            </div>
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8">
-        {/* Bundle — bigger on shop */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+
+        {/* COMPLETE KIT — premium design (mirrors Homepage) */}
         {completeKit && (
-          <div className="bg-white rounded-2xl shadow-md border border-amber-200/40 overflow-hidden mb-8">
-            <div className="bg-amber-400 text-amber-900 py-2 px-4 text-center text-sm font-bold tracking-wide">BEST VALUE — SAVE {completeKit.discount_percent}% — ALL 5 PRODUCTS</div>
-            <div className="p-5">
-              <div className="flex items-start gap-4">
-                <div className="w-28 h-28 bg-gradient-to-br from-green-50 to-amber-50 rounded-2xl flex items-center justify-center flex-shrink-0 overflow-hidden">
-                  {settings.bundle_hero_image ? <img src={settings.bundle_hero_image} alt="Kit" className="w-24 h-24 object-contain" /> : <Package className="w-12 h-12 text-amber-500" />}
+          <section className="relative mb-10 sm:mb-14 rounded-[28px] overflow-hidden" data-testid="shop-complete-kit-section">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#0f1f17] via-[#13261d] to-[#0a1612]" />
+            <div className="absolute inset-0 opacity-30" style={{ backgroundImage: 'radial-gradient(circle at 20% 20%, rgba(245,158,11,0.18) 0%, transparent 45%), radial-gradient(circle at 80% 70%, rgba(16,185,129,0.18) 0%, transparent 45%)' }} />
+
+            <div className="relative">
+              {/* Top status bar */}
+              <div className="flex items-center justify-between px-5 sm:px-7 py-3 border-b border-white/10 bg-gradient-to-r from-amber-500/10 via-amber-400/5 to-transparent">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400" />
+                  </span>
+                  <span className="text-[11px] tracking-widest text-amber-200 font-semibold">SIGNATURE BUNDLE · BEST VALUE</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-black text-gray-900">{completeKit.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1">{completeKit.description}</p>
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {completeKit.product_slugs?.map(slug => { const p = products.find(pr => pr.slug === slug); return p ? <span key={slug} className="text-xs bg-green-50 text-green-700 border border-green-200/60 px-2 py-1 rounded-full font-medium">{p.short_name}</span> : null; })}
-                  </div>
+                <div className="flex items-center gap-1 text-amber-300">
+                  {[1,2,3,4,5].map(i => <Star key={i} size={13} className="fill-amber-300 text-amber-300" />)}
+                  <span className="text-[11px] text-amber-100/80 ml-1 font-semibold">4.9 · 12k+</span>
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                <div>
-                  <div className="flex items-end gap-2">
-                    <span className="text-2xl font-black text-gray-900">₹{completeKit.combo_prepaid_price?.toLocaleString()}</span>
-                    <span className="text-sm text-gray-400 line-through mb-0.5">₹{completeKit.mrp_total?.toLocaleString()}</span>
+
+              <div className="grid grid-cols-1 lg:grid-cols-12">
+                {/* LEFT — Image */}
+                <div className="lg:col-span-7 relative bg-gradient-to-br from-emerald-50 via-amber-50 to-rose-50/50 p-6 sm:p-8 lg:p-10 flex items-center justify-center">
+                  <div className="absolute top-5 left-5 sm:top-7 sm:left-7 z-10">
+                    <div className="bg-amber-400 text-amber-950 font-black text-xs sm:text-sm px-3 py-1.5 rounded-full shadow-lg shadow-amber-900/40 tracking-wide">
+                      SAVE ₹{(completeKit.mrp_total - completeKit.combo_prepaid_price)?.toLocaleString()}
+                    </div>
                   </div>
-                  <p className="text-xs text-green-600 font-bold">Save ₹{(completeKit.mrp_total - completeKit.combo_prepaid_price)?.toLocaleString()}</p>
+                  <div className="absolute top-5 right-5 sm:top-7 sm:right-7 z-10">
+                    <div className="bg-emerald-600 text-white text-[10px] sm:text-xs font-bold px-3 py-1.5 rounded-full shadow-lg tracking-wide">
+                      −{completeKit.discount_percent}% OFF
+                    </div>
+                  </div>
+
+                  <div className="relative w-full aspect-[4/3] sm:aspect-[5/4] flex items-center justify-center">
+                    {settings.bundle_hero_image ? (
+                      <img src={settings.bundle_hero_image} alt={completeKit.name} className="w-full h-full object-contain drop-shadow-2xl" />
+                    ) : (
+                      <div className="grid grid-cols-3 gap-3 w-full max-w-md">
+                        {completeKit.product_slugs?.slice(0,5).map((slug, i) => {
+                          const p = products.find(pr => pr.slug === slug);
+                          return (
+                            <div key={slug} className={`bg-white rounded-2xl shadow-xl shadow-emerald-900/10 ring-1 ring-emerald-100 p-3 aspect-square flex items-center justify-center ${i === 0 ? 'col-span-2 row-span-2' : ''}`}>
+                              {p?.images?.[0] ? <img src={p.images[0]} alt={p.short_name} className="w-full h-full object-contain" /> : <Sparkles className="w-8 h-8 text-emerald-300" />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <button onClick={() => handleAddCombo(completeKit.combo_id)} className="bg-green-600 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:bg-green-700 flex items-center gap-2" data-testid="shop-add-kit"><ShoppingCart size={16} /> Add Kit</button>
+
+                {/* RIGHT — Details */}
+                <div className="lg:col-span-5 p-6 sm:p-8 lg:p-10 text-white">
+                  <h3 className="font-heading text-2xl sm:text-3xl font-black leading-tight">{completeKit.name}</h3>
+                  <p className="text-sm text-emerald-100/70 mt-2 leading-relaxed">{completeKit.description}</p>
+
+                  <div className="mt-5 space-y-2.5">
+                    <p className="text-[11px] tracking-[0.25em] text-amber-300/80 font-semibold">WHAT'S INSIDE</p>
+                    {completeKit.product_slugs?.map(slug => {
+                      const p = products.find(pr => pr.slug === slug);
+                      return p ? (
+                        <div key={slug} className="flex items-center gap-3">
+                          <div className="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center flex-shrink-0 ring-1 ring-white/10 overflow-hidden">
+                            {p.images?.[0] ? <img src={p.images[0]} alt="" className="w-7 h-7 object-contain" /> : <Sparkles size={12} className="text-amber-300" />}
+                          </div>
+                          <span className="text-sm text-white/90 font-medium flex-1 truncate">{p.short_name}</span>
+                          <span className="text-xs text-emerald-200/60 line-through">₹{p.mrp}</span>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+
+                  <div className="mt-6 pt-5 border-t border-white/10">
+                    <div className="flex items-end gap-3 mb-1">
+                      <span className="text-4xl sm:text-5xl font-black text-white tracking-tight">₹{completeKit.combo_prepaid_price?.toLocaleString()}</span>
+                      <span className="text-base text-white/40 line-through mb-1.5">₹{completeKit.mrp_total?.toLocaleString()}</span>
+                    </div>
+                    <p className="text-xs text-amber-300 font-semibold">You save ₹{(completeKit.mrp_total - completeKit.combo_prepaid_price)?.toLocaleString()} · ~₹{Math.round(completeKit.combo_prepaid_price/60)}/day for 60 days</p>
+                  </div>
+
+                  <button
+                    onClick={() => addComboToCart(completeKit.combo_id)}
+                    className="group/btn mt-5 w-full relative overflow-hidden bg-amber-400 hover:bg-amber-300 text-amber-950 font-black py-4 rounded-2xl text-sm tracking-wide shadow-2xl shadow-amber-900/40 transition-all hover:-translate-y-0.5 flex items-center justify-center gap-2"
+                    data-testid="shop-add-kit"
+                  >
+                    <ShoppingCart size={18} />
+                    <span>ADD COMPLETE KIT</span>
+                    <ArrowRight size={16} className="transition-transform group-hover/btn:translate-x-1" />
+                  </button>
+
+                  <div className="mt-4 flex items-center justify-center gap-4 text-[11px] text-emerald-100/60">
+                    <span className="flex items-center gap-1"><Truck size={11} /> Free shipping</span>
+                    <span className="flex items-center gap-1"><Shield size={11} /> 30-day return</span>
+                    <span className="flex items-center gap-1"><Check size={11} /> COD avail.</span>
+                  </div>
+                </div>
               </div>
             </div>
+          </section>
+        )}
+
+        {/* SECTION HEADER + FILTERS */}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+          <div>
+            <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-[0.25em] mb-1">Our Range</p>
+            <h2 className="font-heading text-2xl sm:text-3xl font-black text-gray-900">Individual Products</h2>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <Filter size={14} className="text-gray-400 hidden sm:inline" />
+            {FILTERS.map(f => (
+              <button
+                key={f.id}
+                onClick={() => setFilter(f.id)}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold tracking-wide transition-all ${
+                  filter === f.id
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+                data-testid={`shop-filter-${f.id}`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* PRODUCT GRID */}
+        {visibleProducts.length === 0 ? (
+          <div className="bg-white border border-gray-100 rounded-2xl p-10 text-center text-sm text-gray-500">
+            No products in this category yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 mb-12">
+            {visibleProducts.map(product => {
+              const orders = Math.floor(Math.random() * 40) + 30;
+              const piecesLeft = Math.floor(Math.random() * 20) + 5;
+              const viewing = Math.floor(Math.random() * 20) + 8;
+              return (
+                <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative" data-testid={`shop-product-${product.slug}`}>
+                  {product.is_to_be_launched ? (
+                    <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[11px] font-bold px-3 py-1.5 text-center tracking-wide flex items-center justify-center gap-1.5">
+                      <Clock size={11} />
+                      {product.days_to_launch != null ? `LAUNCHING IN ${product.days_to_launch} DAY${product.days_to_launch === 1 ? '' : 'S'}` : 'COMING SOON'}
+                    </div>
+                  ) : product.badge ? (
+                    <div className={`text-[11px] font-bold px-3 py-1.5 text-center tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-emerald-50 text-emerald-700'}`}>
+                      {product.badge.toUpperCase()}
+                    </div>
+                  ) : null}
+
+                  <Link to={`/product/${product.slug}`}>
+                    <div className="aspect-square bg-gradient-to-br from-stone-50 to-white flex items-center justify-center p-5 group-hover:scale-105 transition-transform duration-500 relative">
+                      {product.images?.[0] ? <img src={product.images[0]} alt={product.short_name} className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-emerald-200" />}
+                    </div>
+                  </Link>
+
+                  {!product.is_to_be_launched && (
+                    <div className="bg-amber-50/70 border-y border-amber-100 px-2 py-1.5 flex items-center justify-around text-[10px] font-semibold gap-1">
+                      <span className="text-amber-700 flex items-center gap-0.5"><Sparkles size={10} className="text-amber-500" /> {viewing} viewing</span>
+                      <span className="text-emerald-700 flex items-center gap-0.5"><Check size={10} className="text-emerald-500" /> {orders} sold</span>
+                      <span className="text-rose-700 flex items-center gap-0.5">{piecesLeft} left</span>
+                    </div>
+                  )}
+
+                  <div className="p-3.5">
+                    <Link to={`/product/${product.slug}`}>
+                      <h3 className="font-bold text-gray-900 text-sm sm:text-base leading-snug mb-1 group-hover:text-emerald-700 line-clamp-2">{product.short_name}</h3>
+                    </Link>
+                    <p className="text-xs text-gray-400 line-clamp-1 mb-2">{product.key_ingredients}</p>
+
+                    <div className="flex items-baseline gap-1.5 mb-1.5">
+                      <span className="text-lg sm:text-xl font-black text-gray-900">₹{product.prepaid_price}</span>
+                      <span className="text-xs text-gray-400 line-through">₹{product.mrp}</span>
+                      <span className="text-[11px] font-bold text-emerald-600">{product.discount_percent}% off</span>
+                    </div>
+
+                    {!product.is_to_be_launched && (
+                      <div className="bg-orange-50 border border-orange-200/80 rounded-lg px-2.5 py-1.5 mb-2.5 flex items-center gap-1.5">
+                        <div className="w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0"><Check size={9} className="text-white" /></div>
+                        <p className="text-[11px] text-orange-800 font-semibold">₹{product.prepaid_price - 50} with <span className="font-mono font-bold">WELCOME50</span></p>
+                      </div>
+                    )}
+
+                    <div className="flex items-center gap-1.5 mb-3">
+                      <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} size={12} className={i <= Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />)}</div>
+                      <span className="text-[11px] text-gray-500">({product.reviews_count?.toLocaleString()})</span>
+                    </div>
+
+                    {product.is_to_be_launched ? (
+                      product.preorder_enabled ? (
+                        <button onClick={() => { addToCart(product.slug); axios.post(`${API}/api/products/${product.slug}/preorder-count`).catch(()=>{}); }} className="w-full bg-purple-600 hover:bg-purple-700 text-white text-xs sm:text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-colors" data-testid={`shop-preorder-${product.slug}`}>
+                          <Clock size={15} /> Preorder Now
+                        </button>
+                      ) : (
+                        <button disabled className="w-full bg-gray-100 text-gray-400 text-xs sm:text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
+                          <Clock size={15} /> Coming Soon
+                        </button>
+                      )
+                    ) : (
+                      <button onClick={() => addToCart(product.slug)} className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md" data-testid={`shop-add-${product.slug}`}>
+                        <ShoppingCart size={15} /> Add to Cart
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {/* All Products */}
-        <h2 className="text-xl font-bold text-gray-900 mb-4">Individual Products</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-10">
-          {products.map(product => {
-            const orders = Math.floor(Math.random() * 40) + 30;
-            const piecesLeft = Math.floor(Math.random() * 20) + 5;
-            const viewing = Math.floor(Math.random() * 20) + 8;
-            return (
-            <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all relative" data-testid={`shop-product-${product.slug}`}>
-              {/* TBL Banner overlay (takes precedence over normal badge) */}
-              {product.is_to_be_launched ? (
-                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold px-3 py-1.5 text-center tracking-wide flex items-center justify-center gap-1.5">
-                  <Clock size={12} />
-                  {product.days_to_launch != null ? `LAUNCHING IN ${product.days_to_launch} DAY${product.days_to_launch === 1 ? '' : 'S'}` : 'COMING SOON'}
-                </div>
-              ) : product.badge ? (
-                <div className={`text-xs font-bold px-3 py-1.5 text-center tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-50 text-green-700'}`}>{product.badge.toUpperCase()}</div>
-              ) : null}
-              <Link to={`/product/${product.slug}`}>
-                <div className="aspect-square bg-stone-50 flex items-center justify-center p-4 group-hover:scale-105 transition-transform relative">
-                  {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-green-200" />}
-                </div>
-              </Link>
-              {/* Live activity strip — neat row BELOW image */}
-              {!product.is_to_be_launched && (
-                <div className="bg-amber-50 border-y border-amber-100 px-2 py-1.5 flex items-center justify-around text-[10px] font-semibold gap-1">
-                  <span className="text-amber-700 flex items-center gap-0.5"><Sparkles size={10} className="text-amber-500" /> {viewing} viewing</span>
-                  <span className="text-green-700 flex items-center gap-0.5"><Check size={10} className="text-green-500" /> {orders} sold</span>
-                  <span className="text-rose-700 flex items-center gap-0.5">{piecesLeft} left</span>
-                </div>
-              )}
-              <div className="p-3.5">
-                <Link to={`/product/${product.slug}`}><h3 className="font-bold text-gray-900 text-base leading-snug mb-1 group-hover:text-green-700 line-clamp-2">{product.short_name}</h3></Link>
-                <p className="text-xs text-gray-400 mb-1">{product.key_ingredients}</p>
-                <div className="flex items-baseline gap-2 mb-1">
-                  <span className="text-sm text-gray-400 line-through">₹{product.mrp}</span>
-                  <span className="text-xl font-black text-gray-900">₹{product.prepaid_price}</span>
-                  <span className="text-xs font-bold text-green-600">{product.discount_percent}% Off</span>
-                </div>
-                {!product.is_to_be_launched && (
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg px-2.5 py-2 mb-2.5 flex items-center gap-2">
-                    <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0"><Check size={10} className="text-white" /></div>
-                    <p className="text-xs text-orange-800 font-semibold">₹{product.prepaid_price - 50} with <span className="font-mono font-bold">WELCOME50</span></p>
-                  </div>
-                )}
-                <div className="flex items-center gap-1.5 mb-3">
-                  <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} size={13} className={i <= Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />)}</div>
-                  <span className="text-xs text-gray-500">({product.reviews_count?.toLocaleString()})</span>
-                </div>
-                {product.is_to_be_launched ? (
-                  product.preorder_enabled ? (
-                    <button onClick={() => { addToCart(product.slug); axios.post(`${API}/api/products/${product.slug}/preorder-count`).catch(()=>{}); }} className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2" data-testid={`shop-preorder-${product.slug}`}>
-                      <Clock size={16} /> Preorder Now
-                    </button>
-                  ) : (
-                    <button disabled className="w-full bg-gray-200 text-gray-500 text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
-                      <Clock size={16} /> Coming Soon
-                    </button>
-                  )
-                ) : (
-                  <button onClick={() => addToCart(product.slug)} className="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2" data-testid={`shop-add-${product.slug}`}>
-                    <ShoppingCart size={16} /> Add to Cart
-                  </button>
-                )}
-              </div>
-            </div>
-            );
-          })}
-        </div>
-
-        {/* Other Combos */}
+        {/* MORE COMBO DEALS */}
         {otherCombos.length > 0 && (
-          <>
-            <h2 className="text-xl font-bold text-gray-900 mb-4">More Combo Deals</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <section className="mt-2">
+            <div className="mb-5">
+              <p className="text-[11px] font-bold text-emerald-700 uppercase tracking-[0.25em] mb-1">Bundle & Save</p>
+              <h2 className="font-heading text-2xl sm:text-3xl font-black text-gray-900">More Combo Deals</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
               {otherCombos.map(combo => (
-                <div key={combo.combo_id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all">
-                  {combo.badge && <div className={`text-sm font-bold px-4 py-2 text-center ${combo.badge === 'Popular' ? 'bg-rose-500 text-white' : 'bg-green-600 text-white'}`}>{combo.badge} | Save {combo.discount_percent}%</div>}
+                <div key={combo.combo_id} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300" data-testid={`shop-combo-card-${combo.combo_id}`}>
+                  <div className="relative aspect-[16/9] bg-gradient-to-br from-emerald-50 via-white to-amber-50 overflow-hidden">
+                    {combo.image ? (
+                      <img src={combo.image} alt={combo.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Package className="w-14 h-14 text-emerald-200" />
+                      </div>
+                    )}
+                    <div className="absolute top-3 left-3 flex gap-2">
+                      {combo.badge && (
+                        <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full shadow-md ${combo.badge === 'Popular' ? 'bg-rose-500 text-white' : 'bg-emerald-600 text-white'}`}>{combo.badge}</span>
+                      )}
+                      <span className="bg-white/90 backdrop-blur text-gray-700 text-[11px] font-bold px-2.5 py-1 rounded-full shadow-md">{combo.product_slugs?.length} Products</span>
+                    </div>
+                    <div className="absolute top-3 right-3">
+                      <span className="bg-amber-400 text-amber-950 text-[11px] font-black px-2.5 py-1 rounded-full shadow-lg">SAVE {combo.discount_percent}%</span>
+                    </div>
+                  </div>
                   <div className="p-5">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1">{combo.name}</h3>
-                    <p className="text-sm text-gray-500 mb-3">{combo.description}</p>
-                    <div className="flex items-center justify-between">
-                      <div><span className="text-gray-400 line-through text-sm">₹{combo.mrp_total?.toLocaleString()}</span><span className="text-2xl font-bold text-gray-900 ml-2">₹{combo.combo_prepaid_price?.toLocaleString()}</span></div>
-                      <button onClick={() => handleAddCombo(combo.combo_id)} className="bg-green-600 text-white px-5 py-2.5 rounded-full font-bold text-sm hover:bg-green-700" data-testid={`shop-add-combo-${combo.combo_id}`}>Add to Cart</button>
+                    <h3 className="text-base sm:text-lg font-black text-gray-900 mb-1">{combo.name}</h3>
+                    <p className="text-xs sm:text-sm text-gray-500 mb-3 line-clamp-2">{combo.description}</p>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-2xl font-black text-gray-900">₹{combo.combo_prepaid_price?.toLocaleString()}</span>
+                          <span className="text-sm text-gray-400 line-through">₹{combo.mrp_total?.toLocaleString()}</span>
+                        </div>
+                        <p className="text-[11px] text-emerald-700 font-semibold">You save ₹{(combo.mrp_total - combo.combo_prepaid_price)?.toLocaleString()}</p>
+                      </div>
+                      <button onClick={() => addComboToCart(combo.combo_id)} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-sm flex items-center gap-1.5 shadow-sm hover:shadow-md transition-all" data-testid={`shop-add-combo-${combo.combo_id}`}>
+                        <ShoppingCart size={14} /> Add
+                      </button>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-          </>
+          </section>
         )}
       </div>
     </div>

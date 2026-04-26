@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Star, ChevronLeft, ChevronRight, Shield, Truck, Award, Clock, Check, Sparkles, Minus, Plus, ChevronDown, User, FlaskConical, Package, Leaf, Droplets, Sun, Zap } from 'lucide-react';
-import { addToCart, getCart, saveCart } from './Homepage';
+import { addToCart, addComboToCart, getCart, saveCart } from './Homepage';
 import { useTracking } from '../providers/TrackingProvider';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -68,7 +68,7 @@ function ProductDetailPage() {
     trackAction('preorder', { product_slug: slug, quantity: qty });
     navigate('/cart');
   };
-  const addCombo = (id) => { const c = getCart(); if (!c.items.find(i => i.combo_id === id)) c.items.push({ combo_id: id, quantity: 1 }); saveCart(c); navigate('/cart'); };
+  const addCombo = (id) => { addComboToCart(id); navigate('/cart'); };
 
   if (loading || !product) return <div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
 
