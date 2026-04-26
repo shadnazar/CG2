@@ -2736,11 +2736,16 @@ logger = logging.getLogger(__name__)
 
 @app.on_event("startup")
 async def startup_seed():
-    """Seed product catalog on startup"""
+    """Seed product catalog + run migrations on startup"""
     try:
         await product_routes.seed_products()
     except Exception as e:
         logging.error(f"Failed to seed products: {e}")
+    try:
+        from migrations import run_all_migrations
+        await run_all_migrations(db)
+    except Exception as e:
+        logging.error(f"Failed to run migrations: {e}", exc_info=True)
 
 @app.on_event("shutdown")
 async def shutdown_db_client():

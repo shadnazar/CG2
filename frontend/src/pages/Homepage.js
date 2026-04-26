@@ -4,6 +4,7 @@ import { ShoppingCart, Star, ChevronRight, Shield, Truck, Award, Clock, Sparkles
 import axios from 'axios';
 import { useTracking } from '../providers/TrackingProvider';
 import DermatologistSection from '../components/DermatologistSection';
+import HeroCarousel from '../components/HeroCarousel';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
@@ -59,7 +60,15 @@ function Homepage() {
         <p className="text-xs sm:text-xs tracking-wider font-medium">FREE SHIPPING | COD AVAILABLE | 30-DAY MONEY BACK | 50,000+ CUSTOMERS</p>
       </div>
 
-      {/* Hero */}
+      {/* Multi-Banner Hero Carousel — admin manageable, auto-scrolls every 2s */}
+      {Array.isArray(settings.banner_carousel) && settings.banner_carousel.length > 0 && (
+        <HeroCarousel
+          banners={[...settings.banner_carousel].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))}
+          autoplayMs={settings.carousel_autoplay_ms || 2000}
+        />
+      )}
+
+      {/* Intro / Featured */}
       <section className="relative overflow-hidden" data-testid="hero-section">
         <div className="absolute inset-0 bg-gradient-to-br from-stone-50 via-green-50/20 to-white" />
         <div className="relative max-w-7xl mx-auto px-4 py-8 sm:py-14 lg:py-20">

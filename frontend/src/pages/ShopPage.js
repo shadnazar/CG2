@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Star, ShoppingCart, Sparkles, ChevronRight, Award, Zap, Package, Check } from 'lucide-react';
+import { Star, ShoppingCart, Sparkles, ChevronRight, Award, Zap, Package, Check, Clock } from 'lucide-react';
 import { addToCart, getCart, saveCart } from './Homepage';
 
 const API = process.env.REACT_APP_BACKEND_URL;
@@ -105,19 +105,34 @@ function ShopPage() {
             const piecesLeft = Math.floor(Math.random() * 20) + 5;
             const viewing = Math.floor(Math.random() * 20) + 8;
             return (
-            <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all" data-testid={`shop-product-${product.slug}`}>
-              {product.badge && <div className={`text-xs font-bold px-3 py-1.5 text-center tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-50 text-green-700'}`}>{product.badge.toUpperCase()}</div>}
+            <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all relative" data-testid={`shop-product-${product.slug}`}>
+              {/* TBL Banner overlay (takes precedence over normal badge) */}
+              {product.is_to_be_launched ? (
+                <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold px-3 py-1.5 text-center tracking-wide flex items-center justify-center gap-1.5">
+                  <Clock size={12} />
+                  {product.days_to_launch != null ? `LAUNCHING IN ${product.days_to_launch} DAY${product.days_to_launch === 1 ? '' : 'S'}` : 'COMING SOON'}
+                </div>
+              ) : product.badge ? (
+                <div className={`text-xs font-bold px-3 py-1.5 text-center tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-50 text-green-700'}`}>{product.badge.toUpperCase()}</div>
+              ) : null}
               <Link to={`/product/${product.slug}`}>
-                <div className="aspect-square bg-stone-50 flex items-center justify-center p-4 group-hover:scale-105 transition-transform">
+                <div className="aspect-square bg-stone-50 flex items-center justify-center p-4 group-hover:scale-105 transition-transform relative">
                   {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-green-200" />}
+                  {product.is_to_be_launched && (
+                    <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] flex items-center justify-center">
+                      <span className="bg-white/95 text-purple-700 font-black text-xs sm:text-sm px-4 py-2 rounded-full border border-purple-200 shadow-sm">TBL — Coming Soon</span>
+                    </div>
+                  )}
                 </div>
               </Link>
               {/* Live activity strip — neat row BELOW image */}
-              <div className="bg-amber-50 border-y border-amber-100 px-2 py-1.5 flex items-center justify-around text-[10px] font-semibold gap-1">
-                <span className="text-amber-700 flex items-center gap-0.5"><Sparkles size={10} className="text-amber-500" /> {viewing} viewing</span>
-                <span className="text-green-700 flex items-center gap-0.5"><Check size={10} className="text-green-500" /> {orders} sold</span>
-                <span className="text-rose-700 flex items-center gap-0.5">{piecesLeft} left</span>
-              </div>
+              {!product.is_to_be_launched && (
+                <div className="bg-amber-50 border-y border-amber-100 px-2 py-1.5 flex items-center justify-around text-[10px] font-semibold gap-1">
+                  <span className="text-amber-700 flex items-center gap-0.5"><Sparkles size={10} className="text-amber-500" /> {viewing} viewing</span>
+                  <span className="text-green-700 flex items-center gap-0.5"><Check size={10} className="text-green-500" /> {orders} sold</span>
+                  <span className="text-rose-700 flex items-center gap-0.5">{piecesLeft} left</span>
+                </div>
+              )}
               <div className="p-3.5">
                 <Link to={`/product/${product.slug}`}><h3 className="font-bold text-gray-900 text-base leading-snug mb-1 group-hover:text-green-700 line-clamp-2">{product.short_name}</h3></Link>
                 <p className="text-xs text-gray-400 mb-1">{product.key_ingredients}</p>
@@ -126,17 +141,31 @@ function ShopPage() {
                   <span className="text-xl font-black text-gray-900">₹{product.prepaid_price}</span>
                   <span className="text-xs font-bold text-green-600">{product.discount_percent}% Off</span>
                 </div>
-                <div className="bg-orange-50 border border-orange-200 rounded-lg px-2.5 py-2 mb-2.5 flex items-center gap-2">
-                  <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0"><Check size={10} className="text-white" /></div>
-                  <p className="text-xs text-orange-800 font-semibold">₹{product.prepaid_price - 50} with <span className="font-mono font-bold">WELCOME50</span></p>
-                </div>
+                {!product.is_to_be_launched && (
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg px-2.5 py-2 mb-2.5 flex items-center gap-2">
+                    <div className="w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center flex-shrink-0"><Check size={10} className="text-white" /></div>
+                    <p className="text-xs text-orange-800 font-semibold">₹{product.prepaid_price - 50} with <span className="font-mono font-bold">WELCOME50</span></p>
+                  </div>
+                )}
                 <div className="flex items-center gap-1.5 mb-3">
                   <div className="flex">{[1,2,3,4,5].map(i => <Star key={i} size={13} className={i <= Math.floor(product.rating) ? 'fill-amber-400 text-amber-400' : 'text-gray-200'} />)}</div>
                   <span className="text-xs text-gray-500">({product.reviews_count?.toLocaleString()})</span>
                 </div>
-                <button onClick={() => addToCart(product.slug)} className="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2" data-testid={`shop-add-${product.slug}`}>
-                  <ShoppingCart size={16} /> Add to Cart
-                </button>
+                {product.is_to_be_launched ? (
+                  product.preorder_enabled ? (
+                    <button onClick={() => { addToCart(product.slug); axios.post(`${API}/api/products/${product.slug}/preorder-count`).catch(()=>{}); }} className="w-full bg-purple-600 hover:bg-purple-700 text-white text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2" data-testid={`shop-preorder-${product.slug}`}>
+                      <Clock size={16} /> Preorder Now
+                    </button>
+                  ) : (
+                    <button disabled className="w-full bg-gray-200 text-gray-500 text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2 cursor-not-allowed">
+                      <Clock size={16} /> Coming Soon
+                    </button>
+                  )
+                ) : (
+                  <button onClick={() => addToCart(product.slug)} className="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2.5 rounded-xl flex items-center justify-center gap-2" data-testid={`shop-add-${product.slug}`}>
+                    <ShoppingCart size={16} /> Add to Cart
+                  </button>
+                )}
               </div>
             </div>
             );

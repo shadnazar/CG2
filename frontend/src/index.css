@@ -57,10 +57,13 @@
   }
 }
 
-/* Mobile App Container */
+/* Responsive App Container - mobile-first, scales to tablet/desktop */
 .app-container {
-  @apply w-full max-w-md mx-auto min-h-screen bg-white relative overflow-x-hidden;
+  @apply w-full mx-auto min-h-screen bg-white relative overflow-x-hidden;
 }
+
+/* On larger screens we let inner sections (max-w-7xl etc.) expand naturally.
+   No outer width cap so PC and tablet get full layout. */
 
 /* Celesta Glow Brand Buttons */
 .btn-cg-primary {

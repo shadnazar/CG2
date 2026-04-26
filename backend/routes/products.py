@@ -58,6 +58,10 @@ class ProductUpdate(BaseModel):
     is_active: Optional[bool] = None
     sort_order: Optional[int] = None
     category: Optional[str] = None
+    # TBL / Preorder
+    is_to_be_launched: Optional[bool] = None
+    launch_date: Optional[str] = None  # ISO date string
+    preorder_enabled: Optional[bool] = None
 
 class ProductCreate(BaseModel):
     slug: str
@@ -80,23 +84,124 @@ class ProductCreate(BaseModel):
     badge: str = ""
     is_active: bool = True
     sort_order: int = 99
+    # TBL / Preorder
+    is_to_be_launched: bool = False
+    launch_date: Optional[str] = None
+    preorder_enabled: bool = False
 
 
 @router.get("/products")
 async def get_all_products(active_only: bool = Query(True)):
-    """Public: Get all active products"""
+    """Public: Get all active products (with TBL auto-flip)"""
     query = {"is_active": True} if active_only else {}
     products = await db.products.find(query, {"_id": 0}).sort("sort_order", 1).to_list(100)
+    # Auto-flip TBL → launched on read if launch_date passed
+    now = datetime.now(timezone.utc)
+    for p in products:
+        if p.get("is_to_be_launched") and p.get("launch_date"):
+            try:
+                ld = datetime.fromisoformat(str(p["launch_date"]).replace("Z", "+00:00"))
+                if ld <= now:
+                    p["is_to_be_launched"] = False
+                    p["launch_date"] = None
+                    await db.products.update_one(
+                        {"slug": p["slug"]},
+                        {"$set": {"is_to_be_launched": False, "launch_date": None,
+                                  "updated_at": now.isoformat()}}
+                    )
+            except Exception:
+                pass
+        # Compute days_to_launch convenience field
+        if p.get("is_to_be_launched") and p.get("launch_date"):
+            try:
+                ld = datetime.fromisoformat(str(p["launch_date"]).replace("Z", "+00:00"))
+                delta = ld - now
+                p["days_to_launch"] = max(0, delta.days)
+                p["hours_to_launch"] = max(0, int(delta.total_seconds() // 3600))
+            except Exception:
+                p["days_to_launch"] = None
+        else:
+            p["days_to_launch"] = None
     return products
 
 
 @router.get("/products/{slug}")
 async def get_product(slug: str):
-    """Public: Get single product by slug"""
+    """Public: Get single product by slug (with TBL auto-flip + countdown)"""
     product = await db.products.find_one({"slug": slug}, {"_id": 0})
     if not product:
         raise HTTPException(status_code=404, detail="Product not found")
+    now = datetime.now(timezone.utc)
+    if product.get("is_to_be_launched") and product.get("launch_date"):
+        try:
+            ld = datetime.fromisoformat(str(product["launch_date"]).replace("Z", "+00:00"))
+            if ld <= now:
+                product["is_to_be_launched"] = False
+                product["launch_date"] = None
+                await db.products.update_one(
+                    {"slug": slug},
+                    {"$set": {"is_to_be_launched": False, "launch_date": None,
+                              "updated_at": now.isoformat()}}
+                )
+            else:
+                delta = ld - now
+                product["days_to_launch"] = max(0, delta.days)
+                product["hours_to_launch"] = max(0, int(delta.total_seconds() // 3600))
+        except Exception:
+            pass
     return product
+
+
+class LaunchStatusUpdate(BaseModel):
+    is_to_be_launched: bool
+    launch_date: Optional[str] = None  # ISO date; required if is_to_be_launched=True
+    preorder_enabled: Optional[bool] = None
+
+
+@router.put("/admin/products/{slug}/launch-status")
+async def set_product_launch_status(
+    slug: str,
+    data: LaunchStatusUpdate,
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    """Admin: Toggle a product's TBL (To-Be-Launched) status, set launch date, toggle preorder."""
+    verify_auth(x_admin_token=x_admin_token)
+    product = await db.products.find_one({"slug": slug})
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found")
+
+    update = {
+        "is_to_be_launched": data.is_to_be_launched,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if data.is_to_be_launched:
+        # When marking as TBL, default to +25 days from today if no date provided
+        if data.launch_date:
+            update["launch_date"] = data.launch_date
+        else:
+            from datetime import timedelta as _td
+            update["launch_date"] = (datetime.now(timezone.utc) + _td(days=25)).isoformat()
+        if data.preorder_enabled is not None:
+            update["preorder_enabled"] = data.preorder_enabled
+    else:
+        # When marking as launched, clear launch_date and disable preorder
+        update["launch_date"] = None
+        update["preorder_enabled"] = False
+
+    await db.products.update_one({"slug": slug}, {"$set": update})
+    return {"success": True, "slug": slug, "is_to_be_launched": data.is_to_be_launched, "launch_date": update.get("launch_date")}
+
+
+@router.post("/products/{slug}/preorder-count")
+async def increment_preorder_count(slug: str):
+    """Public: Increment preorder counter when a TBL item is added to cart."""
+    product = await db.products.find_one({"slug": slug}, {"_id": 0})
+    if not product or not product.get("is_to_be_launched"):
+        raise HTTPException(status_code=400, detail="Product is not in preorder state")
+    await db.products.update_one({"slug": slug}, {"$inc": {"preorder_count": 1}})
+    return {"success": True}
+
+
 
 
 @router.post("/admin/products")
@@ -407,6 +512,9 @@ class SiteSettingsUpdate(BaseModel):
     result_images: Optional[List[str]] = None
     bundle_hero_image: Optional[str] = None
     volume_discounts: Optional[List[Dict]] = None  # [{min_items: 2, discount_percent: 5}, ...]
+    # Multi-banner hero carousel
+    banner_carousel: Optional[List[Dict]] = None  # [{id, image, title, subtitle, cta_text, cta_link, sort_order}, ...]
+    carousel_autoplay_ms: Optional[int] = None  # default 2000
 
 
 @router.get("/site-settings")

@@ -63,25 +63,37 @@ function AdminLogin() {
           )}
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6" autoComplete="on">
+            {/* Hidden username for password managers (helps tablet/mobile autofill) */}
+            <input type="text" name="username" value="admin" autoComplete="username" readOnly hidden />
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="admin-password" className="block text-sm font-medium text-gray-700 mb-2">
                 Admin Password
               </label>
               <div className="relative">
                 <input
+                  id="admin-password"
+                  name="password"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-4 py-3 pr-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                  style={{ fontSize: '16px' }}
                   placeholder="Enter admin password"
                   required
+                  autoComplete="current-password"
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  inputMode="text"
+                  enterKeyHint="go"
                   data-testid="admin-password-input"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -90,8 +102,8 @@ function AdminLogin() {
 
             <button
               type="submit"
-              disabled={loading}
-              className="w-full py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={loading || !password}
+              className="w-full py-3 bg-green-500 text-white font-semibold rounded-xl hover:bg-green-600 active:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation"
               data-testid="admin-login-btn"
             >
               {loading ? 'Signing in...' : 'Sign In'}

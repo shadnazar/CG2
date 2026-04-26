@@ -46,7 +46,8 @@ function Navigation() {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-100 shadow-sm">
-        <div className="flex items-center justify-between px-4 h-14">
+        {/* Mobile + Tablet header (hidden on lg) */}
+        <div className="flex items-center justify-between px-4 h-14 lg:hidden">
           <button onClick={() => setIsMenuOpen(true)} className="p-2 -ml-2 w-10" data-testid="menu-button" aria-label="Open menu">
             <Menu size={24} className="text-gray-900" />
           </button>
@@ -68,9 +69,46 @@ function Navigation() {
             </Link>
           </div>
         </div>
+
+        {/* Desktop header (lg+) */}
+        <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto px-6 xl:px-8 h-16">
+          <Link to="/" className="text-left flex-shrink-0" data-testid="logo-link-desktop">
+            <span className="font-heading text-2xl font-bold tracking-[0.18em] text-gray-900">CELESTA</span>
+            <span className="block text-[10px] tracking-[0.4em] text-gray-500 -mt-0.5">G L O W</span>
+          </Link>
+          <nav className="flex items-center gap-1">
+            {navLinks.map(link => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`px-3.5 py-2 rounded-full text-sm font-semibold transition-colors flex items-center gap-1.5 ${
+                  link.highlight ? 'bg-purple-50 text-purple-700 hover:bg-purple-100'
+                    : location.pathname === link.path ? 'bg-green-50 text-green-700'
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+                data-testid={`nav-desktop-${link.label.toLowerCase().replace(/\s/g, '-')}`}
+              >
+                {link.icon && <link.icon size={15} />}
+                {link.label}
+                {link.highlight && <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded-full">FREE</span>}
+              </Link>
+            ))}
+          </nav>
+          <div className="flex items-center gap-1">
+            <button onClick={() => setIsSearchOpen(true)} className="p-2.5 rounded-full hover:bg-gray-50" data-testid="search-button-desktop" aria-label="Search">
+              <Search size={20} className="text-gray-900" />
+            </button>
+            <Link to="/cart" className="p-2.5 relative rounded-full hover:bg-gray-50" data-testid="cart-button-desktop" aria-label="Cart">
+              <ShoppingCart size={20} className="text-gray-900" />
+              {cartCount > 0 && (
+                <span className="absolute top-0 right-0 w-5 h-5 bg-emerald-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{cartCount}</span>
+              )}
+            </Link>
+          </div>
+        </div>
       </header>
       {/* Spacer for fixed header */}
-      <div className="h-14" />
+      <div className="h-14 lg:h-16" />
 
       {/* Mobile Menu */}
       {isMenuOpen && (

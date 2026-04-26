@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Package, Plus, Edit, Trash2, Image as ImageIcon, DollarSign, Eye, EyeOff, Save, X, ChevronDown, Tag, Settings, Layers, Upload, Trash } from 'lucide-react';
+import { Package, Plus, Edit, Trash2, Image as ImageIcon, DollarSign, Eye, EyeOff, Save, X, ChevronDown, Tag, Settings, Layers, Upload, Trash, Clock, Rocket, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -186,10 +186,22 @@ function AdminProducts() {
 
   const tabs = [
     { key: 'products', label: 'Products', icon: Package },
+    { key: 'banners', label: 'Banners', icon: ImageIcon },
     { key: 'combos', label: 'Combos', icon: Layers },
     { key: 'coupons', label: 'Coupons', icon: Tag },
     { key: 'settings', label: 'Site Settings', icon: Settings },
   ];
+
+  // Helper: toggle a product's TBL status quickly (without entering edit mode)
+  const toggleTbl = async (slug, current) => {
+    try {
+      const newStatus = !current;
+      await axios.put(`${API}/admin/products/${slug}/launch-status`,
+        { is_to_be_launched: newStatus, preorder_enabled: newStatus },
+        { headers });
+      fetchAll();
+    } catch (err) { alert(err.response?.data?.detail || 'Failed to toggle launch status'); }
+  };
 
   return (
     <div className="space-y-6" data-testid="admin-products">
@@ -230,6 +242,56 @@ function AdminProducts() {
                   <div><label className="text-xs font-semibold text-gray-500">Tagline</label><input value={editProduct.tagline || ''} onChange={e => setEditProduct({...editProduct, tagline: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
                   <div><label className="text-xs font-semibold text-gray-500">Description</label><textarea value={editProduct.description || ''} onChange={e => setEditProduct({...editProduct, description: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" rows={3} /></div>
                   <ImageManager images={editProduct.images || []} onChange={(imgs) => setEditProduct({...editProduct, images: imgs})} label="Product Images" headers={headers} />
+
+                  {/* TBL / Preorder Controls */}
+                  <div className="rounded-xl border border-purple-100 bg-purple-50/40 p-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Clock size={14} className="text-purple-700" />
+                      <span className="text-xs font-bold text-purple-900 tracking-wide">LAUNCH STATUS</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setEditProduct({
+                          ...editProduct,
+                          is_to_be_launched: !editProduct.is_to_be_launched,
+                          launch_date: !editProduct.is_to_be_launched
+                            ? (editProduct.launch_date || new Date(Date.now() + 25*86400000).toISOString())
+                            : null,
+                          preorder_enabled: !editProduct.is_to_be_launched ? true : false,
+                        })}
+                        className={`px-4 py-2 rounded-full text-xs font-bold transition-colors ${editProduct.is_to_be_launched ? 'bg-purple-600 text-white' : 'bg-green-100 text-green-800'}`}
+                        data-testid="tbl-toggle"
+                      >
+                        {editProduct.is_to_be_launched ? 'TBL — To Be Launched' : 'Live — Available Now'}
+                      </button>
+                      {editProduct.is_to_be_launched && (
+                        <>
+                          <div className="flex items-center gap-1.5">
+                            <label className="text-xs text-gray-600">Launch:</label>
+                            <input
+                              type="date"
+                              value={editProduct.launch_date ? editProduct.launch_date.slice(0, 10) : ''}
+                              onChange={e => setEditProduct({ ...editProduct, launch_date: e.target.value ? new Date(e.target.value).toISOString() : null })}
+                              className="px-2 py-1.5 border rounded-lg text-xs"
+                              data-testid="tbl-launch-date"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setEditProduct({ ...editProduct, preorder_enabled: !editProduct.preorder_enabled })}
+                            className={`px-3 py-1.5 rounded-full text-xs font-bold ${editProduct.preorder_enabled ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-600'}`}
+                            data-testid="preorder-toggle"
+                          >
+                            Preorder: {editProduct.preorder_enabled ? 'ON' : 'OFF'}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-2">
+                      When TBL: customers see "Coming Soon" + countdown. With Preorder ON, they can place a preorder.
+                    </p>
+                  </div>
                   <div className="flex gap-2">
                     <button onClick={() => updateProduct(product.slug, editProduct)} className="flex items-center gap-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold"><Save size={14} /> Save</button>
                     <button onClick={() => setEditProduct(null)} className="flex items-center gap-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm"><X size={14} /> Cancel</button>
@@ -242,8 +304,13 @@ function AdminProducts() {
                     {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-cover" /> : <Package className="w-6 h-6 text-gray-400" />}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <h3 className="font-bold text-gray-900 text-sm truncate">{product.name}</h3>
+                      {product.is_to_be_launched && (
+                        <span className="text-[10px] px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-bold flex items-center gap-1">
+                          <Clock size={10} /> TBL{product.days_to_launch != null ? ` · ${product.days_to_launch}d` : ''}
+                        </span>
+                      )}
                       {product.badge && <span className="text-xs px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full font-medium">{product.badge}</span>}
                       {!product.is_active && <span className="text-xs px-2 py-0.5 bg-red-100 text-red-700 rounded-full">Inactive</span>}
                     </div>
@@ -256,6 +323,14 @@ function AdminProducts() {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => toggleTbl(product.slug, product.is_to_be_launched)}
+                      className={`p-2 rounded-lg ${product.is_to_be_launched ? 'bg-green-50 hover:bg-green-100 text-green-700' : 'bg-purple-50 hover:bg-purple-100 text-purple-700'}`}
+                      title={product.is_to_be_launched ? 'Mark as Launched' : 'Mark as TBL (To Be Launched)'}
+                      data-testid={`quick-tbl-${product.slug}`}
+                    >
+                      {product.is_to_be_launched ? <Rocket size={16} /> : <Clock size={16} />}
+                    </button>
                     <button onClick={() => setEditProduct({...product})} className="p-2 hover:bg-gray-100 rounded-lg" title="Edit"><Edit size={16} className="text-gray-500" /></button>
                     <button onClick={() => toggleProductActive(product.slug, product.is_active)} className="p-2 hover:bg-gray-100 rounded-lg" title={product.is_active ? 'Deactivate' : 'Activate'}>
                       {product.is_active ? <Eye size={16} className="text-green-500" /> : <EyeOff size={16} className="text-red-500" />}
@@ -266,6 +341,15 @@ function AdminProducts() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Banners Tab — Multi-banner Hero Carousel manager */}
+      {activeTab === 'banners' && (
+        <BannerCarouselManager
+          settings={settings}
+          headers={headers}
+          onSaved={fetchAll}
+        />
       )}
 
       {/* Combos Tab */}
@@ -380,6 +464,186 @@ function AdminProducts() {
               <button onClick={() => setEditSettings({...settings})} className="flex items-center gap-1 px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-semibold"><Edit size={14} /> Edit Settings</button>
             </>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ============================================================
+   Banner Carousel Manager
+   - List existing banners
+   - Add new (upload image, set title/subtitle/CTA)
+   - Reorder (move up/down)
+   - Delete
+   - Set autoplay interval
+   ============================================================ */
+function BannerCarouselManager({ settings, headers, onSaved }) {
+  const API = process.env.REACT_APP_BACKEND_URL;
+  const [banners, setBanners] = useState([]);
+  const [autoplayMs, setAutoplayMs] = useState(2000);
+  const [draft, setDraft] = useState({ image: '', title: '', subtitle: '', cta_text: 'Shop Now', cta_link: '/shop' });
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    const sorted = (settings?.banner_carousel || []).slice().sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+    setBanners(sorted);
+    setAutoplayMs(settings?.carousel_autoplay_ms || 2000);
+  }, [settings]);
+
+  const persist = async (newBanners, newAutoplay) => {
+    try {
+      const ordered = newBanners.map((b, i) => ({ ...b, sort_order: i + 1 }));
+      await axios.put(`${API}/admin/site-settings`,
+        { banner_carousel: ordered, carousel_autoplay_ms: newAutoplay ?? autoplayMs },
+        { headers });
+      onSaved();
+    } catch (err) { alert(err.response?.data?.detail || 'Save failed'); }
+  };
+
+  const handleFileUpload = async (file) => {
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await axios.post(`${API}/admin/upload-image`, fd, {
+        headers: { ...headers, 'Content-Type': 'multipart/form-data' }
+      });
+      setDraft(d => ({ ...d, image: res.data.url }));
+    } catch (err) {
+      alert(err.response?.data?.detail || 'Upload failed');
+    }
+    setUploading(false);
+  };
+
+  const addBanner = async () => {
+    if (!draft.image) { alert('Please upload an image first'); return; }
+    const newBanner = {
+      id: `banner-${Date.now()}`,
+      image: draft.image,
+      title: draft.title || '',
+      subtitle: draft.subtitle || '',
+      cta_text: draft.cta_text || '',
+      cta_link: draft.cta_link || '/shop',
+      sort_order: banners.length + 1,
+    };
+    const updated = [...banners, newBanner];
+    setBanners(updated);
+    await persist(updated);
+    setDraft({ image: '', title: '', subtitle: '', cta_text: 'Shop Now', cta_link: '/shop' });
+    if (fileRef.current) fileRef.current.value = '';
+  };
+
+  const deleteBanner = async (id) => {
+    if (!window.confirm('Delete this banner?')) return;
+    const updated = banners.filter(b => b.id !== id);
+    setBanners(updated);
+    await persist(updated);
+  };
+
+  const moveBanner = async (id, dir) => {
+    const idx = banners.findIndex(b => b.id === id);
+    const target = idx + dir;
+    if (target < 0 || target >= banners.length) return;
+    const updated = [...banners];
+    [updated[idx], updated[target]] = [updated[target], updated[idx]];
+    setBanners(updated);
+    await persist(updated);
+  };
+
+  const updateBannerField = (id, field, value) => {
+    setBanners(prev => prev.map(b => b.id === id ? { ...b, [field]: value } : b));
+  };
+
+  const saveBannerEdits = async () => { await persist(banners); };
+
+  return (
+    <div className="space-y-5" data-testid="banner-manager">
+      {/* Settings row */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex items-center gap-2">
+          <ImageIcon size={18} className="text-green-600" />
+          <h3 className="font-bold text-gray-900">Hero Banner Carousel</h3>
+        </div>
+        <div className="flex-1" />
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-gray-600">Autoplay (ms):</label>
+          <input
+            type="number"
+            min="1500"
+            step="500"
+            value={autoplayMs}
+            onChange={e => setAutoplayMs(Number(e.target.value))}
+            onBlur={() => persist(banners, autoplayMs)}
+            className="w-24 px-2 py-1.5 border rounded-lg text-sm"
+            data-testid="banner-autoplay-input"
+          />
+        </div>
+      </div>
+
+      {/* Add new banner */}
+      <div className="bg-white rounded-2xl border border-gray-200 p-5">
+        <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2"><Plus size={16} /> Add New Banner</h4>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div>
+            <label className="text-xs font-semibold text-gray-500">Image</label>
+            <div className="mt-1 flex items-center gap-3">
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                onChange={e => handleFileUpload(e.target.files?.[0])}
+                className="text-xs flex-1"
+                data-testid="banner-upload-input"
+              />
+              {uploading && <span className="text-xs text-gray-500">Uploading...</span>}
+            </div>
+            {draft.image && (
+              <div className="mt-2 relative">
+                <img src={draft.image} alt="preview" className="w-full h-32 object-cover rounded-lg border border-gray-100" />
+              </div>
+            )}
+          </div>
+          <div className="space-y-2">
+            <div><label className="text-xs font-semibold text-gray-500">Title</label><input value={draft.title} onChange={e => setDraft({...draft, title: e.target.value})} placeholder="e.g., Clinically Proven Anti-Aging" className="w-full px-3 py-2 border rounded-lg text-sm" data-testid="banner-title-input" /></div>
+            <div><label className="text-xs font-semibold text-gray-500">Subtitle</label><input value={draft.subtitle} onChange={e => setDraft({...draft, subtitle: e.target.value})} placeholder="e.g., Visible results in 4 weeks" className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+            <div className="grid grid-cols-2 gap-2">
+              <div><label className="text-xs font-semibold text-gray-500">CTA Text</label><input value={draft.cta_text} onChange={e => setDraft({...draft, cta_text: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+              <div><label className="text-xs font-semibold text-gray-500">CTA Link</label><input value={draft.cta_link} onChange={e => setDraft({...draft, cta_link: e.target.value})} placeholder="/shop" className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+            </div>
+          </div>
+        </div>
+        <button onClick={addBanner} disabled={uploading || !draft.image} className="mt-3 px-4 py-2 bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-semibold flex items-center gap-1" data-testid="banner-add-btn">
+          <Plus size={14} /> Add Banner
+        </button>
+      </div>
+
+      {/* Existing banners list */}
+      {banners.length === 0 ? (
+        <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 text-center text-sm text-amber-800">
+          No banners yet. Add at least one to populate the homepage hero carousel.
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {banners.map((b, i) => (
+            <div key={b.id} className="bg-white rounded-2xl border border-gray-200 p-4 flex flex-col md:flex-row gap-4 items-start" data-testid={`banner-item-${i}`}>
+              <img src={b.image} alt={b.title} className="w-full md:w-44 h-28 object-cover rounded-lg flex-shrink-0 border border-gray-100" />
+              <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+                <div><label className="text-xs font-semibold text-gray-500">Title</label><input value={b.title || ''} onChange={e => updateBannerField(b.id, 'title', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+                <div><label className="text-xs font-semibold text-gray-500">Subtitle</label><input value={b.subtitle || ''} onChange={e => updateBannerField(b.id, 'subtitle', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+                <div><label className="text-xs font-semibold text-gray-500">CTA Text</label><input value={b.cta_text || ''} onChange={e => updateBannerField(b.id, 'cta_text', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+                <div><label className="text-xs font-semibold text-gray-500">CTA Link</label><input value={b.cta_link || ''} onChange={e => updateBannerField(b.id, 'cta_link', e.target.value)} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+              </div>
+              <div className="flex md:flex-col gap-1 flex-shrink-0">
+                <button onClick={() => moveBanner(b.id, -1)} disabled={i === 0} className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-40" title="Move up"><ArrowUp size={14} /></button>
+                <button onClick={() => moveBanner(b.id, 1)} disabled={i === banners.length - 1} className="p-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 disabled:opacity-40" title="Move down"><ArrowDown size={14} /></button>
+                <button onClick={saveBannerEdits} className="p-1.5 rounded-lg bg-green-600 text-white hover:bg-green-700" title="Save edits"><Save size={14} /></button>
+                <button onClick={() => deleteBanner(b.id)} className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100" title="Delete"><Trash2 size={14} /></button>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

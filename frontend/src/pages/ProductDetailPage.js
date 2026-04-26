@@ -62,6 +62,12 @@ function ProductDetailPage() {
 
   const doAdd = () => { addToCart(slug, qty); trackAction('add_to_cart', { product_slug: slug, quantity: qty }); if (window.fbq) window.fbq('track', 'AddToCart', { content_name: product?.name, content_ids: [slug], value: product?.prepaid_price * qty, currency: 'INR' }); };
   const doBuy = () => { addToCart(slug, qty); navigate('/cart'); };
+  const doPreorder = () => {
+    addToCart(slug, qty);
+    axios.post(`${API}/api/products/${slug}/preorder-count`).catch(()=>{});
+    trackAction('preorder', { product_slug: slug, quantity: qty });
+    navigate('/cart');
+  };
   const addCombo = (id) => { const c = getCart(); if (!c.items.find(i => i.combo_id === id)) c.items.push({ combo_id: id, quantity: 1 }); saveCart(c); navigate('/cart'); };
 
   if (loading || !product) return <div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-green-500 border-t-transparent rounded-full animate-spin" /></div>;
@@ -98,7 +104,11 @@ function ProductDetailPage() {
           {/* Gallery */}
           <div>
             <div className="aspect-square bg-gradient-to-br from-stone-50 to-gray-50 rounded-3xl overflow-hidden relative shadow-sm">
-              {product.badge && <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-bold tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-600 text-white'}`}>{product.badge.toUpperCase()}</div>}
+              {product.is_to_be_launched ? (
+                <div className="absolute top-4 left-4 z-10 px-3 py-1.5 rounded-full text-xs font-bold tracking-wide bg-gradient-to-r from-purple-600 to-indigo-600 text-white flex items-center gap-1.5 shadow-md">
+                  <Clock size={12} /> TBL — {product.days_to_launch != null ? `${product.days_to_launch}d` : 'SOON'}
+                </div>
+              ) : product.badge && <div className={`absolute top-4 left-4 z-10 px-3 py-1 rounded-full text-xs font-bold tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-600 text-white'}`}>{product.badge.toUpperCase()}</div>}
               {imgs.length > 0 ? (
                 <img src={imgs[imgIdx]} alt={product.name} className="w-full h-full object-contain p-6 sm:p-10" />
               ) : (
@@ -218,8 +228,22 @@ function ProductDetailPage() {
               </div>
             </div>
             <div className="mt-3 flex gap-3">
-              <button onClick={doAdd} className="flex-1 border-2 border-green-600 text-green-600 font-bold py-3.5 rounded-2xl hover:bg-green-50 text-sm transition-all" data-testid="add-to-cart-btn">Add to Cart</button>
-              <button onClick={doBuy} className="flex-1 bg-green-600 text-white font-bold py-3.5 rounded-2xl hover:bg-green-700 text-sm transition-all shadow-lg shadow-green-200/50" data-testid="buy-now-btn">Buy Now</button>
+              {product.is_to_be_launched ? (
+                product.preorder_enabled ? (
+                  <button onClick={doPreorder} className="flex-1 bg-purple-600 text-white font-bold py-3.5 rounded-2xl hover:bg-purple-700 text-sm transition-all shadow-lg shadow-purple-200/50 flex items-center justify-center gap-2" data-testid="preorder-btn">
+                    <Clock size={16} /> Preorder Now {product.days_to_launch != null && <span className="text-xs opacity-80">· Ships in {product.days_to_launch}d</span>}
+                  </button>
+                ) : (
+                  <button disabled className="flex-1 bg-gray-200 text-gray-500 font-bold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-2 cursor-not-allowed">
+                    <Clock size={16} /> Coming Soon — Launching {product.days_to_launch != null ? `in ${product.days_to_launch}d` : ''}
+                  </button>
+                )
+              ) : (
+                <>
+                  <button onClick={doAdd} className="flex-1 border-2 border-green-600 text-green-600 font-bold py-3.5 rounded-2xl hover:bg-green-50 text-sm transition-all" data-testid="add-to-cart-btn">Add to Cart</button>
+                  <button onClick={doBuy} className="flex-1 bg-green-600 text-white font-bold py-3.5 rounded-2xl hover:bg-green-700 text-sm transition-all shadow-lg shadow-green-200/50" data-testid="buy-now-btn">Buy Now</button>
+                </>
+              )}
             </div>
 
             {/* Trust — Glass style */}
@@ -384,9 +408,22 @@ function ProductDetailPage() {
         <div className="flex items-center gap-3">
           <div className="flex-1">
             <p className="text-lg font-black text-gray-900">₹{product.prepaid_price} <span className="text-xs text-gray-400 line-through font-normal">₹{product.mrp}</span></p>
+            {product.is_to_be_launched && product.days_to_launch != null && (
+              <p className="text-[11px] text-purple-600 font-semibold flex items-center gap-1"><Clock size={11} /> Launching in {product.days_to_launch}d</p>
+            )}
           </div>
-          <button onClick={doAdd} className="border-2 border-green-600 text-green-600 font-bold px-5 py-2.5 rounded-xl text-xs">Add</button>
-          <button onClick={doBuy} className="bg-green-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow-lg shadow-green-200/50">Buy Now</button>
+          {product.is_to_be_launched ? (
+            product.preorder_enabled ? (
+              <button onClick={doPreorder} className="bg-purple-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow-lg shadow-purple-200/50 flex items-center gap-1.5"><Clock size={14} /> Preorder</button>
+            ) : (
+              <button disabled className="bg-gray-200 text-gray-500 font-bold px-6 py-2.5 rounded-xl text-xs cursor-not-allowed">Coming Soon</button>
+            )
+          ) : (
+            <>
+              <button onClick={doAdd} className="border-2 border-green-600 text-green-600 font-bold px-5 py-2.5 rounded-xl text-xs">Add</button>
+              <button onClick={doBuy} className="bg-green-600 text-white font-bold px-6 py-2.5 rounded-xl text-xs shadow-lg shadow-green-200/50">Buy Now</button>
+            </>
+          )}
         </div>
       </div>
     </div>
