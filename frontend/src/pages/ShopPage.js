@@ -47,6 +47,19 @@ function ShopPage() {
     return products;
   }, [products, filter]);
 
+  // Stable per-product social-proof counts (don't re-randomize on filter change)
+  const socialProof = useMemo(() => {
+    const map = {};
+    products.forEach(p => {
+      map[p.slug] = {
+        orders: Math.floor(Math.random() * 40) + 30,
+        piecesLeft: Math.floor(Math.random() * 20) + 5,
+        viewing: Math.floor(Math.random() * 20) + 8,
+      };
+    });
+    return map;
+  }, [products]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-stone-50 to-emerald-50">
@@ -227,9 +240,8 @@ function ShopPage() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4 mb-12">
             {visibleProducts.map(product => {
-              const orders = Math.floor(Math.random() * 40) + 30;
-              const piecesLeft = Math.floor(Math.random() * 20) + 5;
-              const viewing = Math.floor(Math.random() * 20) + 8;
+              const sp = socialProof[product.slug] || { orders: 0, piecesLeft: 0, viewing: 0 };
+              const { orders, piecesLeft, viewing } = sp;
               return (
                 <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative" data-testid={`shop-product-${product.slug}`}>
                   {product.is_to_be_launched ? (
