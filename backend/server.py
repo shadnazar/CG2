@@ -894,6 +894,44 @@ async def get_state_by_pincode(pincode: str):
     return {"pincode": pincode, "state": state}
 
 
+@api_router.get("/pincode/{pincode}")
+async def lookup_pincode(pincode: str):
+    """Resolve pincode → state, district, city/locality (uses free India Post API + local fallback)"""
+    import httpx
+    pincode = (pincode or "").strip()
+    if not pincode.isdigit() or len(pincode) != 6:
+        raise HTTPException(status_code=400, detail="Invalid pincode")
+
+    state = get_state_from_pincode(pincode) or ""
+    city = ""
+    district = ""
+    localities: list = []
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get(f"https://api.postalpincode.in/pincode/{pincode}")
+            if resp.status_code == 200:
+                payload = resp.json()
+                if payload and isinstance(payload, list) and payload[0].get("Status") == "Success":
+                    offices = payload[0].get("PostOffice", []) or []
+                    if offices:
+                        first = offices[0]
+                        state = first.get("State", state) or state
+                        district = first.get("District", "") or ""
+                        city = first.get("Block", "") or first.get("District", "") or ""
+                        localities = [o.get("Name") for o in offices if o.get("Name")][:8]
+    except Exception as e:
+        logging.warning(f"Pincode lookup external API failed for {pincode}: {e}")
+
+    return {
+        "pincode": pincode,
+        "state": state,
+        "district": district,
+        "city": city,
+        "localities": localities
+    }
+
+
 # ==================== BLOG API ROUTES ====================
 
 class BlogCreate(BaseModel):

@@ -120,16 +120,20 @@ function ProductDetailPage() {
                 ))}
               </div>
             )}
-            {/* Live badges below image — medium size */}
-            <div className="flex items-center justify-center gap-3 mt-3">
-              <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5">
-                <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-                <span className="text-xs text-amber-800 font-semibold">{Math.floor(Math.random() * 30) + 40} sold today</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-rose-50 border border-rose-200 rounded-lg px-3 py-1.5">
-                <div className="w-2 h-2 bg-rose-500 rounded-full animate-pulse" />
-                <span className="text-xs text-rose-800 font-semibold">Only {Math.floor(Math.random() * 15) + 5} left</span>
-              </div>
+            {/* Live activity strip — neat horizontal row below image (matches reference design) */}
+            <div className="mt-3 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 flex items-center justify-around gap-2" data-testid="product-live-strip">
+              <span className="flex items-center gap-1.5 text-amber-700 text-xs font-bold">
+                <User size={13} className="text-amber-500" />
+                <span>{Math.floor(Math.random() * 20) + 8} <span className="font-normal">viewing</span></span>
+              </span>
+              <span className="flex items-center gap-1.5 text-green-700 text-xs font-bold">
+                <Zap size={13} className="text-green-500" />
+                <span>{Math.floor(Math.random() * 30) + 40} <span className="font-normal">sold today</span></span>
+              </span>
+              <span className="flex items-center gap-1.5 text-rose-700 text-xs font-bold">
+                <Clock size={13} className="text-rose-500" />
+                <span><span className="font-normal">Only</span> {Math.floor(Math.random() * 15) + 5} <span className="font-normal">left!</span></span>
+              </span>
             </div>
           </div>
 

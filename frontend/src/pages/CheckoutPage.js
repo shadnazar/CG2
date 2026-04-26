@@ -14,7 +14,7 @@ function CheckoutPage() {
   const { cartData: passedCartData, paymentMethod: passedMethod, coupon } = location.state || {};
   const [cartData, setCartData] = useState(passedCartData);
   const [paymentMethod, setPaymentMethod] = useState(passedMethod || 'prepaid');
-  const [formData, setFormData] = useState({ name: '', phone: '', email: '', house_number: '', area: '', pincode: '', state: '' });
+  const [formData, setFormData] = useState({ name: '', phone: '', email: '', house_number: '', area: '', city: '', pincode: '', state: '' });
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -30,17 +30,38 @@ function CheckoutPage() {
 
   const handlePincodeChange = async (pincode) => {
     setFormData(prev => ({ ...prev, pincode }));
-    if (pincode.length === 6) {
-      try { const res = await axios.get(`${API}/api/pincode/${pincode}`); if (res.data.state) setFormData(prev => ({ ...prev, state: res.data.state })); } catch {}
+    if (pincode.length === 6 && /^\d{6}$/.test(pincode)) {
+      try {
+        const res = await axios.get(`${API}/api/pincode/${pincode}`);
+        setFormData(prev => ({
+          ...prev,
+          state: res.data.state || prev.state,
+          city: res.data.city || res.data.district || prev.city
+        }));
+      } catch {}
     }
   };
+
+  // Re-validate cart when payment method changes (so COD/prepaid totals update live)
+  useEffect(() => {
+    if (!cartData) return;
+    const cart = getCart();
+    if (!cart.items.length) return;
+    axios.post(`${API}/api/cart/validate`, { items: cart.items, payment_method: paymentMethod, coupon_code: coupon?.code })
+      .then(res => setCartData(res.data)).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentMethod]);
 
   const validate = () => {
     const e = {};
     if (!formData.name.trim()) e.name = 'Required';
     if (!formData.phone.match(/^[6-9]\d{9}$/)) e.phone = 'Valid 10-digit phone';
+    // Strict email format: no consecutive dots, must have proper local/domain/TLD
+    const emailRe = /^[A-Za-z0-9]+([._-][A-Za-z0-9]+)*@[A-Za-z0-9]+([.-][A-Za-z0-9]+)*\.[A-Za-z]{2,}$/;
+    if (!formData.email.trim()) e.email = 'Email is required';
+    else if (!emailRe.test(formData.email.trim())) e.email = 'Enter a valid email (e.g., name@domain.com)';
     if (!formData.house_number.trim()) e.house_number = 'Required';
-    if (!formData.area.trim()) e.area = 'Required';
+    if (!formData.area.trim()) e.area = 'Address required';
     if (!formData.pincode.match(/^\d{6}$/)) e.pincode = 'Valid pincode';
     if (!formData.state.trim()) e.state = 'Required';
     setErrors(e); return Object.keys(e).length === 0;
@@ -119,11 +140,12 @@ function CheckoutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Field label="Full Name" field="name" placeholder="Your full name" />
                 <Field label="Phone" field="phone" type="tel" placeholder="10-digit number" />
-                <Field label="Email (Optional)" field="email" type="email" placeholder="email@example.com" span />
+                <Field label="Email" field="email" type="email" placeholder="email@example.com" span />
                 <Field label="House / Flat No." field="house_number" placeholder="House no, building, floor" span />
-                <Field label="Area / Locality" field="area" placeholder="Street, area, landmark" span />
+                <Field label="Address" field="area" placeholder="Street, area, landmark" span />
                 <Field label="Pincode" field="pincode" placeholder="6-digit pincode" />
-                <Field label="State" field="state" placeholder="State" />
+                <Field label="City" field="city" placeholder="City / Locality" />
+                <Field label="State" field="state" placeholder="State" span />
               </div>
             </div>
 
@@ -149,8 +171,9 @@ function CheckoutPage() {
                   </div>
                 </label>
                 {paymentMethod === 'COD' && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-2.5 text-center">
-                    <p className="text-xs text-amber-800 font-semibold">You save more with Prepaid! Switch to save extra on faster delivery.</p>
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-center">
+                    <p className="text-xs text-amber-800 font-bold">💡 Pay online & save ₹50 extra!</p>
+                    <p className="text-xs text-amber-700 mt-0.5">Switch to Prepaid for the lowest price + faster delivery.</p>
                   </div>
                 )}
               </div>
@@ -212,6 +235,12 @@ function CheckoutPage() {
                 <div className="flex justify-between text-gray-400"><span>Subtotal</span><span>₹{cartData.subtotal?.toLocaleString()}</span></div>
                 {cartData.discount > 0 && <div className="flex justify-between text-green-600"><span>Coupon Discount</span><span className="font-semibold">-₹{cartData.discount}</span></div>}
                 {cartData.volume_discount > 0 && <div className="flex justify-between text-purple-600"><span>Volume Discount ({cartData.volume_discount_percent}%)</span><span className="font-semibold">-₹{cartData.volume_discount}</span></div>}
+                {cartData.cod_premium > 0 && (
+                  <div className="flex justify-between text-amber-700">
+                    <span>COD Handling <span className="text-[10px] font-normal text-amber-600">(reduced discount)</span></span>
+                    <span className="font-semibold">+₹{cartData.cod_premium}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-400"><span>Taxes & Charges</span><span className="text-green-600 font-medium">₹0 (Included)</span></div>
                 <div className="flex justify-between text-gray-400"><span>Shipping</span><span className="text-green-600 font-medium">FREE</span></div>
                 <div className="border-t border-gray-100 pt-2 flex justify-between font-bold text-gray-900 text-lg"><span>Total</span><span>₹{cartData.total?.toLocaleString()}</span></div>

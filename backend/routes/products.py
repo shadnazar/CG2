@@ -300,12 +300,16 @@ async def validate_cart(data: CartValidateRequest):
     subtotal = 0
     mrp_total = 0
     
+    is_cod = (data.payment_method or "").lower() == "cod"
+    cod_premium = 50 if is_cod else 0  # COD costs ₹50 more (achieved by reducing savings)
+
     for item in data.items:
         if item.product_slug:
             product = await db.products.find_one({"slug": item.product_slug, "is_active": True}, {"_id": 0})
             if not product:
                 continue
-            price = product["prepaid_price"] if data.payment_method == "prepaid" else product["cod_price"]
+            # Always use prepaid price as base — COD premium is applied at cart-level (not per-item)
+            price = product["prepaid_price"]
             line_total = price * item.quantity
             mrp_line = product["mrp"] * item.quantity
             validated_items.append({
@@ -325,7 +329,7 @@ async def validate_cart(data: CartValidateRequest):
             combo = await db.combos.find_one({"combo_id": item.combo_id, "is_active": True}, {"_id": 0})
             if not combo:
                 continue
-            price = combo["combo_prepaid_price"] if data.payment_method == "prepaid" else combo["combo_cod_price"]
+            price = combo["combo_prepaid_price"]  # uniform prepaid base
             line_total = price * item.quantity
             mrp_line = combo["mrp_total"] * item.quantity
             validated_items.append({
@@ -352,7 +356,6 @@ async def validate_cart(data: CartValidateRequest):
                 discount = coupon["discount_value"]
     
     total = max(subtotal - discount, 0)
-    savings = mrp_total - total
     
     # Apply volume discount
     total_items = sum(i["quantity"] for i in validated_items)
@@ -370,8 +373,8 @@ async def validate_cart(data: CartValidateRequest):
             volume_discount = round(total * volume_discount_percent / 100, 2)
             break
     
-    final_total = max(total - volume_discount, 0)
-    total_savings = mrp_total - final_total
+    final_total = max(total - volume_discount, 0) + cod_premium
+    total_savings = max(mrp_total - final_total, 0)
     
     return {
         "items": validated_items,
@@ -380,9 +383,12 @@ async def validate_cart(data: CartValidateRequest):
         "discount": discount,
         "volume_discount": volume_discount,
         "volume_discount_percent": volume_discount_percent,
+        "cod_premium": cod_premium,
+        "payment_method": data.payment_method,
         "total": final_total,
         "savings": total_savings,
-        "item_count": total_items
+        "item_count": total_items,
+        "prepaid_savings_hint": cod_premium  # ₹ saved by switching to prepaid
     }
 
 
@@ -511,6 +517,28 @@ async def delete_before_after(ba_id: str, x_admin_token: str = Header(None, alia
     verify_auth(x_admin_token=x_admin_token)
     await db.before_after_images.delete_one({"ba_id": ba_id})
     return {"success": True}
+
+
+# ==================== IMAGE UPLOAD (admin) ====================
+
+@router.post("/admin/upload-image")
+async def upload_image(
+    file: UploadFile = File(...),
+    x_admin_token: str = Header(None, alias="X-Admin-Token")
+):
+    """Upload an image and return a data-URL that can be used anywhere (product images, hero banner, etc.).
+    Stores as base64 data URL — no filesystem dependency, persists in MongoDB through product/settings docs."""
+    verify_auth(x_admin_token=x_admin_token)
+    import base64
+    contents = await file.read()
+    if len(contents) > 5 * 1024 * 1024:  # 5 MB cap
+        raise HTTPException(status_code=400, detail="Image too large (max 5 MB)")
+    mime = file.content_type or "image/jpeg"
+    if not mime.startswith("image/"):
+        raise HTTPException(status_code=400, detail="File is not an image")
+    encoded = base64.b64encode(contents).decode("utf-8")
+    data_url = f"data:{mime};base64,{encoded}"
+    return {"success": True, "url": data_url, "size": len(contents), "mime": mime}
 
 
 # ==================== SEED DATA ====================

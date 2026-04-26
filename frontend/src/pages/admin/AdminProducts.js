@@ -1,9 +1,105 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Package, Plus, Edit, Trash2, Image, DollarSign, Eye, EyeOff, Save, X, ChevronDown, Tag, Settings, Layers } from 'lucide-react';
+import { Package, Plus, Edit, Trash2, Image as ImageIcon, DollarSign, Eye, EyeOff, Save, X, ChevronDown, Tag, Settings, Layers, Upload, Trash } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
+
+// Reusable image uploader/replacer
+function ImageManager({ images = [], onChange, label = 'Images', single = false, headers }) {
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+
+  const upload = async (file) => {
+    if (!file) return null;
+    const fd = new FormData();
+    fd.append('file', file);
+    setUploading(true);
+    try {
+      const res = await axios.post(`${API}/admin/upload-image`, fd, { headers: { ...headers, 'Content-Type': 'multipart/form-data' } });
+      return res.data.url;
+    } catch (e) {
+      alert(e.response?.data?.detail || 'Upload failed');
+      return null;
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleAdd = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = await upload(file);
+    if (!url) return;
+    if (single) onChange(url);
+    else onChange([...(images || []), url]);
+    e.target.value = '';
+  };
+
+  const handleReplace = async (index, e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = await upload(file);
+    if (!url) return;
+    const next = [...images];
+    next[index] = url;
+    onChange(next);
+    e.target.value = '';
+  };
+
+  const handleRemove = (index) => {
+    if (single) { onChange(''); return; }
+    onChange(images.filter((_, i) => i !== index));
+  };
+
+  // Single-image mode (for hero banner / bundle hero)
+  if (single) {
+    const url = images;
+    return (
+      <div>
+        <label className="text-xs font-semibold text-gray-500 block mb-1.5">{label}</label>
+        <div className="flex items-center gap-3">
+          <div className="w-20 h-20 bg-gray-100 rounded-xl overflow-hidden flex items-center justify-center border border-gray-200">
+            {url ? <img src={url} alt="" className="w-full h-full object-cover" data-testid="single-image-preview" /> : <ImageIcon className="w-6 h-6 text-gray-400" />}
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <input type="file" accept="image/*" ref={fileRef} onChange={handleAdd} className="hidden" data-testid={`upload-${label}`} />
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 text-white rounded-lg text-xs font-semibold disabled:opacity-50">
+              <Upload size={12} /> {uploading ? 'Uploading...' : (url ? 'Replace' : 'Upload')}
+            </button>
+            {url && <button type="button" onClick={() => onChange('')} className="flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-600 rounded-lg text-xs font-semibold"><Trash size={12} /> Remove</button>}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Multi-image mode (product images)
+  return (
+    <div>
+      <label className="text-xs font-semibold text-gray-500 block mb-1.5">{label} ({images?.length || 0})</label>
+      <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+        {(images || []).map((url, i) => (
+          <div key={i} className="relative group aspect-square bg-gray-100 rounded-xl overflow-hidden border border-gray-200">
+            <img src={url} alt="" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100">
+              <label className="cursor-pointer p-1.5 bg-white rounded-lg shadow-md" title="Replace">
+                <Upload size={12} className="text-gray-700" />
+                <input type="file" accept="image/*" onChange={(e) => handleReplace(i, e)} className="hidden" />
+              </label>
+              <button type="button" onClick={() => handleRemove(i)} className="p-1.5 bg-white rounded-lg shadow-md" title="Remove"><Trash size={12} className="text-red-600" /></button>
+            </div>
+          </div>
+        ))}
+        <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading} className="aspect-square border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center gap-1 text-gray-400 hover:border-green-400 hover:text-green-600 transition-colors text-xs">
+          <Upload size={18} />
+          <span>{uploading ? 'Uploading...' : 'Add'}</span>
+        </button>
+        <input type="file" accept="image/*" ref={fileRef} onChange={handleAdd} className="hidden" />
+      </div>
+    </div>
+  );
+}
 
 function AdminProducts() {
   const navigate = useNavigate();
@@ -133,7 +229,7 @@ function AdminProducts() {
                   </div>
                   <div><label className="text-xs font-semibold text-gray-500">Tagline</label><input value={editProduct.tagline || ''} onChange={e => setEditProduct({...editProduct, tagline: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
                   <div><label className="text-xs font-semibold text-gray-500">Description</label><textarea value={editProduct.description || ''} onChange={e => setEditProduct({...editProduct, description: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" rows={3} /></div>
-                  <div><label className="text-xs font-semibold text-gray-500">Images (one URL per line)</label><textarea value={(editProduct.images || []).join('\n')} onChange={e => setEditProduct({...editProduct, images: e.target.value.split('\n').filter(Boolean)})} placeholder="https://example.com/image1.jpg" className="w-full px-3 py-2 border rounded-lg text-sm font-mono" rows={3} /></div>
+                  <ImageManager images={editProduct.images || []} onChange={(imgs) => setEditProduct({...editProduct, images: imgs})} label="Product Images" headers={headers} />
                   <div className="flex gap-2">
                     <button onClick={() => updateProduct(product.slug, editProduct)} className="flex items-center gap-1 px-4 py-2 bg-green-600 text-white rounded-lg text-sm font-semibold"><Save size={14} /> Save</button>
                     <button onClick={() => setEditProduct(null)} className="flex items-center gap-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm"><X size={14} /> Cancel</button>
@@ -253,8 +349,8 @@ function AdminProducts() {
             <>
               <div><label className="text-xs font-semibold text-gray-500">Hero Title</label><input value={editSettings.hero_title || ''} onChange={e => setEditSettings({...editSettings, hero_title: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div><label className="text-xs font-semibold text-gray-500">Hero Subtitle</label><textarea value={editSettings.hero_subtitle || ''} onChange={e => setEditSettings({...editSettings, hero_subtitle: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" rows={2} /></div>
-              <div><label className="text-xs font-semibold text-gray-500">Hero Banner Image URL</label><input value={editSettings.hero_banner_image || ''} onChange={e => setEditSettings({...editSettings, hero_banner_image: e.target.value})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
-              <div><label className="text-xs font-semibold text-gray-500">Bundle Kit Hero Image URL</label><input value={editSettings.bundle_hero_image || ''} onChange={e => setEditSettings({...editSettings, bundle_hero_image: e.target.value})} placeholder="Single image for Complete Kit bundle card" className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
+              <ImageManager images={editSettings.hero_banner_image || ''} onChange={(url) => setEditSettings({...editSettings, hero_banner_image: url})} label="Hero Banner Image (under main heading)" single headers={headers} />
+              <ImageManager images={editSettings.bundle_hero_image || ''} onChange={(url) => setEditSettings({...editSettings, bundle_hero_image: url})} label="Bundle Kit Image (Complete Anti-Aging Kit)" single headers={headers} />
               <div><label className="text-xs font-semibold text-gray-500">COD Advance Amount (₹)</label><input type="number" value={editSettings.cod_advance_amount || 29} onChange={e => setEditSettings({...editSettings, cod_advance_amount: Number(e.target.value)})} className="w-full px-3 py-2 border rounded-lg text-sm" /></div>
               <div className="flex items-center gap-3">
                 <label className="text-xs font-semibold text-gray-500">Pre-Sale Mode</label>

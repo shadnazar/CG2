@@ -100,7 +100,11 @@ function ShopPage() {
         {/* All Products */}
         <h2 className="text-xl font-bold text-gray-900 mb-4">Individual Products</h2>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-10">
-          {products.map(product => (
+          {products.map(product => {
+            const orders = Math.floor(Math.random() * 40) + 30;
+            const piecesLeft = Math.floor(Math.random() * 20) + 5;
+            const viewing = Math.floor(Math.random() * 20) + 8;
+            return (
             <div key={product.slug} className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-xl transition-all" data-testid={`shop-product-${product.slug}`}>
               {product.badge && <div className={`text-xs font-bold px-3 py-1.5 text-center tracking-wide ${product.badge === 'Bestseller' ? 'bg-amber-400 text-amber-900' : product.badge === 'New Launch' ? 'bg-rose-500 text-white' : 'bg-green-50 text-green-700'}`}>{product.badge.toUpperCase()}</div>}
               <Link to={`/product/${product.slug}`}>
@@ -108,6 +112,12 @@ function ShopPage() {
                   {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-green-200" />}
                 </div>
               </Link>
+              {/* Live activity strip — neat row BELOW image */}
+              <div className="bg-amber-50 border-y border-amber-100 px-2 py-1.5 flex items-center justify-around text-[10px] font-semibold gap-1">
+                <span className="text-amber-700 flex items-center gap-0.5"><Sparkles size={10} className="text-amber-500" /> {viewing} viewing</span>
+                <span className="text-green-700 flex items-center gap-0.5"><Check size={10} className="text-green-500" /> {orders} sold</span>
+                <span className="text-rose-700 flex items-center gap-0.5">{piecesLeft} left</span>
+              </div>
               <div className="p-3.5">
                 <Link to={`/product/${product.slug}`}><h3 className="font-bold text-gray-900 text-base leading-snug mb-1 group-hover:text-green-700 line-clamp-2">{product.short_name}</h3></Link>
                 <p className="text-xs text-gray-400 mb-1">{product.key_ingredients}</p>
@@ -129,7 +139,8 @@ function ShopPage() {
                 </button>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Other Combos */}
