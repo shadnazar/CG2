@@ -3,12 +3,14 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Shield, Truck, ArrowLeft, Check, MapPin, Clock, Star, Award, Gift, Lock, Users } from 'lucide-react';
 import { getCart, saveCart, addToCart } from './Homepage';
+import { useTracking } from '../providers/TrackingProvider';
 
 const API = process.env.REACT_APP_BACKEND_URL;
 
 function CheckoutPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { trackAction, trackPurchase, trackGAEvent } = useTracking();
   const { cartData: passedCartData, paymentMethod: passedMethod, coupon } = location.state || {};
   const [cartData, setCartData] = useState(passedCartData);
   const [paymentMethod, setPaymentMethod] = useState(passedMethod || 'prepaid');
@@ -17,6 +19,7 @@ function CheckoutPage() {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
+    trackAction('view_checkout', { step: 'checkout_started' });
     if (!cartData) {
       const cart = getCart();
       if (!cart.items.length) { navigate('/cart'); return; }
@@ -46,7 +49,13 @@ function CheckoutPage() {
   const placeOrder = async () => {
     if (!validate() || !cartData) return;
     setSubmitting(true);
+    trackAction('payment_method_selected', { method: paymentMethod });
     const payload = { ...formData, payment_method: paymentMethod, amount: cartData.total, items: cartData.items, coupon_code: coupon?.code || null, coupon_discount: coupon?.discount || 0 };
+    const fireConversion = (orderId) => {
+      trackAction('order_complete', { order_id: orderId, total: cartData.total, items: cartData.item_count, payment_method: paymentMethod });
+      trackPurchase(orderId, cartData.total, paymentMethod);
+      trackGAEvent('purchase', { transaction_id: orderId, value: cartData.total, currency: 'INR', items: cartData.item_count });
+    };
     try {
       if (paymentMethod === 'prepaid') {
         const rzpOrder = await axios.post(`${API}/api/razorpay/create-order`, { amount: cartData.total });
@@ -54,7 +63,7 @@ function CheckoutPage() {
           key: process.env.REACT_APP_RAZORPAY_KEY_ID || 'rzp_test_key', amount: rzpOrder.data.amount, currency: 'INR',
           name: 'Celesta Glow', description: `Order - ${cartData.item_count} items`, order_id: rzpOrder.data.id,
           handler: async (response) => {
-            try { await axios.post(`${API}/api/razorpay/verify-payment`, response); const order = await axios.post(`${API}/api/orders`, payload); saveCart({ items: [] }); navigate(`/order-success/${order.data.order_id}`); }
+            try { await axios.post(`${API}/api/razorpay/verify-payment`, response); const order = await axios.post(`${API}/api/orders`, payload); fireConversion(order.data.order_id); saveCart({ items: [] }); navigate(`/order-success/${order.data.order_id}`); }
             catch { alert('Payment verification failed'); setSubmitting(false); }
           },
           prefill: { name: formData.name, contact: formData.phone, email: formData.email },
@@ -64,6 +73,7 @@ function CheckoutPage() {
         rzp.on('payment.failed', () => { alert('Payment failed.'); setSubmitting(false); });
       } else {
         const order = await axios.post(`${API}/api/orders`, payload);
+        fireConversion(order.data.order_id);
         saveCart({ items: [] }); navigate(`/order-success/${order.data.order_id}`);
       }
     } catch { alert('Order failed. Please try again.'); setSubmitting(false); }
@@ -150,7 +160,7 @@ function CheckoutPage() {
             <div className="bg-gradient-to-r from-green-600 to-green-700 rounded-2xl p-4 text-white">
               <p className="text-xs font-bold mb-2">Add More, Save More!</p>
               <div className="flex gap-2">
-                {[{n:2,d:'5% OFF'},{n:3,d:'10% OFF'},{n:4,d:'15% OFF'}].map((t,i) => (
+                {[{n:2,d:'Additional 5% OFF'},{n:3,d:'Additional 10% OFF'},{n:4,d:'Additional 15% OFF'}].map((t,i) => (
                   <button key={i} onClick={() => {
                     const cart = getCart();
                     if (cart.items.length > 0 && cart.items[0].product_slug) {

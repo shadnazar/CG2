@@ -160,16 +160,19 @@ function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Volume Discount Offers */}
+            {/* Volume Discount Offers — show additional savings only */}
             <div className="mt-3 bg-purple-50 rounded-xl p-3 border border-purple-100">
-              <p className="text-xs font-bold text-purple-800 mb-2">Buy More, Save More!</p>
+              <p className="text-xs font-bold text-purple-800 mb-2">Buy More, Save More! <span className="text-purple-500 font-normal">(extra discount auto-applied at cart)</span></p>
               <div className="flex gap-1.5">
-                {[{q:1,d:'0%',label:'Buy 1'},{q:2,d:'5%',label:'Buy 2'},{q:3,d:'10%',label:'Buy 3'},{q:4,d:'15%',label:'Buy 4+'}].map((tier,i) => (
-                  <button key={i} onClick={() => { setQty(tier.q); }} className={`flex-1 rounded-lg py-2 text-center transition-all border ${qty >= tier.q && qty < (tier.q === 4 ? 99 : tier.q + 1) ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-purple-200 hover:border-purple-400'}`}>
-                    <p className="text-xs font-bold">{tier.label}</p>
-                    <p className="text-xs opacity-80">{tier.d} Off</p>
-                  </button>
-                ))}
+                {[{q:2,d:5,label:'Buy 2'},{q:3,d:10,label:'Buy 3'},{q:4,d:15,label:'Buy 4+'}].map((tier,i) => {
+                  const active = qty >= tier.q && qty < (tier.q === 4 ? 99 : tier.q + 1);
+                  return (
+                    <button key={i} onClick={() => { setQty(tier.q); }} className={`flex-1 rounded-lg py-2 text-center transition-all border ${active ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-purple-200 hover:border-purple-400'}`}>
+                      <p className="text-xs font-bold">{tier.label}</p>
+                      <p className="text-[11px] opacity-90 leading-tight">Additional {tier.d}% off</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
             <div className="mt-6">

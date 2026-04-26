@@ -1600,6 +1600,18 @@ async def track_action_centralized(data: TrackActionRequest):
             },
             upsert=True
         )
+        # Delegate to behavior tracker so funnel flags (order_completed, reached_checkout, address_entered) get set
+        try:
+            await user_behavior_tracker.track_action({
+                "visitor_id": data.visitor_id,
+                "session_id": data.session_id,
+                "action": data.action,
+                "details": data.data or {},
+                "page": (data.data or {}).get("page"),
+                "timestamp": action_doc["timestamp"]
+            })
+        except Exception as inner_e:
+            logging.warning(f"Behavior tracker delegation failed: {inner_e}")
         return {"success": True, "tracked": True}
     except Exception as e:
         logging.error(f"Track action error: {e}")
@@ -1637,6 +1649,22 @@ async def track_batch_centralized(data: TrackBatchRequest):
             },
             upsert=True
         )
+        
+        # Delegate funnel-relevant events to behavior tracker (order_complete, view_checkout, etc.)
+        funnel_actions = {"order_complete", "view_checkout", "address_complete", "payment_method_selected", "initiate_checkout"}
+        for event in data.events:
+            if event.get("action") in funnel_actions or (event.get("data") or {}).get("has_address") or (event.get("data") or {}).get("has_phone"):
+                try:
+                    await user_behavior_tracker.track_action({
+                        "visitor_id": data.visitor_id,
+                        "session_id": data.session_id,
+                        "action": event.get("action"),
+                        "details": event.get("data", {}),
+                        "page": (event.get("data") or {}).get("page"),
+                        "timestamp": event.get("timestamp") or datetime.now(timezone.utc).isoformat()
+                    })
+                except Exception as inner_e:
+                    logging.warning(f"Behavior tracker delegation (batch) failed: {inner_e}")
         
         return {"success": True, "tracked": len(docs)}
     except Exception as e:

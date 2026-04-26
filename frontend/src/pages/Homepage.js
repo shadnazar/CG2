@@ -83,11 +83,16 @@ function Homepage() {
                 </Link>
               </div>
               {/* Trust — single line with COD */}
-              <div className="flex items-center justify-center lg:justify-start gap-2 mt-6 flex-wrap">
-                {[{ n: '50K+', d: 'Customers', bg: 'green' }, { n: '4.8', d: 'Rating', bg: 'amber' }, { n: '30-Day', d: 'Return', bg: 'rose' }, { n: 'COD', d: 'Available', bg: 'blue' }].map((s, i) => (
-                  <div key={i} className={`bg-${s.bg}-50 border border-${s.bg}-200/60 rounded-xl px-3 py-1.5 text-center`}>
-                    <p className={`text-sm font-black text-${s.bg}-700`}>{s.n}</p>
-                    <p className={`text-xs text-${s.bg}-600 font-semibold tracking-wider`}>{s.d.toUpperCase()}</p>
+              <div className="flex items-center justify-center lg:justify-start gap-2 mt-6 flex-nowrap overflow-x-auto">
+                {[
+                  { n: '50K+', d: 'CUSTOMERS', bg: 'bg-green-50', border: 'border-green-200/60', text: 'text-green-700', sub: 'text-green-600' },
+                  { n: '4.8', d: 'RATING', bg: 'bg-amber-50', border: 'border-amber-200/60', text: 'text-amber-700', sub: 'text-amber-600' },
+                  { n: '30-Day', d: 'RETURN', bg: 'bg-rose-50', border: 'border-rose-200/60', text: 'text-rose-700', sub: 'text-rose-600' },
+                  { n: 'COD', d: 'AVAILABLE', bg: 'bg-blue-50', border: 'border-blue-200/60', text: 'text-blue-700', sub: 'text-blue-600' }
+                ].map((s, i) => (
+                  <div key={i} className={`${s.bg} border ${s.border} rounded-xl px-2.5 py-1.5 text-center flex-shrink-0`}>
+                    <p className={`text-sm font-black ${s.text} leading-tight`}>{s.n}</p>
+                    <p className={`text-[10px] ${s.sub} font-semibold tracking-wider`}>{s.d}</p>
                   </div>
                 ))}
               </div>
@@ -159,7 +164,7 @@ function Homepage() {
 
       {/* Volume Discount Banner */}
       <div className="bg-gradient-to-r from-green-600 to-green-700 text-white py-2.5 px-4 text-center">
-        <p className="text-xs sm:text-xs font-bold">Add More, Save More! <span className="font-normal opacity-90">2 items = 5% OFF | 3 items = 10% OFF | 4+ items = 15% OFF</span></p>
+        <p className="text-xs sm:text-xs font-bold">Add More, Save More! <span className="font-normal opacity-90">2 items = additional 5% OFF | 3 items = additional 10% OFF | 4+ items = additional 15% OFF</span></p>
       </div>
 
       {/* Products */}
@@ -180,10 +185,10 @@ function Homepage() {
                 <div className="aspect-square bg-stone-50 flex items-center justify-center p-4 group-hover:scale-105 transition-transform duration-300">
                   {product.images?.[0] ? <img src={product.images[0]} alt="" className="w-full h-full object-contain" /> : <Sparkles className="w-10 h-10 text-green-200" />}
                 </div>
-                {/* Live badges — medium size */}
-                <div className="absolute bottom-2 left-2 right-2 flex justify-between">
-                  <span className="text-xs bg-white/95 backdrop-blur-sm text-gray-700 px-2 py-1 rounded-lg font-semibold border border-gray-200 shadow-sm">{orders} sold today</span>
-                  <span className="text-xs bg-rose-50 text-rose-700 px-2 py-1 rounded-lg font-semibold border border-rose-200 shadow-sm">{piecesLeft} left</span>
+                {/* Live badges — stacked top-left to avoid overlap on small cards */}
+                <div className="absolute top-2 left-2 flex flex-col gap-1 items-start">
+                  <span className="text-[10px] bg-white/95 backdrop-blur-sm text-gray-700 px-1.5 py-0.5 rounded-md font-semibold border border-gray-200 shadow-sm">{orders} sold today</span>
+                  <span className="text-[10px] bg-rose-50 text-rose-700 px-1.5 py-0.5 rounded-md font-semibold border border-rose-200 shadow-sm">Only {piecesLeft} left</span>
                 </div>
               </Link>
               <div className="p-3">

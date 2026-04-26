@@ -18,33 +18,58 @@ function CartPage() {
   const [upsellProducts, setUpsellProducts] = useState([]);
   const [combos, setCombos] = useState([]);
 
-  const validateCart = useCallback(async () => {
-    setLoading(true);
+  const appliedCouponRef = React.useRef(appliedCoupon);
+  appliedCouponRef.current = appliedCoupon;
+  const initialLoadRef = React.useRef(true);
+
+  const validateCart = useCallback(async (couponOverride) => {
+    if (initialLoadRef.current) setLoading(true);
     const cart = getCart();
-    if (!cart.items.length) { setCartData(null); setLoading(false); return; }
+    if (!cart.items.length) { setCartData(null); setLoading(false); initialLoadRef.current = false; return; }
+    const couponCodeToUse = couponOverride !== undefined ? couponOverride : (appliedCouponRef.current?.code || null);
     try {
-      const res = await axios.post(`${API}/api/cart/validate`, { items: cart.items, coupon_code: appliedCoupon?.code || null, payment_method: 'prepaid' });
+      const res = await axios.post(`${API}/api/cart/validate`, { items: cart.items, coupon_code: couponCodeToUse, payment_method: 'prepaid' });
       setCartData(res.data);
-      const [allProds, comboRes] = await Promise.all([axios.get(`${API}/api/products`), axios.get(`${API}/api/combos`)]);
-      const cartSlugs = cart.items.map(i => i.product_slug).filter(Boolean);
-      const cartCombos = cart.items.map(i => i.combo_id).filter(Boolean);
-      setUpsellProducts(allProds.data.filter(p => !cartSlugs.includes(p.slug)));
-      setCombos(comboRes.data.filter(c => !cartCombos.includes(c.combo_id)));
+      if (initialLoadRef.current) {
+        const [allProds, comboRes] = await Promise.all([axios.get(`${API}/api/products`), axios.get(`${API}/api/combos`)]);
+        const cartSlugs = cart.items.map(i => i.product_slug).filter(Boolean);
+        const cartCombos = cart.items.map(i => i.combo_id).filter(Boolean);
+        setUpsellProducts(allProds.data.filter(p => !cartSlugs.includes(p.slug)));
+        setCombos(comboRes.data.filter(c => !cartCombos.includes(c.combo_id)));
+      }
     } catch (err) { console.error(err); }
     setLoading(false);
-  }, [appliedCoupon]);
+    initialLoadRef.current = false;
+  }, []);
 
-  useEffect(() => { validateCart(); }, [validateCart]);
+  useEffect(() => { validateCart(); }, []);
 
   const updateQuantity = (index, delta) => { const cart = getCart(); cart.items[index].quantity = Math.max(1, (cart.items[index].quantity || 1) + delta); saveCart(cart); validateCart(); };
   const removeItem = (index) => { const cart = getCart(); cart.items.splice(index, 1); saveCart(cart); validateCart(); };
   const addUpsellToCart = (slug) => { const cart = getCart(); const e = cart.items.find(i => i.product_slug === slug); if (e) e.quantity += 1; else cart.items.push({ product_slug: slug, quantity: 1 }); saveCart(cart); validateCart(); };
 
-  const applyCoupon = async () => {
+  const applyCouponCode = async (code) => {
     setCouponError('');
-    if (!couponCode.trim()) return;
-    try { const r = await axios.post(`${API}/api/validate-coupon?code=${couponCode.trim()}&cart_total=${cartData?.subtotal || 0}`); setAppliedCoupon({ code: couponCode.trim().toUpperCase(), ...r.data }); }
-    catch (e) { setCouponError(e.response?.data?.detail || 'Invalid coupon'); setAppliedCoupon(null); }
+    if (!code?.trim()) return;
+    try {
+      const r = await axios.post(`${API}/api/validate-coupon?code=${code.trim()}&cart_total=${cartData?.subtotal || 0}`);
+      const newCoupon = { code: code.trim().toUpperCase(), ...r.data };
+      setAppliedCoupon(newCoupon);
+      // Re-validate cart with the new coupon so totals/discount lines update
+      await validateCart(newCoupon.code);
+    } catch (e) {
+      setCouponError(e.response?.data?.detail || 'Invalid coupon');
+      setAppliedCoupon(null);
+    }
+  };
+
+  const applyCoupon = () => applyCouponCode(couponCode);
+
+  const removeCoupon = async () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    setCouponError('');
+    await validateCart(null);
   };
 
   const proceedToCheckout = () => {
@@ -151,7 +176,7 @@ function CartPage() {
                 <div className="space-y-2">
                   {[
                     { code: 'WELCOME50', desc: '₹50 OFF on orders above ₹499', color: 'orange' },
-                    { code: 'FEB26', desc: '₹25 OFF — February Special', color: 'purple' },
+                    { code: 'FEB25', desc: '₹25 OFF — February Special', color: 'purple' },
                     { code: 'GLOW10', desc: '10% OFF on orders above ₹999', color: 'rose' },
                   ].map(c => (
                     <div key={c.code} className={`bg-${c.color}-50 border border-${c.color}-200 rounded-xl p-3 flex items-center justify-between`}>
@@ -159,12 +184,7 @@ function CartPage() {
                         <p className="text-sm font-bold font-mono text-gray-900">{c.code}</p>
                         <p className="text-xs text-gray-500 mt-0.5">{c.desc}</p>
                       </div>
-                      <button onClick={async () => {
-                        try {
-                          const r = await axios.post(`${API}/api/validate-coupon?code=${c.code}&cart_total=${cartData?.subtotal || 0}`);
-                          setAppliedCoupon({ code: c.code, ...r.data });
-                        } catch (e) { setCouponError(e.response?.data?.detail || 'Cannot apply'); }
-                      }} className={`bg-${c.color}-500 hover:bg-${c.color}-600 text-white text-xs font-bold px-4 py-2 rounded-xl`}>Apply</button>
+                      <button onClick={() => applyCouponCode(c.code)} className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold px-4 py-2 rounded-xl flex-shrink-0">Apply</button>
                     </div>
                   ))}
                 </div>
@@ -212,7 +232,7 @@ function CartPage() {
               {appliedCoupon ? (
                 <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-center justify-between">
                   <div><p className="font-bold text-green-700 text-sm">{appliedCoupon.code}</p><p className="text-xs text-green-600">Saving ₹{appliedCoupon.discount}</p></div>
-                  <button onClick={() => { setAppliedCoupon(null); setCouponCode(''); }} className="text-gray-400 text-xs hover:text-red-500">Remove</button>
+                  <button onClick={removeCoupon} className="text-gray-400 text-xs hover:text-red-500">Remove</button>
                 </div>
               ) : (
                 <div className="flex gap-2">
