@@ -78,6 +78,8 @@ function HeroCarousel({ banners = [], autoplayMs = 2000, className = '' }) {
                 alt={b.title || `Banner ${i + 1}`}
                 className="absolute inset-0 w-full h-full object-cover"
                 loading={i === 0 ? 'eager' : 'lazy'}
+                fetchpriority={i === 0 ? 'high' : 'auto'}
+                decoding={i === 0 ? 'sync' : 'async'}
                 draggable={false}
               />
               {/* Gradient overlay for text legibility */}

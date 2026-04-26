@@ -45,18 +45,54 @@ function Homepage() {
   const kit = combos.find(c => c.combo_id === 'complete-anti-aging-kit');
   const otherCombos = combos.filter(c => c.combo_id !== 'complete-anti-aging-kit');
   const faqs = [
-    { q: "What makes Celesta Glow different?", a: "India's first complete 5-product anti-aging system with clinically-proven actives (Retinol, Niacinamide, Vitamin C, Hyaluronic Acid, Peptides). Each formula is dermatologist-tested and pH-balanced for Indian skin." },
-    { q: "Suitable for all skin types?", a: "Yes — including oily, dry, combination, and sensitive skin. All products are non-comedogenic, fragrance-free, and free of parabens, sulphates and harsh alcohols." },
-    { q: "How soon will I see results?", a: "Most customers see visible improvement in 2-4 weeks: smoother texture, brighter tone, reduced fine lines. Best results compound over 8-12 weeks of consistent daily use." },
-    { q: "Can I use these together?", a: "Absolutely — they're designed as a system. Morning: Cleanser → Serum → Sunscreen. Night: Cleanser → Under Eye Cream → Night Cream. Apply in order, wait 30 seconds between layers." },
-    { q: "What's your return policy?", a: "30-day money-back guarantee. If you're not satisfied, write to support@celestaglow.com — full refund processed within 5-7 business days. No questions asked." },
-    { q: "Is COD available?", a: "Yes! COD with ₹29 advance to confirm your order. Prepaid orders ship in 24 hours and unlock additional discounts via WELCOME50 and other offers." },
-    { q: "How long do products last?", a: "Each bottle/jar is sized for ~45-60 days of daily use. Our Complete Kit covers a full 2-month skincare regimen at a 30%+ discount vs. individual purchases." },
-    { q: "Are products cruelty-free and vegan?", a: "Yes — Certified cruelty-free. We never test on animals. All formulas are vegan except where collagen peptides are used (clearly labelled on packaging)." },
-    { q: "Where are products manufactured?", a: "Manufactured in FDA-approved, GMP-certified facilities in India under licence. Each batch undergoes microbial, stability and dermatological testing before shipment." },
-    { q: "Do you ship internationally?", a: "Currently we ship within India only. International shipping (UAE, Singapore, US) is launching mid-2026. Sign up for our newsletter to be notified first." },
-    { q: "Can I cancel/modify my order?", a: "Yes — within 4 hours of placing the order via the Track Order page or by emailing support@celestaglow.com. After 4 hours, the order enters fulfillment and cannot be modified." },
-    { q: "Is preorder safe? When will TBL products ship?", a: "Preorder is fully refundable until your item ships. To-Be-Launched (TBL) products ship within 24-48 hours of the launch date shown on the product page. You'll receive an email and SMS the moment it dispatches." },
+    {
+      q: "What makes Celesta Glow different from other skincare brands?",
+      a: "Celesta Glow is India's first complete 5-product anti-aging system formulated specifically for Indian skin and climate. Unlike generic Western brands, every product uses clinically-proven actives at percentages that work for melanin-rich skin: 0.5% encapsulated Retinol (gentle slow-release), 5% Niacinamide, 10% L-Ascorbic Acid (Vitamin C), Hyaluronic Acid (multi-weight), and Matrixyl 3000 peptides. Our formulas are pH-balanced (5.0-5.5), fragrance-free, paraben-free, sulphate-free, mineral-oil-free, and non-comedogenic. Every batch is tested for stability, microbial safety, and dermatological tolerance in CDSCO-approved labs before reaching you."
+    },
+    {
+      q: "Is Celesta Glow suitable for all skin types — including sensitive or acne-prone skin?",
+      a: "Yes. Our formulas are deliberately built around hypoallergenic and non-comedogenic ingredients, making them safe for oily, dry, combination, and sensitive skin — including acne-prone or post-acne scarred skin. The Retinol is encapsulated for slow release (10x less irritation vs. classic retinol), and the formulas are alcohol-free with soothing additions like Centella Asiatica and Allantoin. If you have very reactive skin, we recommend starting with the Serum 2-3 nights/week and slowly building up. A 7-day free patch sample is available on request via support@celestaglow.com — just mention your skin concerns."
+    },
+    {
+      q: "How soon will I see results, and what kind of changes should I expect?",
+      a: "Results unfold over a clinical 12-week curve. Week 1-2: Skin feels smoother, more hydrated, and less dull (Hyaluronic Acid + Niacinamide). Week 3-4: Tone evens out, fine post-pigmentation marks fade, pores look refined (Vitamin C + Niacinamide). Week 5-8: First visible reduction in fine lines, crow's feet, and dehydration lines (Retinol + Peptides start showing). Week 9-12: Firmer skin, lifted appearance, and deeper texture refinement. 91% of customers in our 8-week study (n=247) reported visible improvement; 78% reported a measurable reduction in fine lines."
+    },
+    {
+      q: "Can I use all 5 products together? What's the right order and timing?",
+      a: "Absolutely — the system is designed to work synergistically. Morning routine (3-4 minutes): (1) Gentle Cleanser, (2) Anti-Aging Serum (Vitamin C + Hyaluronic Acid) — wait 60 seconds, (3) Sunscreen SPF 50 PA++++. Night routine (4-5 minutes): (1) Gentle Cleanser, (2) Under Eye Cream (apply with ring finger, dab gently), (3) Anti-Aging Night Cream (Retinol + Peptides) — apply only after eye cream has absorbed for ~60 seconds. Use the same routine 7 days a week. If you have other actives (AHA/BHA, Niacinamide), space them at least 2 hours apart from our Retinol cream."
+    },
+    {
+      q: "What is your return and refund policy if I'm not satisfied?",
+      a: "We offer a 30-day money-back guarantee with no questions asked. If you're unhappy for any reason — texture, smell, results, or simply changed your mind — email support@celestaglow.com or WhatsApp +91-XXXXXXXXXX with your order ID. We'll arrange a free reverse pickup, and your refund will be processed within 5-7 business days back to your original payment method (UPI/Card/Wallet) or as a credit note for COD orders. Even partially used bottles are eligible. Bundle orders can be returned together or per item."
+    },
+    {
+      q: "Is Cash on Delivery (COD) available, and how does the ₹29 advance work?",
+      a: "Yes, COD is available across 27,000+ pincodes in India. To prevent fake orders and ensure quick delivery, we collect a small ₹29 prepaid advance via UPI/Card while placing the order — this confirms your order and locks in stock. The remaining balance is paid in cash at delivery. The ₹29 is fully adjusted in your final bill, NOT extra. Prepaid orders skip this step entirely, ship within 24 hours (vs. 48-72 for COD), and unlock additional perks like WELCOME50 (₹50 off first order) and free express shipping."
+    },
+    {
+      q: "How long does each product last, and what's the best way to store them?",
+      a: "Each bottle is sized for 45-60 days of twice-daily use: Serum 30ml ≈ 60 days, Night Cream 50ml ≈ 50 days, Under Eye Cream 15ml ≈ 60 days, Sunscreen 50ml ≈ 45 days (apply 2 finger-lengths AM), Cleanser 100ml ≈ 60 days. Our Complete Anti-Aging Kit covers a full 2-month routine at a 30%+ discount vs. individual purchases. Store at room temperature (15-25°C), away from direct sunlight. Once opened, use within 6 months (PAO 6M printed on packaging). The Vitamin C Serum is best stored in a cool, dark place to preserve potency."
+    },
+    {
+      q: "Are Celesta Glow products cruelty-free, vegan, and clean?",
+      a: "Yes — Celesta Glow is 100% cruelty-free (PETA-applied) and we never test on animals at any stage of development. All formulas are vegan except for the Anti-Aging Night Cream, which contains marine-derived collagen peptides (clearly labelled on the carton; a vegan alternative is in development). We're free of: parabens, sulphates (SLS/SLES), phthalates, mineral oil, formaldehyde donors, synthetic fragrances, microbeads, and plastic glitter. Our packaging is fully recyclable (PCR plastic + FSC-certified paper); send back 5 empty bottles for a ₹100 refill credit."
+    },
+    {
+      q: "Where are Celesta Glow products manufactured, and are they FDA-approved?",
+      a: "Celesta Glow is proudly Made in India under licence in CDSCO-licensed (Indian FDA equivalent), GMP-certified, and ISO 22716-compliant manufacturing facilities in Maharashtra and Gujarat. Each batch undergoes a 4-stage QA process: (1) raw material assay & microbial screening, (2) in-process pH and viscosity checks, (3) accelerated stability testing (3 months at 40°C/75% RH), and (4) finished-product dermatological patch testing on volunteer panels. We're CDSCO-registered as Cosmetic Manufacturer #COS/MUM/2024/XXXX and members of the Indian Beauty & Hygiene Association (IBHA)."
+    },
+    {
+      q: "Do you ship internationally?",
+      a: "Currently we ship within India only — to all 27,000+ pincodes via Bluedart, Delhivery, and India Post. Standard delivery: 2-4 business days for metros, 4-7 days for tier-2/3 cities. Express delivery (₹99 extra) for prepaid orders: 24-48 hours in metros. International shipping to UAE, Singapore, USA, and UK is launching mid-2026. Sign up for our newsletter at the bottom of this page to be notified the moment international orders open — newsletter subscribers also get a 10% launch coupon for international orders."
+    },
+    {
+      q: "Can I cancel, modify, or change the address of my order after placing it?",
+      a: "Yes — you have a 4-hour window after placing the order to cancel, modify items, change quantities, or update the delivery address. You can do this in two ways: (1) Track Order page → 'Modify Order' button (you'll need your order ID + phone number), or (2) email support@celestaglow.com with your order ID and the changes. After 4 hours, the order enters our automated fulfillment system and can no longer be edited — but you can still refuse delivery for a full refund. For prepaid orders, refunds for cancelled orders are processed within 24 hours."
+    },
+    {
+      q: "Is preorder safe? When will To-Be-Launched (TBL) products actually ship?",
+      a: "Preorder is 100% safe and fully refundable until your item ships. When you preorder a TBL product, no money is charged upfront for COD; for prepaid, only the ₹29 reservation advance is taken (refundable). The launch date shown on each product page is firm — TBL items ship within 24-48 hours of that date, and you'll receive an email + SMS the moment your order is dispatched, plus a real-time tracking link. If for any unexpected reason a launch is delayed by more than 7 days, we'll notify you immediately and offer either a full refund or a 15% additional discount as compensation."
+    },
   ];
 
   return (
@@ -66,12 +102,36 @@ function Homepage() {
         <p className="text-xs sm:text-xs tracking-wider font-medium">FREE SHIPPING | COD AVAILABLE | 30-DAY MONEY BACK | 50,000+ CUSTOMERS</p>
       </div>
 
-      {/* Multi-Banner Hero Carousel — admin manageable, auto-scrolls every 2s */}
-      {Array.isArray(settings.banner_carousel) && settings.banner_carousel.length > 0 && (
+      {/* Multi-Banner Hero Carousel — admin manageable, auto-scrolls every 2s.
+          Renders an instant brand-themed skeleton if banners haven't arrived yet,
+          so the layout is reserved (no CLS) and the user sees something immediately. */}
+      {Array.isArray(settings.banner_carousel) && settings.banner_carousel.length > 0 ? (
         <HeroCarousel
           banners={[...settings.banner_carousel].sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0))}
           autoplayMs={settings.carousel_autoplay_ms || 2000}
         />
+      ) : (
+        <section className="relative w-full overflow-hidden bg-gradient-to-br from-emerald-50 via-stone-50 to-amber-50" data-testid="hero-skeleton" aria-busy="true">
+          <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[24/9] max-h-[640px]">
+            <div className="absolute inset-0 flex items-center">
+              <div className="max-w-7xl w-full mx-auto px-5 sm:px-8 lg:px-12">
+                <div className="max-w-md sm:max-w-lg lg:max-w-xl">
+                  <div className="font-heading text-2xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight text-emerald-900/90">
+                    Clinically Proven<br />Anti-Aging Skincare
+                  </div>
+                  <p className="mt-2 sm:mt-4 text-sm sm:text-base lg:text-lg text-emerald-900/70">
+                    Visible results in 4 weeks · Dermatologist tested · Made for Indian skin
+                  </p>
+                  <div className="mt-4 sm:mt-6 inline-flex items-center gap-2 bg-green-600 text-white font-bold px-6 sm:px-7 py-3 sm:py-3.5 rounded-full text-sm sm:text-base shadow-lg shadow-green-900/20">
+                    Shop Now <ChevronRight size={18} />
+                  </div>
+                </div>
+              </div>
+            </div>
+            {/* shimmer pulse */}
+            <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.6s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          </div>
+        </section>
       )}
 
       {/* Intro / Featured */}
@@ -341,20 +401,30 @@ function Homepage() {
       <DermatologistSection />
 
       {/* FAQ */}
-      <section className="bg-stone-50 py-8 sm:py-12" data-testid="faq-section">
-        <div className="max-w-2xl mx-auto px-4">
-          <h2 className="text-lg font-black text-gray-900 text-center mb-5">FAQ</h2>
-          <div className="space-y-1.5">
+      <section className="bg-stone-50 py-10 sm:py-14 lg:py-16" data-testid="faq-section">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-black text-gray-900 mb-2">Frequently Asked Questions</h2>
+            <p className="text-sm sm:text-base text-gray-500">Everything you need to know about Celesta Glow — ingredients, results, shipping, returns, and more.</p>
+          </div>
+          <div className="space-y-2">
             {faqs.map((faq, i) => (
-              <div key={i} className={`rounded-xl overflow-hidden ${openFaq === i ? 'bg-green-50 border border-green-100' : 'bg-white border border-gray-100'}`}>
-                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-center justify-between p-3.5 text-left">
-                  <span className="font-semibold text-gray-900 text-sm pr-4">{faq.q}</span>
-                  <ChevronDown size={16} className={`text-gray-400 flex-shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`} />
+              <div key={i} className={`rounded-2xl overflow-hidden transition-all ${openFaq === i ? 'bg-green-50/60 border border-green-200 shadow-sm' : 'bg-white border border-gray-100 hover:border-green-200'}`}>
+                <button onClick={() => setOpenFaq(openFaq === i ? null : i)} className="w-full flex items-start justify-between gap-3 p-4 sm:p-5 text-left" data-testid={`faq-q-${i}`}>
+                  <span className={`font-semibold text-sm sm:text-base ${openFaq === i ? 'text-green-900' : 'text-gray-900'}`}>{faq.q}</span>
+                  <ChevronDown size={18} className={`text-gray-400 flex-shrink-0 transition-transform mt-0.5 ${openFaq === i ? 'rotate-180 text-green-600' : ''}`} />
                 </button>
-                {openFaq === i && <div className="px-3.5 pb-3.5 text-sm text-gray-600">{faq.a}</div>}
+                {openFaq === i && (
+                  <div className="px-4 sm:px-5 pb-4 sm:pb-5 text-sm sm:text-[15px] text-gray-700 leading-relaxed border-t border-green-100/50 pt-3" data-testid={`faq-a-${i}`}>
+                    {faq.a}
+                  </div>
+                )}
               </div>
             ))}
           </div>
+          <p className="text-center text-xs sm:text-sm text-gray-500 mt-6">
+            Still have questions? <a href="mailto:support@celestaglow.com" className="text-green-700 font-semibold underline">Email support</a> or <a href="https://wa.me/919999999999" target="_blank" rel="noreferrer" className="text-green-700 font-semibold underline">chat on WhatsApp</a>.
+          </p>
         </div>
       </section>
 

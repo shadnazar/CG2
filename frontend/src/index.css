@@ -240,6 +240,13 @@ input, select, textarea {
   animation: bounce-in 0.5s ease-out forwards;
 }
 
+/* Shimmer animation for skeleton placeholders */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
