@@ -60,19 +60,15 @@ function Footer() {
               India's #1 Complete Anti-Aging Solution. 5 clinically-formulated products to fight aging — Serum, Night Cream, Under Eye Cream, Sunscreen & Cleanser.
             </p>
             
-            {/* Company Address — parallel layout, no location icon */}
+            {/* Company Address — heading on top, address below */}
             <div className="border-t border-gray-800 pt-4 mt-2">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:gap-6">
-                <h3 className="text-sm font-semibold text-white tracking-wide flex-shrink-0 sm:min-w-[170px] mb-2 sm:mb-0">
-                  Sold &amp; Marketed By:
-                </h3>
-                <address className="not-italic text-sm text-gray-400 leading-relaxed">
-                  <strong className="text-gray-200 block">Veegal Enterprises LLP</strong>
-                  1st Floor, 38, Booth No. 62,<br />
-                  Ashwini Layout, 2nd Main, Egipura,<br />
-                  Bengaluru, Karnataka – 560047, India
-                </address>
-              </div>
+              <h3 className="text-sm font-semibold text-white tracking-wide mb-2">Sold &amp; Marketed By:</h3>
+              <address className="not-italic text-sm text-gray-400 leading-relaxed">
+                <strong className="text-gray-200 block">Veegal Enterprises LLP</strong>
+                1st Floor, 38, Booth No. 62,<br />
+                Ashwini Layout, 2nd Main, Egipura,<br />
+                Bengaluru, Karnataka – 560047, India
+              </address>
             </div>
           </div>
 
