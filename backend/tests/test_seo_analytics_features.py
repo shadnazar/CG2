@@ -11,7 +11,7 @@ import os
 import time
 import uuid
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://serum-ecommerce-ai.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cg-git-integration.preview.emergentagent.com')
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "celestaglow2024")
 
 

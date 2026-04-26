@@ -6,7 +6,7 @@ import pytest
 import requests
 import os
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://serum-ecommerce-ai.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://cg-git-integration.preview.emergentagent.com')
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "celestaglow2024")
 TEST_PHONE_WITH_DISCOUNT = "6238688650"
 
