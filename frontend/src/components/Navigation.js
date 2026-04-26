@@ -72,9 +72,9 @@ function Navigation() {
 
         {/* Desktop header (lg+) */}
         <div className="hidden lg:flex items-center justify-between max-w-7xl mx-auto px-6 xl:px-8 h-16">
-          <Link to="/" className="text-left flex-shrink-0" data-testid="logo-link-desktop">
-            <span className="font-heading text-2xl font-bold tracking-[0.18em] text-gray-900">CELESTA</span>
-            <span className="block text-[10px] tracking-[0.4em] text-gray-500 -mt-0.5">G L O W</span>
+          <Link to="/" className="flex items-baseline gap-2 flex-shrink-0 whitespace-nowrap" data-testid="logo-link-desktop">
+            <span className="font-heading text-[26px] font-black tracking-[0.22em] text-gray-900 leading-none">CELESTA</span>
+            <span className="font-heading text-[26px] font-light tracking-[0.22em] text-emerald-700 leading-none">GLOW</span>
           </Link>
           <nav className="flex items-center gap-1">
             {navLinks.map(link => (

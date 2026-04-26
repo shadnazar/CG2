@@ -72,7 +72,12 @@ function HeroCarousel({ banners = [], autoplayMs = 2000, className = '' }) {
             aria-hidden={i !== index}
           >
             {/* Aspect: phone tall, tablet wide, desktop very wide */}
-            <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[24/9] max-h-[640px]">
+            <Link
+              to={b.cta_link || '/shop'}
+              className="relative block w-full aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[24/9] max-h-[640px]"
+              data-testid={`carousel-slide-${i}`}
+              aria-label={b.title || `Banner ${i + 1}`}
+            >
               <img
                 src={b.image}
                 alt={b.title || `Banner ${i + 1}`}
@@ -82,36 +87,9 @@ function HeroCarousel({ banners = [], autoplayMs = 2000, className = '' }) {
                 decoding={i === 0 ? 'sync' : 'async'}
                 draggable={false}
               />
-              {/* Gradient overlay for text legibility */}
-              <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent sm:from-black/55 sm:via-black/20" />
-
-              {/* Content */}
-              <div className="absolute inset-0 flex items-center">
-                <div className="max-w-7xl w-full mx-auto px-5 sm:px-8 lg:px-12">
-                  <div className="max-w-md sm:max-w-lg lg:max-w-xl text-white">
-                    {b.title && (
-                      <h2 className="font-heading text-2xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight drop-shadow-md">
-                        {b.title}
-                      </h2>
-                    )}
-                    {b.subtitle && (
-                      <p className="mt-2 sm:mt-4 text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed drop-shadow">
-                        {b.subtitle}
-                      </p>
-                    )}
-                    {b.cta_text && (
-                      <Link
-                        to={b.cta_link || '/shop'}
-                        className="inline-flex items-center gap-2 mt-4 sm:mt-6 bg-green-600 hover:bg-green-700 text-white font-bold px-6 sm:px-7 py-3 sm:py-3.5 rounded-full text-sm sm:text-base shadow-lg shadow-green-900/30 transition-colors"
-                        data-testid={`carousel-cta-${i}`}
-                      >
-                        {b.cta_text} <ChevronRight size={18} />
-                      </Link>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+              {/* Subtle bottom gradient for dot indicator legibility only */}
+              <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+            </Link>
           </div>
         ))}
       </div>

@@ -174,44 +174,24 @@ function Homepage() {
             </div>
             <div className="hidden lg:flex items-center justify-center">
               {/* Editable landscape feature banner — admin sets via Site Settings > Homepage Feature Image */}
-              <div className="relative w-full rounded-3xl overflow-hidden shadow-xl group">
-                <div className="relative w-full aspect-[16/10] bg-gradient-to-br from-emerald-100 to-amber-50">
-                  {settings.homepage_feature_image ? (
-                    <img
-                      src={settings.homepage_feature_image}
-                      alt={settings.homepage_feature_title || 'Celesta Glow'}
-                      className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      data-testid="homepage-feature-image"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <Sparkles className="w-20 h-20 text-green-200" />
-                    </div>
-                  )}
-                  {/* Gradient overlay for legibility */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
-                  {/* Text overlay */}
-                  <div className="absolute inset-0 flex flex-col justify-end p-6 lg:p-8 text-white">
-                    {settings.homepage_feature_title && (
-                      <h3 className="font-heading text-2xl lg:text-3xl font-black leading-tight drop-shadow-lg">
-                        {settings.homepage_feature_title}
-                      </h3>
+              <Link to="/shop" className="block w-full" data-testid="feature-banner-link">
+                <div className="relative w-full rounded-[28px] overflow-hidden shadow-2xl shadow-emerald-900/10 ring-1 ring-emerald-100 group bg-gradient-to-br from-emerald-50 to-amber-50">
+                  <div className="relative w-full aspect-[16/10]">
+                    {settings.homepage_feature_image ? (
+                      <img
+                        src={settings.homepage_feature_image}
+                        alt={settings.homepage_feature_title || 'Celesta Glow'}
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                        data-testid="homepage-feature-image"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Sparkles className="w-20 h-20 text-emerald-200" />
+                      </div>
                     )}
-                    {settings.homepage_feature_subtitle && (
-                      <p className="mt-2 text-sm lg:text-base text-white/90 max-w-md drop-shadow">
-                        {settings.homepage_feature_subtitle}
-                      </p>
-                    )}
-                    <Link
-                      to="/shop"
-                      className="inline-flex items-center gap-2 mt-4 self-start bg-white text-green-700 hover:bg-green-50 font-bold px-5 py-2.5 rounded-full text-sm shadow-lg transition-colors"
-                      data-testid="feature-banner-cta"
-                    >
-                      Discover the Range <ChevronRight size={16} />
-                    </Link>
                   </div>
                 </div>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
